@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.04.25
+// @version		2015.05.01
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -153,6 +153,10 @@
 // @include		http://www.meteoweb.eu/*
 // @include		https://meteoweb.eu/*
 // @include		https://www.meteoweb.eu/*
+// @include		http://liveleak.com/*
+// @include		http://www.liveleak.com/*
+// @include		https://liveleak.com/*
+// @include		https://www.liveleak.com/*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -480,8 +484,7 @@ function createMyPlayer () {
  
   /* Panel Autoplay Button */
   if (feature['autoplay']) {
-    var bAutoPlay = (player['playerWidth'] > 600) ? 'Autoplay' : 'AP';
-    player['buttonAutoplay'] = createMyElement ('div', bAutoPlay, 'click', 'autoplay', '');
+    player['buttonAutoplay'] = createMyElement ('div', 'AP', 'click', 'autoplay', '');
     styleMyElement (player['buttonAutoplay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', cursor: 'pointer'});
     if (option['autoplay']) styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement (player['playerPanel'], player['buttonAutoplay']);
@@ -3978,5 +3981,84 @@ else if (page.url.indexOf('meteoweb.eu/video-gallery/') != -1) {
       
 }
 
+// =====LiveLeak===== //
+
+else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
+  
+  /* Get Player Window */
+  var llPlayerWindow = getMyElement ('', 'div', 'id', 'wrapper', -1, false);
+  if (!llPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Video Thumbnail */
+    var llVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);	
+    
+    /* Get Videos Content */
+    var llVideosContent = getMyContent (page.url, 'config:\\s*"(.*?)"', false);
+      
+    /* My Player Window */
+    myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '625px', height: '374px', backgroundColor: '#F4F4F4', margin: '0px auto'});
+    modifyMyElement (llPlayerWindow, 'div', '', true);
+    appendMyElement (llPlayerWindow, myPlayerWindow);
+
+    /* Get Videos */
+    if (llVideosContent) {
+      var llVideoList = {};
+      var llVideoFound = false;
+      var llVideoFormats = {'.avi': 'Low Definition FLV', '_base': 'Low Definition MP4', '_270p': 'Low Definition MP4', '_720p': 'High Definition MP4'};
+      var llVideo;
+      var llVideos = llVideosContent.match(new RegExp('file_url=(.*?)&', 'g'));
+      if (llVideos) {
+	for (var i = 0; i < llVideos.length; i++) {
+	  llVideo = cleanMyContent(llVideos[i].replace('file_url=', ''), true);
+	  if (llVideo) {
+	    for (var vCode in llVideoFormats) {
+	      if (llVideo.indexOf(vCode) != -1) {
+		if (!llVideoFound) llVideoFound = true;
+		llVideoList[llVideoFormats[vCode]] = llVideo;
+	      }
+	    }
+	  }
+	}
+      }
+      
+      if (llVideoFound) {
+	/* Get Watch Sidebar */
+	var llSidebarWindow = getMyElement ('', 'div', 'id', 'rightcol', -1, false);
+	var llSidebarMargin = (llPlayerWindow.offsetTop) ? llPlayerWindow.offsetTop + 500 : 1000;
+	
+	/* Create Player */
+	var llDefaultVideo = (llVideoList['Low Definition MP4']) ? 'Low Definition MP4' : 'Low Definition FLV';
+	player = {
+	  'playerSocket': llPlayerWindow,
+	  'playerWindow': myPlayerWindow,
+	  'videoList': llVideoList,
+	  'videoPlay': llDefaultVideo,
+	  'videoThumb': llVideoThumb,
+	  'playerWidth': 625,
+	  'playerHeight': 374,
+	  'playerWideWidth': 940,
+	  'playerWideHeight': 552,
+	  'sidebarWindow': llSidebarWindow,
+	  'sidebarMarginNormal': 0,
+	  'sidebarMarginWide': llSidebarMargin
+	};
+	feature['container'] = false;
+	option['definitions'] = ['Low Definition', 'High Definition'];
+	option['containers'] = ['MP4'];
+	createMyPlayer ();
+      }
+      else {
+	showMyMessage ('!videos');
+      }
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+
+}
 
 })();
