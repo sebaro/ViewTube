@@ -6,23 +6,23 @@ ViewTube is a browser user script for watching videos from video websites with a
 
 Installation
 
-Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc)
-== with Greasemonkey add-on:
--> https://addons.mozilla.org/firefox/addon/greasemonkey
-== or with Scriptish add-on:
--> https://addons.mozilla.org/firefox/addon/scriptish
+Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc)  
+== with Greasemonkey add-on:  
+-> https://addons.mozilla.org/firefox/addon/greasemonkey  
+== or with Scriptish add-on:  
+-> https://addons.mozilla.org/firefox/addon/scriptish  
 
-Chromium (or based on: Chrome, Iron etc)
-== no add-on needed, save the script and drag & drop it on the extensions page
-== or with Tampermonkey add-on:
--> http://code.google.com/p/tampermonkey
+Chromium (or based on: Chrome, Iron etc)  
+== no add-on needed, save the script and drag & drop it on the extensions page  
+== or with Tampermonkey add-on:  
+-> http://code.google.com/p/tampermonkey  
 
-Opera:
-== for versions <= 12 no add-on needed, just place the script in the JavaScript files directory
-== or with Violentmonkey extension:
--> https://addons.opera.com/en/extensions/details/violent-monkey
-== or with Tampermonkey extension:
--> https://addons.opera.com/en/extensions/details/tampermonkey-beta
+Opera:  
+== for versions <= 12 no add-on needed, just place the script in the JavaScript files directory  
+== or with Violentmonkey extension:  
+-> https://addons.opera.com/en/extensions/details/violent-monkey  
+== or with Tampermonkey extension:  
+-> https://addons.opera.com/en/extensions/details/tampermonkey-beta  
 
 Safari: 
 == for versions < 5.1 with GreaseKit add-on:
