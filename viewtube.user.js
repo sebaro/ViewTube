@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.04.29
+// @version		2015.05.07
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
