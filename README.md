@@ -15,7 +15,7 @@ Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc):
 Chromium (or based on: Chrome, Iron etc):  
 == no add-on needed, save the script and drag & drop it on the extensions page  
 == or with Tampermonkey add-on:  
--> http://code.google.com/p/tampermonkey  
+-> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
 
 Opera:  
 == for versions <= 12 no add-on needed, just place the script in the JavaScript files directory  
@@ -48,6 +48,8 @@ QupZilla:
 Maxthon:  
 == with Violentmonkey extension:  
 -> http://extension.maxthon.com/detail/index.php?view_id=1680  
+== or with Tampermonkey Chrome extension:  
+-> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
 
 Internet Explorer:  
 == using IE7Pro extension:  
