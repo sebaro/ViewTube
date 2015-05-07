@@ -965,21 +965,21 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       ytPlayerHeight = 742;
       ytPlayerWideWidth = 1706;
       ytPlayerWideHeight = 982;
-      ytSidebarMarginWide = 370;
+      ytSidebarMarginWide = 360;
     }
     else if (ytScreenWidth >= 1294 && ytScreenHeight >= 630) {
       ytPlayerWidth = 854;
       ytPlayerHeight = 502;
       ytPlayerWideWidth = 1280;
       ytPlayerWideHeight = 742;
-      ytSidebarMarginWide = 130;
+      ytSidebarMarginWide = 120;
     }
     else {
       ytPlayerWidth = 640;
       ytPlayerHeight = 382;
       ytPlayerWideWidth = 1066;
       ytPlayerWideHeight = 622;
-      ytSidebarMarginWide = 10;
+      ytSidebarMarginWide = 0;
     }
   }
 
