@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.05.01
+// @version		2015.05.09
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -157,6 +157,10 @@
 // @include		http://www.liveleak.com/*
 // @include		https://liveleak.com/*
 // @include		https://www.liveleak.com/*
+// @include		http://unblockyoutube.co.uk/*
+// @include		http://www.unblockyoutube.co.uk/*
+// @include		https://unblockyoutube.co.uk/*
+// @include		https://www.unblockyoutube.co.uk/*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -390,7 +394,7 @@ function getMyElement (obj, type, from, value, child, content) {
   }
 }
 
-function modifyMyElement (obj, type, content, clear) {
+function modifyMyElement (obj, type, content, clear, hide) {
   if (content) {
     if (type == 'div') obj.innerHTML = content;
     else if (type == 'option') {
@@ -403,9 +407,14 @@ function modifyMyElement (obj, type, content, clear) {
   if (clear) {
     if (obj.hasChildNodes()) {
       while (obj.childNodes.length >= 1) {
-        obj.removeChild(obj.firstChild);
+	obj.removeChild(obj.firstChild);
       }
     }
+  }
+  if (hide) {
+    for(var i = 0; i < obj.children.length; i++) {   
+      styleMyElement(obj.children[i], {display: 'none'});
+    }    
   }
 }
 
@@ -4059,6 +4068,150 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
     }
   }
 
+}
+
+// =====UnblockYouTube===== //
+
+else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
+  
+  /* Get Player Window */
+  var uyPlayerWindow = getMyElement ('', 'div', 'id', 'player-api', -1, false);
+  if (!uyPlayerWindow) {
+    showMyMessage ('!player');
+  }
+  else {
+    /* Video Thumbnail */
+    var uyVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+    if (uyVideoThumb) uyVideoThumb = 'https://img.youtube.com' + uyVideoThumb;
+
+    /* Get Video Title */
+    var uyVideoTitle = getMyContent (page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
+  
+    /* Get Videos Content */
+    var uyVideosContent = getMyElement ('', 'div', 'class', 'video-js', 0, true);
+  
+    /* Player Size */
+    var ytPlayerWidth, ytPlayerHeight;
+    var ytPlayerWideWidth, ytPlayerWideHeight;
+    var ytSidebarMarginWide;
+    var ytScreenWidth, ytScreenHeight;
+    function ytSizes() {
+      ytScreenWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
+      ytScreenHeight = page.win.innerHeight || page.doc.documentElement.clientHeight;
+      if (ytScreenWidth >= 1720 && ytScreenHeight >= 980) {
+	ytPlayerWidth = 1280;
+	ytPlayerHeight = 742;
+	ytPlayerWideWidth = 1706;
+	ytPlayerWideHeight = 982;
+	ytSidebarMarginWide = 370;
+      }
+      else if (ytScreenWidth >= 1294 && ytScreenHeight >= 630) {
+	ytPlayerWidth = 854;
+	ytPlayerHeight = 502;
+	ytPlayerWideWidth = 1280;
+	ytPlayerWideHeight = 742;
+	ytSidebarMarginWide = 130;
+      }
+      else {
+	ytPlayerWidth = 640;
+	ytPlayerHeight = 382;
+	ytPlayerWideWidth = 1066;
+	ytPlayerWideHeight = 622;
+	ytSidebarMarginWide = 10;
+      }
+    }
+
+    /* Get Sizes */
+    ytSizes();	      
+      
+    /* My Player Window */
+    myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
+    styleMyElement (uyPlayerWindow, {backgroundColor: '#F1F1F1'});
+    modifyMyElement (uyPlayerWindow, 'div', '', false, true);
+    appendMyElement (uyPlayerWindow, myPlayerWindow);
+    
+    var blockObject = uyPlayerWindow;
+    var blockInterval = 20;
+    page.win.setInterval(function() {
+      // Block videos
+      if (blockObject && blockInterval > 0) {
+	var elEmbeds = getMyElement (blockObject, 'embed', 'tag', '', -1, false) || getMyElement (blockObject, 'object', 'tag', '', -1, false);
+	if (elEmbeds.length > 0) {
+	  for (var e = 0; e < elEmbeds.length; e++) {
+	    var elEmbed = elEmbeds[e];
+	    if (elEmbed && elEmbed.id != 'vtVideo' && elEmbed.parentNode) {
+	      removeMyElement (elEmbed.parentNode, elEmbed);
+	    }
+	  }
+	}
+	var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);    
+	if (elVideos.length > 0) {
+	  for (var v = 0; v < elVideos.length; v++) {
+	    var elVideo = elVideos[v];
+	    if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
+	      modifyMyElement (elVideo, 'video', 'none', true);
+	    }
+	  }
+	}
+	if (blockInterval > 0) blockInterval--;
+      }
+    }, 500);
+      
+    /* Update Sizes */
+    page.win.addEventListener('resize', function() {
+      ytSizes();
+      player['playerWidth'] = ytPlayerWidth;
+      player['playerHeight'] = ytPlayerHeight;
+      player['playerWideWidth'] = ytPlayerWideWidth;
+      player['playerWideHeight'] = ytPlayerWideHeight;
+      player['sidebarMarginWide'] = ytSidebarMarginWide;
+      resizeMyPlayer('widesize');
+    }, false);      
+
+    /* Sidebar Window */
+    var ytSidebarWindow = getMyElement ('', 'div', 'id', 'watch7-sidebar', -1, false);
+    if (ytSidebarWindow) styleMyElement (ytSidebarWindow, {marginTop: '-400px'});
+
+    /* Get Videos */
+    if (uyVideosContent) {
+      var uyVideo = uyVideosContent.match(/src="(.*?)"\s+type="video\/mp4"/);
+      uyVideo = (uyVideo) ? uyVideo[1].replace(/&amp;/g, '&') : null;
+      
+      if (uyVideo) {
+	var uyVideoList = {};
+	var uyDefaultVideo = 'Low Definition MP4';
+	var uyQuality = getMyContent (page.url, 'Select quality:</b> (.*?) <a', false);
+	if (uyQuality && uyQuality == '720p') uyDefaultVideo = 'High Definition MP4';
+	uyVideoList[uyDefaultVideo] = uyVideo;
+	player = {
+	  'playerSocket': uyPlayerWindow,
+	  'playerWindow': myPlayerWindow,
+	  'videoList': uyVideoList,
+	  'videoPlay': uyDefaultVideo,
+	  'videoThumb': uyVideoThumb,
+	  'videoTitle': uyVideoTitle,
+	  'playerWidth': ytPlayerWidth,
+	  'playerHeight': ytPlayerHeight,
+	  'playerWideWidth': ytPlayerWideWidth,
+	  'playerWideHeight': ytPlayerWideHeight,
+	  'sidebarWindow': ytSidebarWindow,
+	  'sidebarMarginNormal': -400,
+	  'sidebarMarginWide': ytSidebarMarginWide
+	};
+	feature['definition'] = false;
+	feature['container'] = false;
+	createMyPlayer();
+      }
+      else {
+	showMyMessage ('!videos');
+      }
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+  
 }
 
 })();

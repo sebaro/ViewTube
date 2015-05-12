@@ -2,7 +2,6 @@
 ViewTube is a browser user script for watching videos from video websites with a video plugin or the HTML5 video player.
 
 ![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)
-![](https://raw.github.com/sebaro/ViewTube/master/screenshot2.png)
 
 ### Installation
 
