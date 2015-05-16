@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.05.07
+// @version		2015.05.16
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1588,9 +1588,10 @@ else if (page.url.indexOf('metacafe.com/watch') != -1) {
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4', zIndex: 10});
-    modifyMyElement (mcPlayerWindow, 'div', '', true);
+    modifyMyElement (mcPlayerWindow, 'div', '', false, true);
     styleMyElement (mcPlayerWindow, {height: '100%'});
     appendMyElement (mcPlayerWindow, myPlayerWindow);
+    blockObject = mcPlayerWindow;
 
     /* Get Videos */
     if (mcVideosContent || mcVideo) {
@@ -2165,7 +2166,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '970px', height: '570px', backgroundColor: '#F4F4F4'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '970px', height: '566px', backgroundColor: '#F4F4F4'});
     modifyMyElement (crPlayerWindow, 'div', '', true);
     styleMyElement (crPlayerWindow, {width: '970px', height: '600px', backgroundColor: '#FFFFFF'});
     appendMyElement (crPlayerWindow, myPlayerWindow);
@@ -2191,7 +2192,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
 	'videoPlay': crDefaultVideo,
 	'videoThumb': crVideoThumb,
 	'playerWidth': 970,
-	'playerHeight': 570
+	'playerHeight': 566
       };
       feature['container'] = false;
       feature['widesize'] = false;
@@ -2239,7 +2240,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
              
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '950px', height: '558px', backgroundColor: '#F4F4F4'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '950px', height: '556px', backgroundColor: '#F4F4F4'});
     modifyMyElement (vkPlayerWindow, 'div', '', false, true);
     if (vkPlayerWindow.parentNode) styleMyElement (vkPlayerWindow.parentNode, {height: '558px'});
     appendMyElement (vkPlayerWindow, myPlayerWindow);
@@ -2264,7 +2265,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
 	  'videoPlay': vkDefaultVideo,
 	  'videoThumb': vkVideoThumb,
 	  'playerWidth': 950,
-	  'playerHeight': 558
+	  'playerHeight': 556
 	};
 	feature['definition'] = false;
 	feature['container'] = false;
@@ -2354,7 +2355,7 @@ else if (page.url.indexOf('imdb.com') != -1) {
 	'playerWidth': 670,
 	'playerHeight': 398,
 	'playerWideWidth': 1010,
-	'playerWideHeight': 594,
+	'playerWideHeight': 592,
 	'sidebarWindow': imdbSidebarWindow,
 	'sidebarMarginNormal': -400,
 	'sidebarMarginWide': 0
