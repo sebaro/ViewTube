@@ -36,13 +36,13 @@ Konqueror:
 -> http://kde-apps.org/content/show.php?content=140676  
 
 Epiphany:  
-== using the Greasemonkey extension from Epiphany extensions  
+== with the Greasemonkey extension from Epiphany extensions  
 
 Midori:  
-== using “User Addons” extension  
+== with "User Addons" extension  
 
 QupZilla:  
-== using the Greasemonkey plugin  
+== with the Greasemonkey plugin  
 
 Maxthon:  
 == with Violentmonkey extension:  
@@ -51,7 +51,7 @@ Maxthon:
 -> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
 
 Internet Explorer:  
-== using IE7Pro extension:  
+== with IE7Pro extension:  
 -> http://ie7pro.com  
 
 ### Plugins

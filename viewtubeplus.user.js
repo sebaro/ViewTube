@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.05.09
+// @version		2015.05.16
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -17,6 +17,10 @@
 // @include		http://www.canalplus.fr/*
 // @include		https://canalplus.fr/*
 // @include		https://www.canalplus.fr/*
+// @include		http://d8.tv/*
+// @include		http://www.d8.tv/*
+// @include		https://d8.tv/*
+// @include		https://www.d8.tv/*
 // @include		http://wat.tv/*
 // @include		http://www.wat.tv/*
 // @include		https://wat.tv/*
@@ -1086,12 +1090,16 @@ else if (page.url.indexOf('video.gelocal.it') != -1) {
 
 // =====CanalPlus===== //
 
-if (page.url.indexOf('canalplus.fr') != -1) {
+if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
+  
+  /* Reload On Video Change */
+  page.win.setInterval(function() {
+    var nurl = page.win.location.href;
+    if (page.url != nurl) page.win.location.href = nurl;
+  }, 500);
 
   /* Get Player Window */
-  var cpPlayerID = getMyContent (page.url, 'canal:player.*?\\s+id="(.*?)"', false);
-  if (cpPlayerID)  var cpPlayerWindow = getMyElement ('', '', 'id', cpPlayerID, -1, false);
-  else return;
+  var cpPlayerWindow = getMyElement ('', '', 'class', 'playerVideo player_16_9', 0, false);
  
   if (!cpPlayerWindow) {
     showMyMessage ('!player');
@@ -1099,10 +1107,10 @@ if (page.url.indexOf('canalplus.fr') != -1) {
   else {
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '360px', backgroundColor: '#F4F4F4', zIndex: '99999'});
-    cpPlayerWindow = cpPlayerWindow.parentNode;
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (cpPlayerWindow, 'div', '', true);
     styleMyElement (cpPlayerWindow, {height: '100%', overflow: 'visible', padding: '0px 0px 20px 0px'});
+    styleMyElement (cpPlayerWindow.parentNode, {overflow: 'visible'});
     appendMyElement (cpPlayerWindow, myPlayerWindow);
     
     /* Get Video ID */
@@ -1139,7 +1147,7 @@ if (page.url.indexOf('canalplus.fr') != -1) {
 	var cpSidebarWindow = getMyElement ('', 'div', 'id', 'rightSection', -1, false);
 	var cpMainSection = getMyElement ('', 'div', 'id', 'mainSection', -1, false);
 	if (cpMainSection) styleMyElement (cpMainSection, {overflow: 'visible'});
-	
+ 
 	/* Create Player */
 	player = {
 	  'playerSocket': cpPlayerWindow,
@@ -1148,12 +1156,12 @@ if (page.url.indexOf('canalplus.fr') != -1) {
 	  'videoPlay': cpDefaultVideo,
 	  'videoThumb': cpVideoThumb,
 	  'playerWidth': 640,
-	  'playerHeight': 360,
+	  'playerHeight': 382,
 	  'playerWideWidth': 970,
-	  'playerWideHeight': 510,
+	  'playerWideHeight': 568,
 	  'sidebarWindow': cpSidebarWindow,
 	  'sidebarMarginNormal': 0,
-	  'sidebarMarginWide': 820
+	  'sidebarMarginWide': 800
 	};
 	feature['definition'] = false;
 	feature['container'] = false;
