@@ -165,6 +165,10 @@
 // @include		http://www.unblockyoutube.co.uk/*
 // @include		https://unblockyoutube.co.uk/*
 // @include		https://www.unblockyoutube.co.uk/*
+// @include		http://jeuxvideo.com/*
+// @include		http://www.jeuxvideo.com/*
+// @include		https://jeuxvideo.com/*
+// @include		https://www.jeuxvideo.com/*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -4212,6 +4216,88 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
     }
   }
   
+}
+
+// =====JeuxVideo===== //
+
+else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
+  
+  /* Get Player Window */
+  var jvPlayerWindow = getMyElement ('', 'div', 'class', 'player-contenu', 0, false);
+  if (!jvPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Video Thumbnail */
+    var jvVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);	
+
+    /* Get Videos Content */
+    var jvVideosContent;
+    var jvVideoID = getMyContent (page.url, '/iframe/(\\d+)', false);
+    if (jvVideoID) {
+      jvVideosContent = getMyContent (page.win.location.protocol + '//' + page.win.location.hostname + '/contenu/medias/video.php?q=config&id=' + jvVideoID, '"sources":\\[(.*?)\\]', false);
+    }
+  
+    /* My Player Window */
+    myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '625px', height: '374px', backgroundColor: '#F4F4F4', margin: '0px auto'});
+    modifyMyElement (jvPlayerWindow, 'div', '', true);
+    styleMyElement (jvPlayerWindow, {height: '100%'});
+    appendMyElement (jvPlayerWindow, myPlayerWindow);
+
+    /* Get Videos */
+    if (jvVideosContent) {
+      var jvVideoList = {};
+      var jvVideoFound = false;
+      var jvVideoFormats = {'272p': 'Low Definition MP4', '400p': 'Standard Definition MP4', '720p': 'High Definition MP4', '1080p': 'Full High Definition MP4'};
+      var jvVideo, jvPattern
+      for (var vCode in jvVideoFormats) {
+	jvPattern = '"label":"' + vCode + '","file":"(.*?)"';
+	jvVideo = jvVideosContent.match(jvPattern);
+	jvVideo = (jvVideo) ? jvVideo[1] : null;
+	if (jvVideo) {
+	  if (!jvVideoFound) jvVideoFound = true;
+	  jvVideoList[jvVideoFormats[vCode]] = cleanMyContent(jvVideo, false);
+	}
+      }
+      
+      if (jvVideoFound) {
+	/* Get Watch Sidebar */
+	var jvSidebarWindow = getMyElement ('', 'div', 'class', 'col-droite-player', 0, false);
+      
+	/* Create Player */
+	var jvDefaultVideo = 'Low Definition MP4';
+	player = {
+	  'playerSocket': jvPlayerWindow,
+	  'playerWindow': myPlayerWindow,
+	  'videoList': jvVideoList,
+	  'videoPlay': jvDefaultVideo,
+	  'videoThumb': jvVideoThumb,
+	  'playerWidth': 625,
+	  'playerHeight': 374,
+	  'playerWideWidth': 940,
+	  'playerWideHeight': 552,
+	  'sidebarWindow': jvSidebarWindow,
+	  'sidebarMarginNormal': -370,
+	  'sidebarMarginWide': 160
+	};
+	feature['container'] = false;
+	option['definitions'] = ['Low Definition', 'Standard Definition', 'High Definition', 'Full High Definition'];
+	option['containers'] = ['MP4'];
+	createMyPlayer ();
+
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '5px'});	
+      }
+      else {
+	showMyMessage ('!videos');
+      }
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+    
 }
 
 })();
