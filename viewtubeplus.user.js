@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.05.16
+// @version		2015.05.19
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1251,22 +1251,20 @@ else if (page.url.indexOf('wat.tv/video') != -1) {
 
 else if (page.url.indexOf('videos.tf1.fr') != -1) {
 
-  /* Get Page Type */
-  var tf1PageType = getMyContent (page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
-  if (!tf1PageType || tf1PageType != 'video.episode') return;
-
   /* Get Player Window */
-  //var tf1PlayerWindow = getMyElement ('', 'div', 'id', 'FlashPlayer', -1, false);
   var tf1PlayerWindow = getMyElement ('', 'div', 'class', 'unique', 0, false);
   if (!tf1PlayerWindow) {
-    showMyMessage ('!player');
+    //showMyMessage ('!player');
   }
   else {
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '360px', backgroundColor: '#F4F4F4', zIndex: '99999'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '384px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (tf1PlayerWindow, 'div', '', true);
     styleMyElement (tf1PlayerWindow, {height: '100%', overflow: 'visible'});
+    styleMyElement (tf1PlayerWindow.parentNode, {overflow: 'visible'});
+    styleMyElement (tf1PlayerWindow.parentNode.parentNode, {overflow: 'visible'});
+    styleMyElement (tf1PlayerWindow.parentNode.parentNode.parentNode, {overflow: 'visible'});
     appendMyElement (tf1PlayerWindow, myPlayerWindow);
     
     /* Get Video Thumbnail */
@@ -1286,13 +1284,7 @@ else if (page.url.indexOf('videos.tf1.fr') != -1) {
       tf1VideoList['Low Definition MP4'] = tf1Video;
 
       /* Get Watch Sidebar */
-      var tf1SidebarWindow = getMyElement ('', 'div', 'id', 'ible164496', -1, false);
-      var tf1MainSection = getMyElement ('', 'div', 'id', 'iblbt150171', -1, false);
-      if (tf1MainSection) styleMyElement (tf1MainSection, {overflow: 'visible'});
-      var tf1MainSection2 = getMyElement ('', 'div', 'id', 'ibl150171', -1, false);
-      if (tf1MainSection2) styleMyElement (tf1MainSection2, {overflow: 'visible'});
-      var tf1MainSection3 = getMyElement ('', 'div', 'class', 'unique', 0, false);
-      if (tf1MainSection3) styleMyElement (tf1MainSection3, {overflow: 'visible'});
+      var tf1SidebarWindow = getMyElement ('', 'div', 'class', 'fright', 0, false);
 
       /* Create Player */
       var tf1DefaultVideo = 'Low Definition MP4';
@@ -1303,12 +1295,12 @@ else if (page.url.indexOf('videos.tf1.fr') != -1) {
 	'videoPlay': tf1DefaultVideo,
 	'videoThumb': tf1VideoThumb,
 	'playerWidth': 640,
-	'playerHeight': 360,
+	'playerHeight': 384,
 	'playerWideWidth': 960,
-	'playerWideHeight': 510,
+	'playerWideHeight': 564,
 	'sidebarWindow': tf1SidebarWindow,
 	'sidebarMarginNormal': 0,
-	'sidebarMarginWide': 530
+	'sidebarMarginWide': 600
       };
       feature['definition'] = false;
       feature['container'] = false;
