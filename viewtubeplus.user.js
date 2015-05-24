@@ -4,8 +4,8 @@
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
-// @downloadURL		http://isebaro.com/viewtube/include/files/viewtubeplus.user.js
-// @updateURL		http://isebaro.com/viewtube/include/files/viewtubeplus.user.js
+// @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
+// @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
 // @icon		http://s3.amazonaws.com/uso_ss/icon/87011/large.png
 // @include		http://*.rai.tv/*
 // @include		https://*.rai.tv/*
