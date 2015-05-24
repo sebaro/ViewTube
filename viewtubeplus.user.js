@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.05.19
+// @version		2015.05.24
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1923,7 +1923,7 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
   if (!triPageType || triPageType.indexOf('video') == -1) return;
   
   /* Get Player Window */
-  var triPlayerWindow = getMyElement ('', 'div', 'class', 'player', 0, false);
+  var triPlayerWindow = getMyElement ('', 'div', 'class', 'player-av-wp', 0, false);
   if (!triPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1938,15 +1938,15 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
     var triVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
       
     /* Get Videos Content */
-    var triVideosContents = getMyContent (page.url, 'block_flash_vars\\s+=\\s+\\{(.*?)\\}', false);
+    var triVideosContents = getMyContent (page.url, 'file:\\s*"(.*?)"', false);
     
     /* Get Videos Content */
     if (triVideosContents) {
-      var triUser = triVideosContents.match(/"userid":"(.*?)"/);
+      var triUser = triVideosContents.match(/username=(.*?)&/);
       triUser = (triUser) ? triUser[1] : null;
-      var triHash = triVideosContents.match(/"hash":"(.*?)"/);
+      var triHash = triVideosContents.match(/hash=(.*?)&/);
       triHash = (triHash) ? triHash[1] : null;
-      var triServer = triVideosContents.match(/"server":"(.*?)"/);
+      var triServer = triVideosContents.match(/fs(\d+)/);
       triServer = (triServer) ? triServer[1] : null;
       var triFormatsURL = 'http://fs' + triServer + '.trilulilu.ro/' + triHash + '/video-formats';
       var triFormatsContent = getMyContentGM(triFormatsURL, 'TEXT', false);
@@ -1985,7 +1985,7 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
 	  option['definitions'] = ['Low Definition', 'High Definition'];
 	  option['containers'] = ['MP4', 'FLV', 'Any'];
 	  createMyPlayer ();
-	  styleMyElement(player['playerContent'], {marginTop: '3px'});
+	  styleMyElement(player['playerContent'], {marginTop: '7px'});
 	}
 	else {
 	  showMyMessage ('!videos');
