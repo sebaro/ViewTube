@@ -3,6 +3,12 @@
 /* ViewTube Changelog */
 
 
+#2015.05.27
+- add support for Dailymotion playlists
+
+#2015.05.24
+- change update URL
+
 #2015.05.16
 - blocks MetaCafe video player
 

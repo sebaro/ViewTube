@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.05.24
+// @version		2015.05.27
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -871,6 +871,13 @@ page.win.setInterval(function() {
       if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.href = nurl;
       else if (player['isPlaying']) playMyVideo(false);
     }
+    // Dailymotion
+    else if (nurl.indexOf('dailymotion.com') != -1) {
+      if (nurl.indexOf('dailymotion.com/playlist') != -1 && nurl.indexOf('#video=') != -1) {
+	page.win.location.href = nurl;
+	location.reload();
+      }
+    }
     // Facebook
     else if (nurl.indexOf('facebook.com') != -1) {
       if (nurl.match('facebook.com/(video.php|.*/videos/)')) {
@@ -1322,10 +1329,10 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 
 // =====DailyMotion===== //
 
-else if (page.url.indexOf('dailymotion.com/video') != -1) {
+else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('dailymotion.com/playlist') != -1) {
 
   /* Get Player Window */
-  var dmPlayerWindow = getMyElement ('', 'div', 'id', 'player_main', -1, false);
+  var dmPlayerWindow = getMyElement ('', 'div', 'id', 'player_container', -1, false);
   if (!dmPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1334,7 +1341,9 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
     var dmVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Get Videos Content */
-    var dmEmbed = page.url.replace(/\/video\//, "/embed/video/");
+    var dmEmbed;
+    if (page.url.indexOf('dailymotion.com/video') != -1) dmEmbed = page.url.replace(/\/video\//, "/embed/video/");
+    else dmEmbed = page.url.replace(/playlist.*=/, "embed/video/");
     dmVideosContent = getMyContent (dmEmbed, 'info\\s+=\\s+\\{(.*)\\},', false);
     
     /* Fix content size and player window overflow */
@@ -1342,8 +1351,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
     if (dmContent) styleMyElement(dmContent, {maxWidth: '1010px', padding: '5px'})
     var dmPlayerJSBox = getMyElement ('', 'div', 'class', 'js-player-box', 0, false);
     if (dmPlayerJSBox) styleMyElement(dmPlayerJSBox, {overflow: 'visible'});
-    var dmPlayerJSExpend = getMyElement ('', 'div', 'class', 'js-expand-player', 0, false);
-    if (dmPlayerJSExpend) styleMyElement(dmPlayerJSExpend, {display: 'none'});
+    else styleMyElement(dmPlayerWindow.parentNode, {overflow: 'visible'});
     var dmPlayerInfos = getMyElement ('', 'div', 'class', 'pl_video_infos', 0, false);
     if (dmPlayerInfos) styleMyElement(dmPlayerInfos, {marginTop: '10px'});
 
@@ -1380,7 +1388,11 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
 	feature['direct'] = true;
 	
 	/* Get Watch Sidebar */
-	var dmSidebarWindow = getMyElement ('', 'div', 'class', 'js-related-box', 0, false);
+	var dmSidebarWindow = getMyElement ('', 'div', 'class', 'col-3', 0, false);
+	if (!dmSidebarWindow) {
+	  dmSidebarWindow = getMyElement ('', 'div', 'class', 'col-4', 0, false);
+	  if (dmSidebarWindow) styleMyElement (dmSidebarWindow, {marginLeft: '40px'});
+	}
 	
 	/* Create Player */
 	var dmDefaultVideo = 'Low Definition MP4';
@@ -1396,7 +1408,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
 	  'playerWideHeight': 588,
 	  'sidebarWindow': dmSidebarWindow,
 	  'sidebarMarginNormal': 0,
-	  'sidebarMarginWide': 600
+	  'sidebarMarginWide': 610
 	};
 	feature['container'] = false;
 	option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
@@ -1414,27 +1426,16 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
 	}
 
 	/* Fix windows size on widesize */
-	var dmPlayerContainer = getMyElement ('', 'div', 'id', 'player_container', -1, false);
-	if (dmPlayerContainer) {
-	  page.win.setTimeout(function() {
-	    styleMyElement(dmPlayerContainer, {height: player['playerWindow'].style.height});
-	  }, 1000);
-	  player['buttonWidesize'].addEventListener('click', function() {
-	    styleMyElement(dmPlayerContainer, {height: player['playerWindow'].style.height});
-	  }, false);
-	}
+	page.win.setTimeout(function() {
+	    styleMyElement(dmPlayerWindow, {height: player['playerWindow'].style.height});
+	}, 1000);
+	player['buttonWidesize'].addEventListener('click', function() {
+	  styleMyElement(dmPlayerWindow, {height: player['playerWindow'].style.height});
+	}, false);
 	
-	/* Hide Top & Right Ad */
+	/* Hide Top */
 	var dmMcTop = getMyElement ('', 'div', 'id', 'mc_Top', -1, false);
 	if (dmMcTop) styleMyElement(dmMcTop, {display: 'none'});
-	var dmMcRight = getMyElement ('', 'div', 'id', 'mc_Right', -1, false);
-	if (dmMcRight) styleMyElement(dmMcRight, {display: 'none'});
-	var dmContainer = getMyElement ('', 'div', 'class', 'container-fluid', 1, false);
-	if (dmContainer) styleMyElement(dmContainer, {width: '1000px'});
-	page.win.addEventListener('resize', function () {
-	    dmContainer = getMyElement ('', 'div', 'class', 'container-fluid', 1, false);
-	    if (dmContainer) styleMyElement(dmContainer, {width: '1000px'});
-	}, false);
 
 	/* Fix panel */
 	styleMyElement(player['playerContent'], {marginTop: '7px'});
