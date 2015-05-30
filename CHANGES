@@ -3,11 +3,14 @@
 /* ViewTube Changelog */
 
 
+#2015.05.28
+- fixes missing playlist
+
 #2015.05.27
-- add support for Dailymotion playlists
+- adds support for Dailymotion playlists
 
 #2015.05.24
-- change update URL
+- changes update URL
 
 #2015.05.16
 - blocks MetaCafe video player
@@ -25,7 +28,7 @@
 - fixes age-restricted YouTube videos
 
 #2015.04.10
-- add buttons tooltips
+- adds buttons tooltips
 - adds support for playing videos directly with mpv + youtube-dl or VLC
 
 #2015.04.08

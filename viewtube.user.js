@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.05.27
+// @version		2015.05.28
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1071,6 +1071,14 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     var ytPlaceholderPlayer = getMyElement ('', 'div', 'id', 'placeholder-player', -1, false);
     if (ytPlaceholderPlayer) styleMyElement (ytPlaceholderPlayer, {display: 'none'});
     
+    /* Playlist */
+    var ytPlaylist = getMyElement ('', 'div', 'id', 'player-playlist', -1, false);
+    if (ytPlaylist) {
+      styleMyElement(ytPlaylist, {marginLeft: '-' + ytPlayerWidth + 'px'});
+      var ytPlaceholderPlaylist = getMyElement ('', 'div', 'id', 'placeholder-playlist', -1, false);
+      if (ytPlaceholderPlaylist) appendMyElement(ytPlaceholderPlaylist, ytPlaylist);
+    }
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
@@ -1087,8 +1095,9 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       player['playerWideHeight'] = ytPlayerWideHeight;
       player['sidebarMarginWide'] = ytSidebarMarginWide;
       resizeMyPlayer('widesize');
+      if (ytPlaylist) styleMyElement(ytPlaylist, {marginLeft: '-' + ytPlayerWidth + 'px'});
     }, false);
-    
+
     /* Sidebar Window */
     var ytSidebarWindow = getMyElement ('', 'div', 'id', 'watch7-sidebar', -1, false);
     if (ytSidebarWindow) styleMyElement (ytSidebarWindow, {marginTop: '-382px'});
