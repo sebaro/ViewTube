@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.06.02
+// @version		2015.06.04
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -3739,6 +3739,10 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 
     /* Get Player Window */
     var rtlPlayerWindow = getMyElement ('', 'div', 'id', 'dont-turn-off-the-lights', -1, false);
+    if (!rtlPlayerWindow) {
+      rtlPlayerWindow = getMyElement ('', 'div', 'class', 'social-bar', 0, false);
+      if (rtlPlayerWindow) styleMyElement(rtlPlayerWindow, {height: '502px'});
+    }
     if (!rtlPlayerWindow) {
       //showMyMessage ('!player');
     }
