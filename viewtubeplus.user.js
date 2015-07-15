@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.06.05
+// @version		2015.07.15
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -113,6 +113,10 @@
 // @include		https://www.videomore.ru/*
 // @include		http://videomore.ru/*
 // @include		https://www.videomore.ru/*
+// @include		http://tvigle.ru/*
+// @include		https://tvigle.ru/*
+// @include		http://www.tvigle.ru/*
+// @include		https://www.tvigle.ru/*
 // @include		http://alkislarlayasiyorum.com/*
 // @include		http://www.alkislarlayasiyorum.com/*
 // @include		https://alkislarlayasiyorum.com/*
@@ -3243,6 +3247,103 @@ else if (page.url.indexOf('videomore.ru/') != -1) {
  
 }
 
+// =====Tvigle===== //
+
+else if (page.url.indexOf('tvigle.ru/video') != -1) {
+  
+  /* Get Player Window */
+  var tviPlayerWindow = getMyElement ('', 'div', 'class', 'player-content', 0, false);  
+  if (!tviPlayerWindow) {
+    showMyMessage ('!player');
+  }
+  else {
+    /* Get Video Thumb */
+    var tviVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+    /* Get Video ID */
+    var tviVideoId = getMyContent (page.url, 'cloudId\\s*=\\s*\'(.*?)\';', false);
+
+    /* My Player Window */
+    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '712px', height: '422px', backgroundColor: '#F4F4F4'});
+    styleMyElement (tviPlayerWindow, {height: '100%'});
+    modifyMyElement (tviPlayerWindow, 'div', '', true);
+    appendMyElement (tviPlayerWindow, myPlayerWindow);
+
+    /* Get Videos */
+    if (tviVideoId) {
+      GM_xmlhttpRequest({
+	method: 'GET',
+	url: 'http://cloud.tvigle.ru/api/play/video/' + tviVideoId,
+	onload: function(response) {
+	  if (response.readyState === 4 && response.status === 200) {
+	    var tviVideosSource = response.responseText;
+	    if (tviVideosSource) {
+	      var tviVideoFound = false;
+	      var tviVideoList = {};
+	      var tviVideosMP4 = tviVideosSource.match(/"mp4":\s*\{(.*?)\}/);
+	      tviVideosMP4 = (tviVideosMP4) ? tviVideosMP4[1] : null;
+	      if (tviVideosMP4) {
+		var tviVideo = tviVideosMP4.match(/"480p":\s*"(.*?)"/);
+		tviVideo = (tviVideo) ? tviVideo[1] : null;
+		if (tviVideo) {
+		  tviVideoList['Standard Definition MP4'] = tviVideo;
+		  tviVideoFound = true;
+		}
+		var tviVideo = tviVideosMP4.match(/"720p":\s*"(.*?)"/);
+		tviVideo = (tviVideo) ? tviVideo[1] : null;
+		if (tviVideo) {
+		  tviVideoList['High Definition MP4'] = tviVideo;
+		  tviVideoFound = true;
+		}
+	      }
+	      var tviVideosFLV = tviVideosSource.match(/"flv":\s*\{(.*?)\}/);
+	      tviVideosFLV = (tviVideosFLV) ? tviVideosFLV[1] : null;
+	      if (tviVideosFLV) {
+		var tviVideo = tviVideosFLV.match(/"480p":\s*"(.*?)"/);
+		tviVideo = (tviVideo) ? tviVideo[1] : null;
+		if (tviVideo) {
+		  tviVideoList['Standard Definition FLV'] = tviVideo;
+		  tviVideoFound = true;
+		}
+		var tviVideo = tviVideosFLV.match(/"720p":\s*"(.*?)"/);
+		tviVideo = (tviVideo) ? tviVideo[1] : null;
+		if (tviVideo) {
+		  tviVideoList['High Definition FLV'] = tviVideo;
+		  tviVideoFound = true;
+		}
+	      }
+
+	      /* Create Player */
+	      if (tviVideoFound) {
+		var tviDefaultVideo = 'Standard Definition MP4';
+		player = {'playerSocket': tviPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': tviVideoList, 'videoPlay': tviDefaultVideo, 'videoThumb': tviVideoThumb, 'playerWidth': 712, 'playerHeight': 422};
+		feature['widesize'] = false;
+		option['definitions'] = ['High Definition', 'Standard Definition'];
+		option['containers'] = ['MP4', 'FLV'];
+		createMyPlayer ();
+	      }
+	      else {
+		showMyMessage ('!videos');
+	      }
+	    }
+	    else {
+	      showMyMessage ('!content');
+	    }
+	  }
+	  else {
+	    showMyMessage ('!content');
+	  }
+	}
+      });
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+
+}
+
 // =====AlkislarlaYasiyorum===== //
 
 else if (page.url.indexOf('alkislarlayasiyorum.com/icerik') != -1) {
@@ -3323,7 +3424,7 @@ else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
       player = {'playerSocket': huPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': huVideoList, 'videoPlay': huDefaultVideo, 'videoThumb': huVideoThumb, 'playerWidth': 580, 'playerHeight': 340};
       feature['container'] = false;
       feature['widesize'] = false;
-      option['definitions'] = ['Full High Definition MP4', 'High Definition MP4', 'Standard Definition MP4', 'Low Definition', 'Very Low Definition'];
+      option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
       option['containers'] = ['MP4'];      
       createMyPlayer ();     
     }
@@ -3397,7 +3498,7 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
 	};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['High Definition MP4', 'Low Definition', 'Very Low Definition'];
+	option['definitions'] = ['High Definition', 'Low Definition', 'Very Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 	styleMyElement(player['playerContent'], {marginTop: '4px'});
@@ -3765,7 +3866,7 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 	var rtlVideoPath = rtlVideoPath.replace(/.*\/flash/, '').replace(/\.f4m/, '');
 	rtlVideo = 'http://pg.us.rtl.nl/rtlxl/network/a3m/progressive/' + rtlVideoPath + '.mp4';
       }
-      
+
       /* My Player Window */
       myPlayerWindow = createMyElement ('div', '', '', '', '');
       styleMyElement (myPlayerWindow, {position: 'relative', width: '852px', height: '502px', backgroundColor: '#F4F4F4', zIndex: 10, margin: '0px auto'});
