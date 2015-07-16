@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.07.15
+// @version		2015.07.16
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -117,6 +117,10 @@
 // @include		https://tvigle.ru/*
 // @include		http://www.tvigle.ru/*
 // @include		https://www.tvigle.ru/*
+// @include		http://ivi.ru/*
+// @include		https://ivi.ru/*
+// @include		http://www.ivi.ru/*
+// @include		https://www.ivi.ru/*
 // @include		http://alkislarlayasiyorum.com/*
 // @include		http://www.alkislarlayasiyorum.com/*
 // @include		https://alkislarlayasiyorum.com/*
@@ -3334,6 +3338,9 @@ else if (page.url.indexOf('tvigle.ru/video') != -1) {
 	  else {
 	    showMyMessage ('!content');
 	  }
+	},
+	onerror: function() {
+	  showMyMessage ('!content');
 	}
       });
     }
@@ -3342,6 +3349,90 @@ else if (page.url.indexOf('tvigle.ru/video') != -1) {
     }
   }
 
+}
+
+// =====IVI===== //
+
+else if (page.url.indexOf('ivi.ru/watch/') != -1) {
+
+  /* Get Player Window */
+  var iviPlayerWindow = getMyElement ('', 'div', 'id', 'js-player-area', -1, false);  
+  if (!iviPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Get Video Thumb */
+    var iviVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+    /* Get Video ID */
+    var iviVideoId = getMyContent (page.url, 'data-id="(.*?)"', false);
+      
+    /* My Player Window */
+    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '978px', height: '550px', backgroundColor: '#F4F4F4'});
+    styleMyElement (iviPlayerWindow, {height: '100%'});
+    modifyMyElement (iviPlayerWindow, 'div', '', true);
+    appendMyElement (iviPlayerWindow, myPlayerWindow);
+
+    /* Get Videos */
+    if (iviVideoId) {
+      var params = {"method":"da.content.get","params":[iviVideoId,{"site":"s183","referrer":"http://www.ivi.ru/watch/"+iviVideoId,"contentid":iviVideoId}]};
+      GM_xmlhttpRequest({
+	method: 'POST',
+	url: 'http://api.digitalaccess.ru/api/json/',
+	data: JSON.stringify (params),
+	headers: {"Content-Type": "application/json"},
+	onload: function(response) {
+	  if (response.readyState === 4 && response.status === 200) {
+	    var iviVideosSource = response.responseText;
+	    if (iviVideosSource) {
+	      var iviVideoFound = false;
+	      var iviVideoList = {};
+	      var iviVideosContent = iviVideosSource.match(/"files":\s*\[(.*?)\]/);
+	      iviVideosContent = (iviVideosContent) ? iviVideosContent[1] : null;
+	      if (iviVideosContent) {
+		var iviVideoMatch = iviVideosContent.match(/"url":\s*"(.*?)"/g);
+		if (iviVideoMatch) {
+		  iviVideoFound = true;
+		  for (var i = 0; i < iviVideoMatch.length; i++) {
+		    var iviVideo = iviVideoMatch[i].replace(/"url":\s*"/, '').replace(/"/, '');
+		    if (iviVideo.indexOf('mp4-hi')) iviVideoList['Very Low Definition MP4'] = iviVideo;
+		    if (iviVideo.indexOf('mp4-shq')) iviVideoList['Low Definition MP4'] = iviVideo;
+		  }
+		}
+	      }
+
+	      /* Create Player */
+	      if (iviVideoFound) {
+		var iviDefaultVideo = 'Low Definition MP4';
+		player = {'playerSocket': iviPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': iviVideoList, 'videoPlay': iviDefaultVideo, 'videoThumb': iviVideoThumb, 'playerWidth': 987, 'playerHeight': 550};
+		feature['widesize'] = false;
+		option['definitions'] = ['Very Low Definition', 'Low Definition'];
+		option['containers'] = ['MP4'];
+		createMyPlayer ();
+	      }
+	      else {
+		showMyMessage ('!videos');
+	      }
+	    }
+	    else {
+	      showMyMessage ('!content');
+	    }
+	  }
+	  else {
+	    showMyMessage ('!content');
+	  }
+	},
+	onerror: function() {
+	  showMyMessage ('!content');
+	}
+      });
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+  
 }
 
 // =====AlkislarlaYasiyorum===== //
