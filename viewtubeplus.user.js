@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.07.16
+// @version		2015.07.17
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -121,6 +121,10 @@
 // @include		https://ivi.ru/*
 // @include		http://www.ivi.ru/*
 // @include		https://www.ivi.ru/*
+// @include		http://megogo.net/*
+// @include		https://megogo.net/*
+// @include		http://www.megogo.net/*
+// @include		https://www.megogo.net/*
 // @include		http://alkislarlayasiyorum.com/*
 // @include		http://www.alkislarlayasiyorum.com/*
 // @include		https://alkislarlayasiyorum.com/*
@@ -687,13 +691,13 @@ function getMyVideo () {
 function resizeMyPlayer (size) {
   if (size == 'widesize') {
     if (option['widesize']) {
-      modifyMyElement (player['buttonWidesize'], 'div', '&lt;', false);
+      if (player['buttonWidesize']) modifyMyElement (player['buttonWidesize'], 'div', '&lt;', false);
       var playerWidth = player['playerWideWidth'];
       var playerHeight= player['playerWideHeight'];
       var sidebarMargin = player['sidebarMarginWide'];
     }
     else {
-      modifyMyElement (player['buttonWidesize'], 'div', '&gt;', false);
+      if (player['buttonWidesize']) modifyMyElement (player['buttonWidesize'], 'div', '&gt;', false);
       var playerWidth = player['playerWidth'];
       var playerHeight= player['playerHeight'];
       var sidebarMargin = player['sidebarMarginNormal'];
@@ -731,7 +735,7 @@ function resizeMyPlayer (size) {
     
   /* Resize The Player */
   if (size == 'widesize') {
-    styleMyElement (player['sidebarWindow'], {marginTop: sidebarMargin + 'px'});
+    if (player['sidebarWindow']) styleMyElement (player['sidebarWindow'], {marginTop: sidebarMargin + 'px'});
     styleMyElement (player['playerWindow'], {width: playerWidth + 'px', height: playerHeight + 'px'});
   }
   else styleMyElement (player['playerWindow'], {position: playerPosition, top: '0px', left: '0px', width: playerWidth + 'px', height: playerHeight + 'px', zIndex: playerIndex});
@@ -2736,6 +2740,65 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	twVideoType = 'l';      
       }
     }
+    
+    /* Player Size */
+    var twPlayerWidth, twPlayerHeight;
+    var twScreenWidth, twScreenHeight;
+    var twLWindowWidth, twRWindowWidth;
+    var twLWindowStatus, twRWindowStatus;
+    var twLREvent = 'resize';
+    var twLWindow = getMyElement ('', 'div', 'id', 'left_col', -1, false);
+    if (twLWindow) {
+      if (twLWindow.className.indexOf('closed') != -1) twLWindowStatus = 'closed';
+      else twLWindowStatus = 'open';
+    }
+    var twRWindow = getMyElement ('', 'div', 'id', 'right_col', -1, false);
+    if (twRWindow) {
+      if (twRWindow.className.indexOf('closed') != -1) twRWindowStatus = 'closed';
+      else twRWindowStatus = 'open';
+    }
+    function twSizes() {
+      twScreenWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
+      twScreenHeight = page.win.innerHeight || page.doc.documentElement.clientHeight;
+      if (twLWindow) {
+	if (twLREvent == 'resize') {
+	  if (twLWindowStatus == 'closed') {
+	    twLWindowWidth = 0;
+	  }
+	  else {
+	    twLWindowWidth = 240;
+	  }
+	  if (twRWindowStatus == 'closed') {
+	    twRWindowWidth = 0;
+	  }
+	  else {
+	    twRWindowWidth = 340;
+	  }
+	}
+	else if (twLREvent == 'left') {
+	  if (twLWindowStatus == 'closed') {
+	    twLWindowWidth = 240;
+	    twLWindowStatus = 'open';
+	  }
+	  else {
+	    twLWindowWidth = 0;
+	    twLWindowStatus = 'closed';
+	  }
+	}
+	else if (twLREvent == 'right') {
+	  if (twRWindowStatus == 'closed') {
+	    twRWindowWidth = 340;
+	    twRWindowStatus = 'open';
+	  }
+	  else {
+	    twRWindowWidth = 0;
+	    twRWindowStatus = 'closed';
+	  }
+	}
+      }
+      twPlayerWidth = twScreenWidth - (110 + twLWindowWidth + twRWindowWidth);
+      twPlayerHeight = Math.round(twPlayerWidth / 1.77);
+    }    
 
     /* Parse Videos */
     function twHLS() {
@@ -2767,12 +2830,23 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	}
 	/* Create Player */
 	var twDefaultVideo = 'Any Definition MP4';
-	player = {'playerSocket': twPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': twVideoList, 'videoPlay': twDefaultVideo, 'videoThumb': twVideoThumb, 'playerWidth': 854, 'playerHeight': 502};
+	player = {'playerSocket': twPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': twVideoList, 'videoPlay': twDefaultVideo, 'videoThumb': twVideoThumb, 'playerWidth': twPlayerWidth, 'playerHeight': twPlayerHeight};
 	feature['container'] = false;
 	feature['widesize'] = false;
 	option['definitions'] = ['High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
+	page.win.setInterval(function() {
+	  if (player['isPlaying']) {
+	    var objEls = document.getElementsByTagName('object');
+	    if (objEls.length > 0) {
+	      var objEl = objEls[0];
+	      if (objEl) {
+		if (objEl.style.minHeight != player['contentHeight'] + 'px') objEl.style.minHeight = player['contentHeight'] + 'px';
+	      }
+	    }
+	  }
+	}, 1000);
       }
     }
     function twSource() {
@@ -2807,12 +2881,43 @@ else if (page.url.indexOf('twitch.tv') != -1) {
     var twVideoSource;
     var twHLSStep = 1;
     if (twVideoType) {
+      /* Get Sizes */
+      twSizes();
+
       /* My Player Window */
       var myPlayerWindow = createMyElement ('div', '', '', '', '');
-      styleMyElement (myPlayerWindow, {position: 'relative', width: '854px', height: '502px', backgroundColor: '#F4F4F4', margin: '0px auto'});
+      styleMyElement (myPlayerWindow, {position: 'relative', width: twPlayerWidth + 'px', height: twPlayerHeight + 'px', backgroundColor: '#F4F4F4', margin: '0px auto'});
       modifyMyElement (twPlayerWindow, 'div', '', true);
-      styleMyElement (twPlayerWindow, {backgroundColor: '#FFFFFF'});
+      styleMyElement (twPlayerWindow, {minHeight: twPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
       appendMyElement (twPlayerWindow, myPlayerWindow);
+
+      /* Update Sizes */
+      page.win.addEventListener('resize', function() {
+	twLREvent = 'resize';
+	twSizes();
+	player['playerWidth'] = twPlayerWidth;
+	player['playerHeight'] = twPlayerHeight;
+	styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
+	resizeMyPlayer('widesize');
+      }, false);
+      var twLButton = getMyElement ('', 'div', 'id', 'left_close', -1, false);
+      twLButton.addEventListener('click', function() {
+	twLREvent = 'left';
+	twSizes();
+	player['playerWidth'] = twPlayerWidth;
+	player['playerHeight'] = twPlayerHeight;
+	styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
+	resizeMyPlayer('widesize');
+      }, false);
+      var twRButton = getMyElement ('', 'div', 'id', 'right_close', -1, false);
+      twRButton.addEventListener('click', function() {
+	twLREvent = 'right';
+	twSizes();
+	player['playerWidth'] = twPlayerWidth;
+	player['playerHeight'] = twPlayerHeight;
+	styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
+	resizeMyPlayer('widesize');
+      }, false);
 
       /* Video Sources */
       if (twVideoType == 'l') {
@@ -3433,6 +3538,162 @@ else if (page.url.indexOf('ivi.ru/watch/') != -1) {
     }
   }
   
+}
+
+// =====Megogo===== //
+
+else if (page.url.indexOf('megogo.net/') != -1) {
+  
+  /* Get Player Window */
+  //var mePlayerWindow = getMyElement ('', 'div', 'id', 'playerPlace', -1, false);
+  var mePlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
+  if (!mePlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Get Video Thumb */
+    var meVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+    
+    /* Get Video ID */
+    var meVideoId = page.url.replace(/.*\//, '').replace(/-.*/, '');
+    
+    /* My Player Window */
+    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '690px', height: '406px', backgroundColor: '#E4E4E4', margin: '0px auto'});
+    modifyMyElement (mePlayerWindow, 'div', '', true);
+    styleMyElement (mePlayerWindow, {height: '410px'});
+    appendMyElement (mePlayerWindow, myPlayerWindow);
+    
+    /* Get Videos */
+    if (meVideoId) {
+      GM_xmlhttpRequest({
+	method: 'GET',
+	url: page.url.replace(/-.*/, '').replace('/view/', '/e/'),
+	headers: {"Referer": page.url},
+	onload: function(response) {
+	  if (response.readyState === 4 && response.status === 200) {
+	    var meContentSource = response.responseText;
+	    if (meContentSource) {
+	      var mePlaylistSource = meContentSource.match(/src='(.*?)'/);
+	      mePlaylistSource = (mePlaylistSource) ? mePlaylistSource[1] : null;
+	      if (mePlaylistSource) {
+		var mePlaylistId = mePlaylistSource.replace(/.*pl=/, '');
+		GM_xmlhttpRequest({
+		  method: 'GET',
+		  url: mePlaylistSource,
+		  onload: function(response) {
+		    if (response.readyState === 4 && response.status === 200) {
+		      var meVideoSource = response.responseText;
+		      if (meVideoSource) {
+			var meVideoId = meVideoSource.match(/video=(\d+),/);
+			meVideoId = (meVideoId) ? meVideoId[1] : null;
+			if (meVideoId) {
+			  GM_xmlhttpRequest({
+			    method: 'GET',
+			    url: 'http://out.pladform.ru/getVideo?social=none&pl=' + mePlaylistId + '&videoid=' + meVideoId,
+			    onload: function(response) {
+			      if (response.readyState === 4 && response.status === 200) {
+				var meVideosContent = response.responseText;
+				if (meVideosContent) {
+				  var meVideoFound;
+				  var meVideoList = {};
+				  var meVideoThumb = meVideosContent.match(/<cover>\/\/(.*?)</);
+				  meVideoThumb = (meVideoThumb) ? 'http://' + meVideoThumb[1] : null;
+				  var meVideo = meVideosContent.match(/quality='sd'><!\[CDATA\[(.*?)\]/);
+				  meVideo = (meVideo) ? meVideo[1] : null;
+				  if (meVideo) {
+				    meVideoFound = true;
+				    meVideoList['Standard Definition MP4'] = meVideo;
+				  }
+				  var meVideo = meVideosContent.match(/quality='ld'><!\[CDATA\[(.*?)\]/);
+				  meVideo = (meVideo) ? meVideo[1] : null;
+				  if (meVideo) {
+				    meVideoFound = true;
+				    meVideoList['Low Definition MP4'] = meVideo;
+				  }
+				  
+				  /* Create Player */
+				  if (meVideo) {
+				    var meDefaultVideo = 'Low Definition MP4';
+				    player = {'playerSocket': mePlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': meVideoList, 'videoPlay': meDefaultVideo, 'videoThumb': meVideoThumb, 'playerWidth': 690, 'playerHeight': 406};
+				    feature['definition'] = false;
+				    feature['container'] = false;
+				    feature['widesize'] = false;
+				    createMyPlayer ();
+				    /* Fix panel */
+				    styleMyElement(player['playerContent'], {marginTop: '4px'});
+				  }
+				  else {
+				    showMyMessage ('!videos');
+				  }
+				}
+				else {
+				  showMyMessage ('!content');
+				}
+			      }
+			      else {
+				showMyMessage ('!content');
+			      }
+			    },
+			    onerror: function() {
+			     showMyMessage ('!content');
+		            }
+			  });
+			}
+			else {
+			  showMyMessage ('!content');
+			}
+		      }
+		      else {
+			showMyMessage ('!content');
+		      }
+		    }
+		    else {
+		      showMyMessage ('!content');
+		    }
+		  },
+		  onerror: function() {
+		    showMyMessage ('!content');
+		  }
+		});
+	      }
+	      else {
+		var meVideo = getMyContent(page.win.location.protocol + '//' + page.win.location.hostname + '/b/info/?l=ru&i=' + meVideoId + '&s=0&p=0&m=%2D1&t=0&preview=0&h=' + page.url + '&e=0', '<src>(.*?)<', false);
+		if (meVideo) {
+		  var meDefaultVideo = 'HTTP Live Streaming M3U8';
+		  var meVideoList = {};
+		  meVideoList[meDefaultVideo] = meVideo;
+		  player = {'playerSocket': mePlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': meVideoList, 'videoPlay': meDefaultVideo, 'videoThumb': meVideoThumb, 'playerWidth': 690, 'playerHeight': 406};
+		  feature['definition'] = false;
+		  feature['container'] = false;
+		  feature['widesize'] = false;
+		  createMyPlayer ();
+		  /* Fix panel */
+		  styleMyElement(player['playerContent'], {marginTop: '4px'});
+		}
+		else {
+		  showMyMessage ('!videos');
+		}
+	      }
+	    }
+	    else {
+	      showMyMessage ('!content');
+	    }
+	  }
+	  else {
+	    showMyMessage ('!content');
+	  }
+	},
+	onerror: function() {
+	  showMyMessage ('!content');
+	}
+      });
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+    
 }
 
 // =====AlkislarlaYasiyorum===== //
