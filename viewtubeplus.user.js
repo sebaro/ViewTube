@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.07.17
+// @version		2015.07.19
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1337,14 +1337,14 @@ else if (page.url.indexOf('videos.tf1.fr') != -1) {
 else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/notice') != -1) {
 
   /* Get Player Window */
-  var inaPlayerWindow = getMyElement ('', 'div', 'class', 'media', 0, false);
+  var inaPlayerWindow = getMyElement ('', 'div', 'class', 'block-medias__show', 0, false);
   if (!inaPlayerWindow) {
     showMyMessage ('!player');
   }
   else {
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '620px', height: '346px', backgroundColor: '#F4F4F4', zIndex: '99999'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '620px', height: '364px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (inaPlayerWindow, 'div', '', true);
     styleMyElement (inaPlayerWindow, {height: '100%'});
     appendMyElement (inaPlayerWindow, myPlayerWindow);
@@ -1383,12 +1383,12 @@ else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/noti
 	  'videoPlay': inaDefaultVideo,
 	  'videoThumb': inaVideoThumb,
 	  'playerWidth': 620,
-	  'playerHeight': 346,
-	  'playerWideWidth': 960,
-	  'playerWideHeight': 510,
+	  'playerHeight': 364,
+	  'playerWideWidth': 940,
+	  'playerWideHeight': 552,
 	  'sidebarWindow': inaSidebarWindow,
 	  'sidebarMarginNormal': 0,
-	  'sidebarMarginWide': 530
+	  'sidebarMarginWide': 800
 	};
 	feature['definition'] = false;
 	feature['container'] = false;
@@ -1396,6 +1396,8 @@ else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/noti
 	option['definitions'] = ['Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '4px'});
       }
       else {
 	showMyMessage ('!videos');
@@ -2901,23 +2903,27 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	resizeMyPlayer('widesize');
       }, false);
       var twLButton = getMyElement ('', 'div', 'id', 'left_close', -1, false);
-      twLButton.addEventListener('click', function() {
-	twLREvent = 'left';
-	twSizes();
-	player['playerWidth'] = twPlayerWidth;
-	player['playerHeight'] = twPlayerHeight;
-	styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
-	resizeMyPlayer('widesize');
-      }, false);
+      if (twLButton) {
+	twLButton.addEventListener('click', function() {
+	  twLREvent = 'left';
+	  twSizes();
+	  player['playerWidth'] = twPlayerWidth;
+	  player['playerHeight'] = twPlayerHeight;
+	  styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
+	  resizeMyPlayer('widesize');
+	}, false);
+      }
       var twRButton = getMyElement ('', 'div', 'id', 'right_close', -1, false);
-      twRButton.addEventListener('click', function() {
-	twLREvent = 'right';
-	twSizes();
-	player['playerWidth'] = twPlayerWidth;
-	player['playerHeight'] = twPlayerHeight;
-	styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
-	resizeMyPlayer('widesize');
-      }, false);
+      if (twRButton) {
+	twRButton.addEventListener('click', function() {
+	  twLREvent = 'right';
+	  twSizes();
+	  player['playerWidth'] = twPlayerWidth;
+	  player['playerHeight'] = twPlayerHeight;
+	  styleMyElement(player['playerSocket'], {minHeight: player['playerHeight'] + 'px'});
+	  resizeMyPlayer('widesize');
+	}, false);
+      }
 
       /* Video Sources */
       if (twVideoType == 'l') {
