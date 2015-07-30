@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2015.07.30
+- add license metadata
+
 #2015.07.29
 - fixes Dailymotion
 
@@ -435,15 +438,15 @@ Dailymotion:
 -> Adds Very Low Definition video, when available.
 
 #2012.09.06
-Script: 
+Script:
 -> Fixes empty first element in video and plugin menus for some browsers.
-Dailymotion: 
+Dailymotion:
 -> Use the same player window size for al videos.
-Break: 
+Break:
 -> Replaces embedded videos from YouTube with a link to the video page.
-FunnyOrDie: 
--> Fixed for web site changes. 
-Blip: 
+FunnyOrDie:
+-> Fixed for web site changes.
+Blip:
 -> Fixed for web site changes.
 
 #2012.08.23
@@ -452,19 +455,19 @@ MetaCafe:
 -> Adds LD FLV when available.
 
 #2012.05.19
-Script: 
+Script:
 -> Adds support for VeeHD, MP4/H264 and AVI/DivX at various definitions.
 
-#2012.04.27 
-Script: 
--> Direct download for YouTube, video url link for the others. 
-Vimeo: 
--> Fixed for the new layout. 
--> Available videos: HD (720p) MP4, LD (360p) MP4, VLD (270p) MP4. 
-Break: 
--> Don't run the script on Break Pictures. 
-Blip.TV 
--> Don't run the script on non video pages. 
+#2012.04.27
+Script:
+-> Direct download for YouTube, video url link for the others.
+Vimeo:
+-> Fixed for the new layout.
+-> Available videos: HD (720p) MP4, LD (360p) MP4, VLD (270p) MP4.
+Break:
+-> Don't run the script on Break Pictures.
+Blip.TV
+-> Don't run the script on non video pages.
 -> Resizes video window.
 
 #2012.04.13
@@ -484,7 +487,7 @@ YouTube:
 YouTube:
 -> Removes HTML5 videos while loading without checking for video player type, Flash or HTML5.
 Facebook:
--> Fixed for Timeline, video URL has changed. 
+-> Fixed for Timeline, video URL has changed.
 
 #2012.03.27
 Script:
@@ -541,18 +544,18 @@ Script:
 Script:
 -> Adds pseudo fullscreen feature (YouTube & Dailymotion for now).
 -> Replaces application/x-mplayer2 mimetype with application/x-ms-wmp which seems to improve WMP performance.
-YouTube: 
+YouTube:
 -> The script should work for both HTML5 Trial and Flash Player.
 -> Adds a second source for video thumbnail.
 
-#2012.01.22 
-Script: 
+#2012.01.22
+Script:
 -> A new attempt to resize/fit large/HD videos in the player window.
 YouTube:
 -> Adds 3D videos, LD, SD, HD definitions, in MP4 and WebM containers.
 
-#2012.01.21 
-Script: 
+#2012.01.21
+Script:
 -> Fixes buttons position relative to the panel width.
 YouTube:
 -> Fixes video file name for downloaded files.
@@ -568,8 +571,8 @@ Script:
 -> Alert messages when no video plugin is installed or no videos are found.
 -> New definition button, you can choose from HD (highest), SD (standard) or LD (lowest) definition.
 
-#2012.01.13 
-Script: 
+#2012.01.13
+Script:
 -> New Autoplay button, click to toggle it on and off.
 -> Now HTML5 and Autoplay settings are saved in a cookie.
 -> Adds support for Veoh, low definition H264 in FLV and MP4 containers.
@@ -659,7 +662,7 @@ Facebook:
 Google Video:
 -> Removed.
 
-#2011.09.04 
+#2011.09.04
 Vimeo:
 -> Alert and messages redesign.
 -> You can choose from the folowing definitions/encodings: 360 MP4 or 720 MP4.
@@ -688,14 +691,14 @@ YouTube:
 -> Alert and messages redesign.
 -> You can choose from the folowing definitions/encodings: 240 FLV, 360 FLV, 360 MP4, 360 WebM, 480 FLV, 480 MP4, 480 WebM, 720 MP4, 720 WebM, 1080 MP4, if available. Default is 360 MP4.
 
-#8.8 
+#8.8
 YouTube:
 -> Fixed, site changed.
 
 #8.7
 Script:
 -> Rewritten.
-YouTube: 
+YouTube:
 -> Alerts if player element is not found.
 -> Warns if video is not found or not loading.
 

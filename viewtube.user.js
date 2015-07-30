@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.07.29
+// @version		2015.07.30
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
+// @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
 // @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
 // @icon		http://s3.amazonaws.com/uso_ss/icon/87011/large.png
@@ -67,7 +68,7 @@
 
 
 /*
-  
+
   Copyright (C) 2010 - 2015 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
@@ -82,10 +83,10 @@
 
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
-  
+
   Website: http://isebaro.com/viewtube
   Contact: http://isebaro.com/contact
-  
+
 */
 
 
@@ -208,7 +209,7 @@ function createMyElement (type, content, event, action, target) {
       else if (action == 'autoplay') {
 	option['autoplay'] = (option['autoplay']) ? false : true;
 	if (option['autoplay']) {
-	  styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});  
+	  styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
 	  if (!player['isPlaying']) playMyVideo(true);
 	}
 	else {
@@ -254,17 +255,17 @@ function createMyElement (type, content, event, action, target) {
       else if (action == 'dash') {
 	option['dash'] = (option['dash']) ? false : true;
 	if (option['dash']) {
-	  styleMyElement (player['buttonDASH'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});  
+	  styleMyElement (player['buttonDASH'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
 	}
 	else {
 	  styleMyElement (player['buttonDASH'], {color: '#CCCCCC', textShadow: '0px 0px 0px'});
 	}
 	setMyOptions ('dash', option['dash']);
-      }      
+      }
       else if (action == 'direct') {
 	option['direct'] = (option['direct']) ? false : true;
 	if (option['direct']) {
-	  styleMyElement (player['buttonDirect'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});  
+	  styleMyElement (player['buttonDirect'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
 	}
 	else {
 	  styleMyElement (player['buttonDirect'], {color: '#CCCCCC', textShadow: '0px 0px 0px'});
@@ -329,9 +330,9 @@ function modifyMyElement (obj, type, content, clear, hide) {
     }
   }
   if (hide) {
-    for(var i = 0; i < obj.children.length; i++) {   
+    for(var i = 0; i < obj.children.length; i++) {
       styleMyElement(obj.children[i], {display: 'none'});
-    }    
+    }
   }
 }
 
@@ -418,7 +419,7 @@ function createMyPlayer () {
     if (option['autoplay']) styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement (player['playerPanel'], player['buttonAutoplay']);
   }
- 
+
   /* Panel Get Button */
   player['buttonGet'] = createMyElement ('div', 'Get', 'click', 'get', '');
   player['buttonGet'].title = '{Get: click to download the selected video format}';
@@ -512,7 +513,7 @@ function createMyPlayer () {
   /* Select My Video */
   if (feature['definition'] || feature['container']) selectMyVideo ();
 
-  /* Play My Video */ 
+  /* Play My Video */
   playMyVideo (option['autoplay']);
 }
 
@@ -701,7 +702,7 @@ function resizeMyPlayer (size) {
     styleMyElement (player['playerWindow'], {width: playerWidth + 'px', height: playerHeight + 'px'});
   }
   else styleMyElement (player['playerWindow'], {position: playerPosition, top: '0px', left: '0px', width: playerWidth + 'px', height: playerHeight + 'px', zIndex: playerIndex});
-  
+
   /* Resize The Panel */
   var panelWidth = playerWidth - player['panelPadding'] * 2;
   styleMyElement (player['playerPanel'], {width: panelWidth + 'px'});
@@ -893,7 +894,7 @@ page.win.setInterval(function() {
 	}
       }
     }
-    var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);    
+    var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);
     if (elVideos.length > 0) {
       for (var v = 0; v < elVideos.length; v++) {
 	var elVideo = elVideos[v];
@@ -909,7 +910,7 @@ page.win.setInterval(function() {
 // =====YouTube===== //
 
 if (page.url.indexOf('youtube.com/watch') != -1) {
-  
+
   /* Video Availability */
   var ytVideoUnavailable = getMyElement ('', 'div', 'id', 'player-unavailable', -1, false);
   if (ytVideoUnavailable) {
@@ -921,7 +922,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       }
     }
   }
-  
+
   /* Decrypt Signature */
   var ytScriptSrc;
   function ytDecryptSignature (s) {return null;}
@@ -951,7 +952,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       }
     }
   }
-  
+
   /* Player Size */
   var ytPlayerWidth, ytPlayerHeight;
   var ytPlayerWideWidth, ytPlayerWideHeight;
@@ -1045,21 +1046,21 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     }
     if (ytVideosAdaptiveFmts) {
       ytVideosAdaptiveFmts = ytVideosAdaptiveFmts.replace(/clen=\d+&/g, '').replace(/&clen=\d+/g, '');
-      ytVideosAdaptiveFmts = ytVideosAdaptiveFmts.replace(/lmt=\d+&/g, '').replace(/&lmt=\d+/g, ''); 
+      ytVideosAdaptiveFmts = ytVideosAdaptiveFmts.replace(/lmt=\d+&/g, '').replace(/&lmt=\d+/g, '');
       if (ytVideosContent) ytVideosContent += ',' + ytVideosAdaptiveFmts;
       else ytVideosContent = ytVideosAdaptiveFmts;
     }
-    
+
     /* Get HLS Content */
     if (!ytVideosContent) {
       var ytHLSVideos, ytHLSContent;
       ytHLSVideos = getMyContent(page.url, '"hlsvp":\\s*"(.*?)"', false);
       if (ytHLSVideos) ytHLSVideos = cleanMyContent(ytHLSVideos, false);
     }
-    
+
     /* Get Sizes */
     ytSizes();
-    
+
     /* Hide Player Window */
     var ytPlaceholderPlayer = getMyElement ('', 'div', 'id', 'placeholder-player', -1, false);
     if (ytPlaceholderPlayer) styleMyElement (ytPlaceholderPlayer, {display: 'none'});
@@ -1121,7 +1122,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       option['containers'] = ['MP4', 'WebM', 'FLV', '3GP', 'Any'];
       createMyPlayer();
     }
-    
+
     /* Parse Videos */
     function ytVideos() {
       var ytVideoFormats = {
@@ -1224,9 +1225,9 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       else {
 	if (ytVideosContent.indexOf('conn=rtmp') != -1) showMyMessage ('!support');
 	else showMyMessage ('!videos');
-      }      
+      }
     }
-      
+
     /* Parse HLS */
     function ytHLS() {
       var ytHLSFormats = {
@@ -1260,7 +1261,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       ytDefaultVideo = 'Any Definition MP4';
       ytPlayer();
     }
-    
+
     /* Get Videos */
     var ytVideoList = {};
     if (ytVideosContent) {
@@ -1330,7 +1331,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       }
     }
   }
-  
+
 }
 
 // =====DailyMotion===== //
@@ -1341,7 +1342,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
   if (page.url.indexOf('dailymotion.com/playlist') != -1 && page.url.indexOf('#video=') != -1) {
     page.win.location.href = page.url.replace(/playlist.*#/, '').replace("=", "/");
   }
-  
+
   /* Get Player Window */
   var dmPlayerWindow = getMyElement ('', 'div', 'id', 'player_container', -1, false);
   if (!dmPlayerWindow) {
@@ -1426,14 +1427,14 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
 	/* DVL */
 	dmVideoList['Direct Video Link'] = page.url;
 	feature['direct'] = true;
-	
+
 	/* Get Watch Sidebar */
 	var dmSidebarWindow = getMyElement ('', 'div', 'class', 'col-3', 0, false);
 	if (!dmSidebarWindow) {
 	  dmSidebarWindow = getMyElement ('', 'div', 'class', 'col-4', 0, false);
 	  if (dmSidebarWindow) styleMyElement (dmSidebarWindow, {marginLeft: '40px'});
 	}
-	
+
 	/* Create Player */
 	var dmDefaultVideo = 'Low Definition MP4';
 	player = {
@@ -1470,7 +1471,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Vimeo===== //
@@ -1479,7 +1480,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 
   /* Multi Video Page */
   if (getMyElement('', 'div', 'class', 'player_container', -1, false).length > 1) return;
-  
+
   /* Get Player Window */
   var viPlayerWindow = getMyElement ('', 'div', 'class', 'player_container', 0, false);
   if (!viPlayerWindow) {
@@ -1491,24 +1492,24 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="image"\\s+content="(.*?)"', false);
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Content Source */
-    var viVideoSource = getMyContent (page.url, 'data-config-url="(.*?)"', false).replace(/&amp;/g, '&');      
-  
+    var viVideoSource = getMyContent (page.url, 'data-config-url="(.*?)"', false).replace(/&amp;/g, '&');
+
     /* Get Videos Content */
     var viVideosContent;
     if (viVideoSource) {
       viVideosContent = getMyContent(viVideoSource, '"h264":\\{(.*?)\\}\\}', false);
       if (!viVideosContent) viVideosContent = getMyContent(viVideoSource, '"vp6":\\{(.*?)\\}\\}', false);
     }
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '960px', height: '562px', backgroundColor: '#F4F5F7'});
     modifyMyElement (viPlayerWindow, 'div', '', true);
     styleMyElement (viPlayerWindow, {height: '100%'});
     appendMyElement (viPlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (viVideosContent) {
       var viVideoFormats = {'hd': 'High Definition MP4', 'sd': 'Low Definition MP4', 'mobile': 'Very Low Definition MP4'};
@@ -1525,7 +1526,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 	  viVideoList[myVideoCode] = viVideo;
 	}
       }
-      
+
       /* Channels Sidebar */
       if (page.url.indexOf('/channels/staffpicks') == -1) {
 	var viSidebar = getMyElement ('', 'div', 'class', 'col_small', 0, false);
@@ -1568,7 +1569,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====MetaCafe===== //
@@ -1644,11 +1645,11 @@ else if (page.url.indexOf('metacafe.com/watch') != -1) {
 	feature['definition'] = false;
 	feature['container'] = false;
       }
-      
+
       if (mcVideoFound) {
 	/* Get Watch Sidebar */
 	var mcSidebarWindow = getMyElement ('', 'div', 'id', 'Sidebar', -1, false);
-	
+
 	/* Create Player */
 	var mcDefaultVideo = (mcVideoList['Low Definition MP4']) ? 'Low Definition MP4' : 'Low Definition FLV';
 	player = {
@@ -1679,12 +1680,12 @@ else if (page.url.indexOf('metacafe.com/watch') != -1) {
 	var ytVideoLink = 'http://youtube.com/watch?v=' + ytVideoId[1];
 	showMyMessage ('embed', ytVideoLink);
       }
-      else {      
+      else {
 	showMyMessage ('!content');
       }
     }
   }
-  
+
 }
 
 // =====Break===== //
@@ -1735,7 +1736,7 @@ else if (page.url.indexOf('break.com/video') != -1) {
 	  }
 	}
       }
-      
+
       if (brVideoFound) {
 	/* Get Watch Sidebar */
 	var brSidebarWindow = getMyElement ('', 'aside', 'class', 'sidebar', 0, false);
@@ -1786,7 +1787,7 @@ else if (page.url.indexOf('break.com/video') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====FunnyOrDie===== //
@@ -1805,7 +1806,7 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
 
     /* Get Videos Content */
     var fodVideosContent = getMyContent (page.url, '<video([\\s\\S]*?)video>', false);
-    
+
     /* Restyle */
     var fodPlayerContainer = getMyElement ('', 'div', 'class', 'video-content', 0, false);
     if (fodPlayerContainer) styleMyElement (fodPlayerContainer, {width: '100%'});
@@ -1817,7 +1818,7 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
     styleMyElement (fodPlayerSocket, {height: '570px', backgroundColor: '#252525'});
     replaceMyElement(fodPlayerWindow.parentNode, fodPlayerSocket, fodPlayerWindow);
     appendMyElement (fodPlayerSocket, myPlayerWindow);
-    
+
     /* Get Videos */
     if (fodVideosContent) {
       var fodVideoFormats = {'v2500.mp4': 'High Definition MP4', 'v1800.mp4': 'Standard Definition MP4', 'v600.mp4': 'Low Definition MP4', 'v600.webm': 'Low Definition WebM', 'v110.mp4': 'Very Low Definition MP4'};
@@ -1878,9 +1879,9 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
     }
     else {
       showMyMessage ('!content');
-    } 
+    }
   }
-  
+
 }
 
 // =====Videojug===== //
@@ -1907,7 +1908,7 @@ else if (page.url.indexOf('videojug.com/') != -1) {
     /* Get Videos Content */
     var vjVideoID = getMyContent (page.url, 'data-videoid="(.*?)"', true);
     var vjVideoTitle = getMyContent (page.url, 'data-filenameprefix="(.*?)"', true);
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: vjPlayerWidth + 'px', height: vjPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
@@ -1938,16 +1939,16 @@ else if (page.url.indexOf('videojug.com/') != -1) {
 	    if (!vjVideoFound) vjVideoFound = true;
 	    vjVideo = vjVideoLocation + '/' + vjVideoPart + '__' + vjVideoCode;
 	    myVideoCode = vjVideoFormats[vjVideoCode];
-	    vjVideoList[myVideoCode] = vjVideo; 
+	    vjVideoList[myVideoCode] = vjVideo;
 	  }
 	}
 	vjVideoThumb = 'http://content5.videojug.com/' + vjVideoPart + '.WidePlayer.jpg';
       }
-      
+
       if (vjVideoFound) {
 	/* Get Watch Sidebar */
 	var vjSidebarWindow = getMyElement ('', 'aside', 'id', 'side-bar', -1, false);
-	
+
 	/* Create Player */
 	var vjDefaultVideo = 'Low Definition MP4';
 	player = {
@@ -1978,7 +1979,7 @@ else if (page.url.indexOf('videojug.com/') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Blip===== //
@@ -2007,7 +2008,7 @@ else if (page.url.indexOf('blip.tv') != -1) {
   else {
     /* Get Video Info */
     var blipVideoInfo = getMyContent(page.url + '?skin=json', 'TEXT', false);
-    
+
     /* Get Video Thumbnail */
     var blipVideoThumb = (blipVideoInfo) ? blipVideoInfo.match(/"thumbnailUrl":"(.*?)"/) : null;
     blipVideoThumb = (blipVideoThumb) ? blipVideoThumb[1] : null;
@@ -2016,7 +2017,7 @@ else if (page.url.indexOf('blip.tv') != -1) {
     var blipVideosContent = (blipVideoInfo) ? blipVideoInfo.match(/"additionalMedia":\[(.*?)\]/) : null;
     blipVideosContent = (blipVideosContent) ? blipVideosContent[1] : null;
 
-    /* My Player Window */    
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: blipPlayerWidth + 'px', height: blipPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
     modifyMyElement (blipPlayerWindow, 'div', '', true);
@@ -2069,7 +2070,7 @@ else if (page.url.indexOf('blip.tv') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Veoh===== //
@@ -2078,7 +2079,7 @@ else if (page.url.indexOf('veoh.com/watch') != -1) {
 
   /* Get Video Availability */
   if (getMyElement ('', 'div', 'class', 'veoh-video-player-error', 0, false)) return;
- 
+
   /* Get Player Window */
   var vePlayerWindow = getMyElement ('', 'div', 'id', 'videoPlayerContainer', -1, false);
   if (!vePlayerWindow) {
@@ -2088,7 +2089,7 @@ else if (page.url.indexOf('veoh.com/watch') != -1) {
     /* Get Videos Content */
     var veVideosContent = getMyContent (page.url, '__watch.videoDetailsJSON = \'\\{(.*?)\\}', false);
     veVideosContent = cleanMyContent (veVideosContent, true);
-    
+
     /* Get Video Thumbnail */
     var veVideoThumbGet = veVideosContent.match (/"highResImage":"(.*?)"/);
     var veVideoThumb = (veVideoThumbGet) ? veVideoThumbGet[1] : null;
@@ -2160,7 +2161,7 @@ else if (page.url.indexOf('veoh.com/watch') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Crackle===== //
@@ -2170,7 +2171,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
   /* Get Page Type */
   var crPageType = getMyContent (page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
   if (!crPageType || crPageType.indexOf('video') == -1) return;
- 
+
   /* Get Player Window */
   var crPlayerWindow = getMyElement ('', 'div', 'id', 'main', -1, false);
   if (!crPlayerWindow) {
@@ -2193,7 +2194,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
     modifyMyElement (crPlayerWindow, 'div', '', true);
     styleMyElement (crPlayerWindow, {width: '970px', height: '600px', backgroundColor: '#FFFFFF'});
     appendMyElement (crPlayerWindow, myPlayerWindow);
-     
+
     /* Get Videos */
     if (crVideoPath) {
       var crVideoList = {};
@@ -2223,7 +2224,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
       option['definitions'] = ['Standard Definition', 'Low Definition'];
       option['containers'] = ['MP4'];
       createMyPlayer ();
-   
+
       /* Fix Thumbnails */
       var crThumbs = getMyElement('', 'div', 'class', 'thumbnail', -1, false);
       for (var crT = 0; crT < crThumbs.length; crT++) {
@@ -2240,7 +2241,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
       showMyMessage ('!videos');
     }
   }
-   
+
 }
 
 // =====Viki===== //
@@ -2260,7 +2261,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
     /* Get Videos Content */
     var vkVideosContent;
     if (vkVideoID) vkVideosContent = getMyContent (page.win.location.protocol + '//' + page.win.location.host + '/player5_fragment/' + vkVideoID + 'v.json', 'TEXT', false);
-             
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '950px', height: '556px', backgroundColor: '#F4F4F4'});
@@ -2268,7 +2269,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
     if (vkPlayerWindow.parentNode) styleMyElement (vkPlayerWindow.parentNode, {height: '558px'});
     appendMyElement (vkPlayerWindow, myPlayerWindow);
     blockObject = vkPlayerWindow;
-    
+
     /* Get Videos */
     if (vkVideosContent) {
       var vkVideoList = {};
@@ -2276,7 +2277,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
       vkVideo = (vkVideo) ? vkVideo[1] : null;
       var vkVideoThumb = vkVideosContent.match(/"image_url":"(.*?)"/);
       vkVideoThumb = (vkVideoThumb) ? vkVideoThumb[1] : null;
-      
+
       /* Create Player */
       if (vkVideo) {
 	var vkDefaultVideo = 'Low Definition MP4';
@@ -2304,15 +2305,15 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
     }
     else {
       showMyMessage ('!content');
-    }    
+    }
   }
-  
+
 }
 
 // =====IMDB===== //
 
 else if (page.url.indexOf('imdb.com') != -1) {
-  
+
   /* Redirect To Video Page */
   if (page.url.indexOf('imdb.com/video/') == -1) {
     page.doc.addEventListener('click', function(e) {
@@ -2333,7 +2334,7 @@ else if (page.url.indexOf('imdb.com') != -1) {
     showMyMessage ('!player');
   }
   else {
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '670px', height: '398px', backgroundColor: '#F4F4F4'});
     modifyMyElement (imdbPlayerWindow, 'div', '', true);
@@ -2367,7 +2368,7 @@ else if (page.url.indexOf('imdb.com') != -1) {
       /* Get Watch Sidebar */
       var imdbSidebarWindow = getMyElement ('', 'div', 'id', 'sidebar', -1, false);
       styleMyElement (imdbSidebarWindow, {marginTop: '-400px'});
-      
+
       /* Create Player */
       player = {
 	'playerSocket': imdbPlayerWindow,
@@ -2393,13 +2394,13 @@ else if (page.url.indexOf('imdb.com') != -1) {
       else showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====Facebook===== //
 
 else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
-  
+
   /* Get Player Window */
   var fbPlayerWindow = getMyElement ('', 'div', 'class', 'stageWrapper', 0, false);
   if (!fbPlayerWindow) {
@@ -2413,13 +2414,13 @@ else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
       return String.fromCharCode(parseInt(group, 16));
     });
     fbVideosContent = unescape(fbVideosContent);
-      
-    /* My Player Window */ 
+
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '720px', height: '428px', backgroundColor: '#F4F4F4'});
     modifyMyElement (fbPlayerWindow, 'div', '', true);
     appendMyElement (fbPlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (fbVideosContent) {
       var fbVideoList = {};
@@ -2443,7 +2444,7 @@ else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
 	if (fbVideoThumb) fbVideoThumb = cleanMyContent(fbVideoThumb, false);
 	else fbVideoThumb = 'https://www.facebook.com/images/fb_icon_325x325.png';
       }
-	
+
       if (fbVideoFound) {
 	/* Create Player */
 	player = {
@@ -2468,13 +2469,13 @@ else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
       showMyMessage ('!content');
     }
   }
-      
+
 }
 
 // =====YahooScreen===== //
 
 else if (page.url.indexOf('screen.yahoo.com') != -1) {
-  
+
   /* Get Player Window */
   var ysPlayerWindow = getMyElement ('', 'div', 'class', 'vp-container', 0, false);
   if (!ysPlayerWindow) {
@@ -2508,13 +2509,13 @@ else if (page.url.indexOf('screen.yahoo.com') != -1) {
     modifyMyElement (ysPlayerWindow, 'div', '', true);
     styleMyElement (ysPlayerWindow, {height: '100%', width: '1050px', backgroundColor: '#17151D'});
     appendMyElement (ysPlayerWindow, myPlayerWindow);
-    
+
     /* Restyle */
     var ysStage = getMyElement ('', 'div', 'class', 'y-stage', 0, false);
     if (ysStage) styleMyElement (ysStage, {height: '1150px', maxHeight: '1150px'});
     var ysOverlay = getMyElement ('', 'div', 'class', 'vp-overlay', 0, false);
     if (ysOverlay) styleMyElement (ysOverlay, {marginTop: '580px', width: '1000px'});
- 
+
     /* Get Videos */
     if (ysVideosContent) {
       var ysVideoList = {};
@@ -2544,7 +2545,7 @@ else if (page.url.indexOf('screen.yahoo.com') != -1) {
 	  }
 	}
       }
-      
+
       if (ysVideoFound) {
 	/* Create Player */
 	var ysDefaultVideo = 'Low Definition MP4';
@@ -2573,7 +2574,7 @@ else if (page.url.indexOf('screen.yahoo.com') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 })();

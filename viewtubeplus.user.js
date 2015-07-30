@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.07.19
+// @version		2015.07.30
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
+// @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
 // @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
 // @icon		http://s3.amazonaws.com/uso_ss/icon/87011/large.png
@@ -188,7 +189,7 @@
 
 
 /*
-  
+
   Copyright (C) 2010 - 2015 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
@@ -203,10 +204,10 @@
 
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
-  
+
   Website: http://isebaro.com/viewtube
   Contact: http://isebaro.com/contact
-  
+
 */
 
 
@@ -258,7 +259,7 @@ var contact = 'http://isebaro.com/contact/?ln=en&sb=viewtube';
 // Don't run on frames or iframes
 if (window.top != window.self)  return;
 
- 
+
 // ==========Functions========== //
 
 function createMyElement (type, content, event, action, target) {
@@ -332,7 +333,7 @@ function createMyElement (type, content, event, action, target) {
 	option['autoplay'] = (option['autoplay']) ? false : true;
 	if (option['autoplay']) {
 	  styleMyElement (player['buttonPlay'], {display: 'none'});
-	  styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});  
+	  styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
 	  if (!player['isPlaying']) playMyVideo(true);
 	}
 	else {
@@ -432,9 +433,9 @@ function modifyMyElement (obj, type, content, clear, hide) {
     }
   }
   if (hide) {
-    for(var i = 0; i < obj.children.length; i++) {   
+    for(var i = 0; i < obj.children.length; i++) {
       styleMyElement(obj.children[i], {display: 'none'});
-    }    
+    }
   }
 }
 
@@ -459,26 +460,26 @@ function replaceMyElement (parent, orphan, child) {
 function createMyPlayer () {
   /* Get My Options */
   getMyOptions ();
-  
+
   /* Player Settings */
   player['panelHeight'] = 18;
   player['panelPadding'] = 2;
-  
+
   /* The Panel */
   var panelWidth = player['playerWidth'] - player['panelPadding'] * 2;
   player['playerPanel'] = createMyElement ('div', '', '', '', '');
   styleMyElement (player['playerPanel'], {width: panelWidth + 'px', height: player['panelHeight'] + 'px', padding: player['panelPadding'] + 'px', backgroundColor: 'inherit', textAlign: 'center'});
   appendMyElement (player['playerWindow'], player['playerPanel']);
-  
+
   /* Panel Items */
   var panelItemBorder = 1;
   var panelItemHeight = player['panelHeight'] - panelItemBorder * 2;
-  
+
   /* Panel Logo */
   player['panelLogo'] = createMyElement ('div', userscript + ': ', 'click', 'logo', '');
   styleMyElement (player['panelLogo'], {height: panelItemHeight + 'px', padding: '0px', display: 'inline', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['panelLogo']);
-  
+
   /* Panel Video Menu */
   player['videoMenu'] = createMyElement ('select', '', 'change', '', 'video');
   styleMyElement (player['videoMenu'], {width: '200px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
@@ -488,7 +489,7 @@ function createMyPlayer () {
     styleMyElement (player['videoItem'], {padding: '0px', display: 'block', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['videoMenu'], player['videoItem']);
   }
-  
+
   /* Panel Plugin Menu */
   player['pluginMenu'] = createMyElement ('select', '', 'change', '', 'plugin');
   styleMyElement (player['pluginMenu'], {width: '70px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
@@ -499,18 +500,18 @@ function createMyPlayer () {
     appendMyElement (player['pluginMenu'], player['pluginItem']);
   }
   player['pluginMenu'].value = option['plugin'];
-      
+
   /* Panel Play Button */
   player['buttonPlay'] = createMyElement ('div', 'Play', 'click', 'play', '');
   styleMyElement (player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   if (option['autoplay']) styleMyElement (player['buttonPlay'], {display: 'none'});
   appendMyElement (player['playerPanel'], player['buttonPlay']);
- 
+
   /* Panel Get Button */
   player['buttonGet'] = createMyElement ('div', 'Get', 'click', 'get', '');
   styleMyElement (player['buttonGet'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C000C0', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['buttonGet']);
- 
+
   /* Panel Autoplay Button */
   if (feature['autoplay']) {
     player['buttonAutoplay'] = createMyElement ('div', 'AP', 'click', 'autoplay', '');
@@ -518,21 +519,21 @@ function createMyPlayer () {
     if (option['autoplay']) styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement (player['playerPanel'], player['buttonAutoplay']);
   }
- 
+
   /* Panel Definition Button */
   if (feature['definition']) {
     player['buttonDefinition'] = createMyElement ('div', option['definition'], 'click', 'definition', '');
     styleMyElement (player['buttonDefinition'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonDefinition']);
   }
-   
+
   /* Panel Container Button */
   if (feature['container']) {
     player['buttonContainer'] = createMyElement ('div', option['container'], 'click', 'container', '');
     styleMyElement (player['buttonContainer'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonContainer']);
   }
-     
+
   /* Panel Widesize Button */
   if (feature['widesize']) {
     if (option['widesize']) player['buttonWidesize'] = createMyElement ('div', '&lt;', 'click', 'widesize', '');
@@ -540,7 +541,7 @@ function createMyPlayer () {
     styleMyElement (player['buttonWidesize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonWidesize']);
   }
-         
+
   /* Panel Fullsize Button */
   if (feature['fullsize']) {
     if (option['fullsize']) player['buttonFullsize'] = createMyElement ('div', '-', 'click', 'fullsize', '');
@@ -574,15 +575,15 @@ function createMyPlayer () {
   if (!feature['autoplay']) option['autoplay'] = false;
   if (!feature['widesize']) option['widesize'] = false;
   if (!feature['fullsize']) option['fullsize'] = false;
- 
+
   /* Resize My Player */
   if (option['widesize']) resizeMyPlayer('widesize');
   if (option['fullsize']) resizeMyPlayer('fullsize');
 
   /* Select My Video */
   if (feature['definition'] || feature['container']) selectMyVideo ();
- 
-  /* Play My Video */ 
+
+  /* Play My Video */
   playMyVideo (option['autoplay']);
 }
 
@@ -732,18 +733,18 @@ function resizeMyPlayer (size) {
       player['isFullsize'] = false;
     }
   }
-    
+
   /* Resize The Player */
   if (size == 'widesize') {
     if (player['sidebarWindow']) styleMyElement (player['sidebarWindow'], {marginTop: sidebarMargin + 'px'});
     styleMyElement (player['playerWindow'], {width: playerWidth + 'px', height: playerHeight + 'px'});
   }
   else styleMyElement (player['playerWindow'], {position: playerPosition, top: '0px', left: '0px', width: playerWidth + 'px', height: playerHeight + 'px', zIndex: playerIndex});
- 
+
   /* Resize The Panel */
   var panelWidth = playerWidth - player['panelPadding'] * 2;
   styleMyElement (player['playerPanel'], {width: panelWidth + 'px'});
- 
+
   /* Resize The Content */
   player['contentWidth'] = playerWidth;
   player['contentHeight'] = playerHeight - player['panelHeight'] - player['panelPadding'] * 2;
@@ -910,17 +911,17 @@ function showMyMessage (cause, content) {
 // =====RAI===== //
 
 if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
-  
-  var myPlayerWindow;  
+
+  var myPlayerWindow;
   page.win.setTimeout(function() {
-  
+
     /* Get Player Window */
     var raiPlayerWindow = getMyElement ('', 'div', 'class', 'Player', 0, false);
     if (!raiPlayerWindow) {
       //showMyMessage ('!player');
     }
     else {
-      /* My Player Window */ 
+      /* My Player Window */
       myPlayerWindow = createMyElement ('div', '', '', '', '');
       styleMyElement (myPlayerWindow, {position: 'relative', width: '648px', height: '400px', backgroundColor: '#F4F4F4', zIndex: '99999'});
       modifyMyElement (raiPlayerWindow, 'div', '', true);
@@ -948,7 +949,7 @@ if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
       if (raiVideoFound) {
 	/* Get Watch Sidebar */
 	var raiSidebarWindow = getMyElement ('', 'div', 'id', 'evidenzaSpalla', -1, false);
-	
+
 	/* Create Player */
 	player = {
 	  'playerSocket': raiPlayerWindow,
@@ -975,9 +976,9 @@ if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
 	showMyMessage ('!videos');
       }
     }
-  
+
   }, 2000);
-  
+
 }
 
 // =====Repubblica===== //
@@ -990,7 +991,7 @@ else if (page.url.indexOf('video.repubblica.it') != -1) {
     showMyMessage ('!player');
   }
   else {
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '360px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (repPlayerWindow, 'div', '', true);
@@ -1012,7 +1013,7 @@ else if (page.url.indexOf('video.repubblica.it') != -1) {
     if (repVideoFound) {
       /* Get Watch Sidebar */
       var repSidebarWindow = getMyElement ('', 'div', 'id', 'contB', -1, false);
-      
+
       /* Create Player */
       player = {
 	'playerSocket': repPlayerWindow,
@@ -1039,20 +1040,20 @@ else if (page.url.indexOf('video.repubblica.it') != -1) {
       showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====Gelocal===== //
 
 else if (page.url.indexOf('video.gelocal.it') != -1) {
-  
+
   /* Get Player Window */
   var gelPlayerWindow = getMyElement ('', 'div', 'id', 'player', -1, false);
   if (!gelPlayerWindow) {
     showMyMessage ('!player');
   }
   else {
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '360px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (gelPlayerWindow, 'div', '', true);
@@ -1070,7 +1071,7 @@ else if (page.url.indexOf('video.gelocal.it') != -1) {
       gelVideoList['Low Definition MP4'] = gelVideo;
       gelDefaultVideo = 'Low Definition MP4';
     }
-  
+
     if (gelVideoFound) {
       /* Get Watch Sidebar */
       var gelSidebarWindow = getMyElement ('', 'div', 'id', 'contB', -1, false);
@@ -1101,13 +1102,13 @@ else if (page.url.indexOf('video.gelocal.it') != -1) {
       showMyMessage ('!videos');
     }
   }
-      
+
 }
 
 // =====CanalPlus===== //
 
 if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
-  
+
   /* Reload On Video Change */
   page.win.setInterval(function() {
     var nurl = page.win.location.href;
@@ -1116,7 +1117,7 @@ if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
 
   /* Get Player Window */
   var cpPlayerWindow = getMyElement ('', '', 'class', 'playerVideo player_16_9', 0, false);
- 
+
   if (!cpPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1128,7 +1129,7 @@ if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
     styleMyElement (cpPlayerWindow, {height: '100%', overflow: 'visible', padding: '0px 0px 20px 0px'});
     styleMyElement (cpPlayerWindow.parentNode, {overflow: 'visible'});
     appendMyElement (cpPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video ID */
     var cpVideoID = getMyContent (page.url, 'videoId\\s+=\\s+"(.*?)"', false);
 
@@ -1153,17 +1154,17 @@ if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
 	  cpVideo = cpVideoURL + cpVideoSecret;
 	  cpVideoList[cpDefaultVideo] = cpVideo;
       }
-      
+
       if (cpVideoFound) {
 	/* Get Video Thumbnail */
 	var cpVideoThumb = cpVideosContent.match (/<GRAND>(.*?)<\/GRAND>/);
 	cpVideoThumb = (cpVideoThumb) ? cpVideoThumb[1] : null;
-	
+
 	/* Get Watch Sidebar */
 	var cpSidebarWindow = getMyElement ('', 'div', 'id', 'rightSection', -1, false);
 	var cpMainSection = getMyElement ('', 'div', 'id', 'mainSection', -1, false);
 	if (cpMainSection) styleMyElement (cpMainSection, {overflow: 'visible'});
- 
+
 	/* Create Player */
 	player = {
 	  'playerSocket': cpPlayerWindow,
@@ -1194,7 +1195,7 @@ if (page.url.indexOf('canalplus.fr') != -1 || page.url.indexOf('d8.tv') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Wat.TV===== //
@@ -1216,7 +1217,7 @@ else if (page.url.indexOf('wat.tv/video') != -1) {
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '360px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (watPlayerWindow, 'div', '', true);
     appendMyElement (watPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video Thumbnail */
     var watVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
@@ -1260,7 +1261,7 @@ else if (page.url.indexOf('wat.tv/video') != -1) {
       showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====TF1===== //
@@ -1282,7 +1283,7 @@ else if (page.url.indexOf('videos.tf1.fr') != -1) {
     styleMyElement (tf1PlayerWindow.parentNode.parentNode, {overflow: 'visible'});
     styleMyElement (tf1PlayerWindow.parentNode.parentNode.parentNode, {overflow: 'visible'});
     appendMyElement (tf1PlayerWindow, myPlayerWindow);
-    
+
     /* Get Video Thumbnail */
     var tf1VideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
@@ -1329,7 +1330,7 @@ else if (page.url.indexOf('videos.tf1.fr') != -1) {
       showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====INA===== //
@@ -1348,7 +1349,7 @@ else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/noti
     modifyMyElement (inaPlayerWindow, 'div', '', true);
     styleMyElement (inaPlayerWindow, {height: '100%'});
     appendMyElement (inaPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video Thumbnail */
     var inaVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
     if (inaVideoThumb) inaVideoThumb = inaVideoThumb.replace (/300x225/, '620x349');
@@ -1357,9 +1358,9 @@ else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/noti
     var inaVideoID = page.url.match (/ina.fr\/video\/(.*?)(\/|$)/);
     if (!inaVideoID) inaVideoID = page.url.match (/ina.fr\/notice\/voir\/(.*?)(\/|$)/);
     inaVideoID = (inaVideoID) ? inaVideoID[1] : null;
-    
+
     /* Get Videos Content GM */
-    var inaVideosContent = getMyContentGM ('http://player.ina.fr/notices/' + inaVideoID + '.mrss', 'TEXT', false);    
+    var inaVideosContent = getMyContentGM ('http://player.ina.fr/notices/' + inaVideoID + '.mrss', 'TEXT', false);
 
     /* Get Videos */
     if (inaVideosContent) {
@@ -1407,7 +1408,7 @@ else if (page.url.indexOf('ina.fr/video') != -1 || page.url.indexOf('ina.fr/noti
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====NicoVideo===== //
@@ -1431,11 +1432,11 @@ else if (page.url.indexOf('nicovideo.jp/watch') != -1) {
     modifyMyElement (nicoPlayerWindow, 'div', '', true);
     styleMyElement (nicoPlayerWindow, {marginTop: '-120px', width: '672px', height: '465px', backgroundColor: '#F4F4F4'});
     appendMyElement (nicoPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video ID */
     var nicoVideoID = page.url.match(/\/watch\/(\w*\d+)/);
     nicoVideoID = (nicoVideoID) ? nicoVideoID[1] : null;
-    
+
     /* Get Videos Content GM */
     var nicoVideo;
     if (nicoVideoID) nicoVideo = getMyContentGM ('http://flapi.nicovideo.jp/api/getflv/' + nicoVideoID, 'url=(.*?)(&|$)', true);
@@ -1443,10 +1444,10 @@ else if (page.url.indexOf('nicovideo.jp/watch') != -1) {
     /* Get Videos */
     if (nicoVideo) {
       var nicoVideoList = {};
-      
+
       /* Get Video Thumbnail */
       var nicoVideoThumb = getMyContent (page.url, 'thumbImage&quot;:&quot;(.*?)&', true);
-      
+
       /* Create Player */
       var nicoDefaultVideo = 'Low Definition MP4';
       nicoVideoList[nicoDefaultVideo] = nicoVideo;
@@ -1471,13 +1472,13 @@ else if (page.url.indexOf('nicovideo.jp/watch') != -1) {
       showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====BuniTV===== //
 
 else if (page.url.indexOf('buni.tv/video') != -1) {
-  
+
   /* Get Player Window */
   var buniPlayerWindow = getMyElement ('', 'div', 'class', 'video-player', 0, false);
   if (!buniPlayerWindow) buniPlayerWindow = getMyElement ('', 'div', 'class', 'player', 0, false);
@@ -1487,7 +1488,7 @@ else if (page.url.indexOf('buni.tv/video') != -1) {
   else {
     /* Buni+ */
     if (buniPlayerWindow.innerHTML.indexOf('This video is only available on Buni+') != -1) return;
-    
+
     /* YouTube */
     var ytVideoID = buniPlayerWindow.innerHTML.match(/\/embed\/(.*?)(\?|&|$)/);
     if (!ytVideoID) ytVideoID = buniPlayerWindow.innerHTML.match(/\/watch\?v=(.*?)"/);
@@ -1534,7 +1535,7 @@ else if (page.url.indexOf('buni.tv/video') != -1) {
     else {
       if (buniVideo) {
 	var buniVideoList = {};
-	
+
 	/* Create Player */
 	var buniDefaultVideo = 'Low Definition MP4';
 	buniVideoList[buniDefaultVideo] = buniVideo;
@@ -1560,13 +1561,13 @@ else if (page.url.indexOf('buni.tv/video') != -1) {
       }
     }
   }
-  
+
 }
 
 // =====Youku===== //
 
 else if (page.url.indexOf('v.youku.com') != -1) {
-  
+
   /* Decrypt Function */
   var ykNewEp, ykSid, ykToken;
   function generate_ep(vid, ep) {
@@ -1599,7 +1600,7 @@ else if (page.url.indexOf('v.youku.com') != -1) {
 	}
 	q += 1;
       }
-      return result    
+      return result
     }
     var f_code_1 = 'becaf9be';
     var f_code_2 = 'bf7e5f01';
@@ -1623,15 +1624,15 @@ else if (page.url.indexOf('v.youku.com') != -1) {
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '458px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (ykPlayerWindow, 'div', '', true);
     appendMyElement (ykPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video ID */
     var ykVideoID = page.url.match(/show\/id_(.*?)\./);
     ykVideoID = (ykVideoID) ? ykVideoID[1] : null;
-    
+
     /* Get Videos Content */
     var ykVideosContent;
     if (ykVideoID) ykVideosContent = getMyContent ('http://v.youku.com/player/getPlayList/VideoIDS/' + ykVideoID + '/ctype/12/ev/1', 'TEXT', false);
-    
+
     /* Get Videos */
     if (ykVideosContent) {
       var ykVideoFound = false;
@@ -1653,7 +1654,7 @@ else if (page.url.indexOf('v.youku.com') != -1) {
 	  ykVideoFound = true;
 	}
       }
-      
+
       if (ykVideoFound) {
 	/* Create Player */
 	player = {
@@ -1680,7 +1681,7 @@ else if (page.url.indexOf('v.youku.com') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====iQIYI===== //
@@ -1703,16 +1704,16 @@ else if (page.url.indexOf('iqiyi.com') != -1) {
     var iqVideoThumb = getMyContent (page.url, 'thumbImage&quot;:&quot;(.*?)&', true);
     if (!iqVideoThumb) iqVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="image"\\s+content="(.*?)"', false);
     if (!iqVideoThumb) iqVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
-    
+
     /* Get Video ID */
-    var iqTVID = getMyContent(page.url, 'data-player-tvid="(.*?)"', false);    
+    var iqTVID = getMyContent(page.url, 'data-player-tvid="(.*?)"', false);
     var iqVideoID = getMyContent(page.url, 'data-player-videoid="(.*?)"', false);
-    
+
     /* Get Videos Content */
     //var iqVideosContent = (iqTVID && iqVideoID) ? getMyContentGM('http://cache.video.qiyi.com/m/' + iqVideoID + '/', 'TEXT', false) : null;
     //var iqVideosContent = (iqTVID && iqVideoID) ? getMyContentGM('http://cache.video.qiyi.com/m/' +iqTVID + '/' + iqVideoID + '/', 'TEXT', false) : null;
     var iqVideosContent = (iqTVID && iqVideoID) ? getMyContentGM('http://cache.video.qiyi.com/vp/' +iqTVID + '/' + iqVideoID + '/', 'TEXT', false) : null;
-    
+
     /* Get Videos */
     if (iqVideosContent) {
       var iqVideoList = {};
@@ -1736,7 +1737,7 @@ else if (page.url.indexOf('iqiyi.com') != -1) {
 	  iqVideoList['Standard Definition MP4'] = iqMP4;
 	}
       }*/
-      
+
       if (iqVideoFound) {
 	/* Create Player */
 	var iqDefaultVideo = 'Standard Definition MP4';
@@ -1770,7 +1771,7 @@ else if (page.url.indexOf('iqiyi.com') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====JPopsuki===== //
@@ -1786,25 +1787,25 @@ else if (page.url.indexOf('jpopsuki.tv/video') != -1) {
     styleMyElement (myPlayerWindow, {position: 'relative', width: "\""+width+"px", height: "\""+height+"px", backgroundColor: '#F4F4F4', zIndex: '999999'});
     modifyMyElement (player, 'div', '', true);
     player = replaceMyElement (player.parentNode, myPlayerWindow, player);
- 
+
     var jpopsukiSource = getMyContent(page.url, "TEXT", false);
     jpopsukiVideoURL = jpopsukiSource.match('src="(.*?\.mp4)"')[1];
     jpopsukiVideoURL = "http://" + page.doc.location.hostname + jpopsukiVideoURL;
     jpopsukiThumb = jpopsukiSource.match('poster="(.*?\.jpg)"')[1];
     jpopsukiThumb = "http://" + page.doc.location.hostname + jpopsukiThumb;
-    
+
     var jpopsukiVideoList = {};
     var jpopsukiVideoFormats = {'1': 'Low Definition MP4'};
     var jpopsukiVideoFound = false;
-    
+
     var width=720;
     var height=396;
- 
+
     if (jpopsukiVideoURL) {
         jpopsukiVideoFound = true;
         jpopsukiVideoList[jpopsukiVideoFormats[1]] = jpopsukiVideoURL;
     }
-    
+
     if (jpopsukiVideoFound) {
         /* Create Player */
         player = {
@@ -1833,7 +1834,7 @@ else if (page.url.indexOf('jpopsuki.tv/video') != -1) {
 // =====VPlay===== //
 
 else if (page.url.indexOf('vplay.ro/watch') != -1) {
-  
+
   /* Get Player Window */
   var vpPlayerWindow = getMyElement ('', 'div', 'class', 'video_back', 0, false);
   if (!vpPlayerWindow) {
@@ -1845,13 +1846,13 @@ else if (page.url.indexOf('vplay.ro/watch') != -1) {
     styleMyElement (myPlayerWindow, {position: 'relative', width: '980px', height: '573px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (vpPlayerWindow, 'div', '', true);
     appendMyElement (vpPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video Thumbnail */
     var vpVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Video ID */
     var vpVideoID = getMyContent (page.url, 'meta\\s+property="og:url"\\s+content=".*?vplay.ro/watch/(.*?)/"', false);
-    
+
     /* Get Videos Content */
     var vpVideosContent;
     if (vpVideoID) {
@@ -1903,13 +1904,13 @@ else if (page.url.indexOf('vplay.ro/watch') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====VHD===== //
 
 else if (page.url.indexOf('vhd.ro/video') != -1 || page.url.indexOf('vhd.ro/film') != -1) {
-  
+
   var vhdEmbeds= getMyElement ('', 'div', 'class', 'tabpage', -1, false);
   for (i = 0; i < vhdEmbeds.length; i++) {
     var vhdEmbed = vhdEmbeds[i];
@@ -1925,17 +1926,17 @@ else if (page.url.indexOf('vhd.ro/video') != -1 || page.url.indexOf('vhd.ro/film
       vhdEmbed.innerHTML = '<a href="' + vhdLink + '" style="color:green;font-weight:bold;font-size:24px">' + vhdLink + '</a>';
     }
   }
-  
+
 }
 
 // =====Trilulilu===== //
 
 else if (page.url.indexOf('trilulilu.ro') != -1) {
-  
+
   /* Check Page Type */
   var triPageType = getMyContent (page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
   if (!triPageType || triPageType.indexOf('video') == -1) return;
-  
+
   /* Get Player Window */
   var triPlayerWindow = getMyElement ('', 'div', 'class', 'player-av-wp', 0, false);
   if (!triPlayerWindow) {
@@ -1947,13 +1948,13 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
     styleMyElement (myPlayerWindow, {position: 'relative', width: '728px', height: '432px', backgroundColor: '#FFFFFF', zIndex: '99999'});
     modifyMyElement (triPlayerWindow, 'div', '', true);
     appendMyElement (triPlayerWindow, myPlayerWindow);
-      
+
     /* Get Video Thumbnail */
     var triVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
     /* Get Videos Content */
     var triVideosContents = getMyContent (page.url, 'file:\\s*"(.*?)"', false);
-    
+
     /* Get Videos Content */
     if (triVideosContents) {
       var triUser = triVideosContents.match(/username=(.*?)&/);
@@ -1964,7 +1965,7 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
       triServer = (triServer) ? triServer[1] : null;
       var triFormatsURL = 'http://fs' + triServer + '.trilulilu.ro/' + triHash + '/video-formats';
       var triFormatsContent = getMyContentGM(triFormatsURL, 'TEXT', false);
-      
+
       if (triUser && triHash && triServer && triFormatsContent) {
 	var triVideoList = {};
 	var triVideoFound = false;
@@ -1980,10 +1981,10 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
 	  if (triVideoCode) {
 	    if (triVideoCode == 'Low Definition MP4') triDefaultVideo = triVideoCode;
 	    if (!triVideoFound) triVideoFound = true;
-	    triVideoList[triVideoCode] = triVideo; 
+	    triVideoList[triVideoCode] = triVideo;
 	  }
 	}
-	
+
 	if (triVideoFound) {
 	  /* Create Player */
 	  player = {
@@ -2013,19 +2014,19 @@ else if (page.url.indexOf('trilulilu.ro') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Adevărul===== //
 
 else if (page.url.indexOf('adevarul.ro') != -1) {
-  
+
   /* Check Page Type */
   var adPageType = getMyContent (page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
   if (!page.url.match(/adevarul.ro\/video-center\/$/)) {
     if (!adPageType || adPageType.indexOf('video') == -1) return;
   }
- 
+
   /* Get Player Window */
   var adPlayerWindow = getMyElement ('', 'div', 'id', 'tab-video', -1, false);
   if (!adPlayerWindow) {
@@ -2046,13 +2047,13 @@ else if (page.url.indexOf('adevarul.ro') != -1) {
 	adVideo = getMyContentGM(adVideoManifest, 'file\\s*:\\s*"(.*?)"', false);
       }
     }
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '980px', height: '576px', backgroundColor: '#FFFFFF', zIndex: '99999'});
     modifyMyElement (adPlayerWindow, 'div', '', true);
     appendMyElement (adPlayerWindow, myPlayerWindow);
-    
+
     if (adVideo) {
       var adVideoList = {};
       var adDefaultVideo = 'Low Definition MP4';
@@ -2078,13 +2079,13 @@ else if (page.url.indexOf('adevarul.ro') != -1) {
     }
 
   }
-   
+
 }
 
 // =====VeeHD===== //
 
 else if (page.url.indexOf('veehd.com/video/') != -1) {
-  
+
   /* Get Player Window */
   var veePlayerWindow = getMyElement ('', 'div', 'class', 'videoHolder', 0, false);
   if (!veePlayerWindow) {
@@ -2094,9 +2095,9 @@ else if (page.url.indexOf('veehd.com/video/') != -1) {
     /* Get Video Thumb */
     //var veeVideoThumb = getMyContent (page.url, 'img\\s+id="veehdpreview"\\s+src="(.*?)"', false);
     var veeVideoThumb;
-    
+
     /* Get Videos Content */
-    var veeVideosContent;    
+    var veeVideosContent;
     var veeVideoId = getMyContent (page.url, 'videoid\\s*=\\s*"(.*?)"', false);
     if (veeVideoId) {
       veeVideoThumb = 'http://s3.amazonaws.com/img.veehd.com/' + veeVideoId + '_t1.jpg';
@@ -2104,13 +2105,13 @@ else if (page.url.indexOf('veehd.com/video/') != -1) {
       if (veeVideoSource) veeVideosContent = getMyContent(page.win.location.protocol + '//' + page.win.location.hostname + veeVideoSource, 'TEXT');
     }
 
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '980px', height: '560px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (veePlayerWindow, 'div', '', true);
     styleMyElement (veePlayerWindow, {minHeight: '560px'});
     appendMyElement (veePlayerWindow, myPlayerWindow);
-      
+
     /* Get Videos */
     if (veeVideosContent) {
       var veeVideoList = {};
@@ -2135,7 +2136,7 @@ else if (page.url.indexOf('veehd.com/video/') != -1) {
 	veeVideo = cleanMyContent(veeVideo, true);
 	veeVideoList[veeDefaultVideo] = veeVideo;
       }
-       
+
       if (veeVideoFound) {
 	/* Create Player */
 	player = {'playerSocket': veePlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': veeVideoList, 'videoPlay': veeDefaultVideo, 'videoThumb': veeVideoThumb, 'playerWidth': 980, 'playerHeight': 560};
@@ -2154,13 +2155,13 @@ else if (page.url.indexOf('veehd.com/video/') != -1) {
       showMyMessage ('!content');
     }
   }
-      
+
 }
 
 // =====SVTPlay===== //
 
 else if (page.url.indexOf('svtplay.se/') != -1) {
-  
+
   /* Get Player Window */
   var svtPlayerWindow = getMyElement ('', 'a', 'id', 'player', -1, false);
   if (!svtPlayerWindow) {
@@ -2169,16 +2170,16 @@ else if (page.url.indexOf('svtplay.se/') != -1) {
   else {
     /* Get Video Thumb */
     var svtVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Videos Content */
     var svtVideosContent = getMyContent (page.url + '?output=json', 'TEXT', false);
-    
-    /* My Player Window */ 
+
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '988px', height: '580px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (svtPlayerWindow, 'div', '', true);
     appendMyElement (svtPlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (svtVideosContent) {
       var svtVideoList = {};
@@ -2211,7 +2212,7 @@ else if (page.url.indexOf('svtplay.se/') != -1) {
 	  svtVideoFound = false;
 	}
       }
-      
+
       if (svtVideoFound) {
 	/* Create Player */
 	svtDefaultVideo = 'Low Definition MP4';
@@ -2228,15 +2229,15 @@ else if (page.url.indexOf('svtplay.se/') != -1) {
     }
     else {
       showMyMessage ('!content');
-    }      
+    }
   }
-  
+
 }
 
 // =====NRKTV===== //
 
 else if (page.url.indexOf('nrk.no/') != -1) {
-  
+
   /* Get Player Window */
   var nrkPlayerWindow = getMyElement ('', 'div', 'id', 'playerelement', -1, false);
   if (!nrkPlayerWindow) {
@@ -2245,11 +2246,11 @@ else if (page.url.indexOf('nrk.no/') != -1) {
   else {
     /* Get Video Thumb */
     var nrkVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
     /* Get Videos Content */
     var nrkVideosContent = getMyContent (page.url + '?foo', 'data-hls-media="(.*?master.m3u8)', false);
 
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '960px', height: '564px', backgroundColor: '#F4F4F4', zIndex: '9999999999'});
     var nrkPlayerWindowNew = createMyElement ('div', '', '', '', '');
@@ -2257,7 +2258,7 @@ else if (page.url.indexOf('nrk.no/') != -1) {
     styleMyElement (nrkPlayerWindowNew, {position: 'relative', width: '960px', height: '564px', backgroundColor: '#F4F4F4'});
     if (nrkPlayerWindow.parentNode) replaceMyElement(nrkPlayerWindow.parentNode, nrkPlayerWindowNew, nrkPlayerWindow);
     appendMyElement (nrkPlayerWindowNew, myPlayerWindow);
-      
+
     /* Get Videos */
     if (nrkVideosContent) {
       var nrkVideoList = {};
@@ -2283,7 +2284,7 @@ else if (page.url.indexOf('nrk.no/') != -1) {
 	nrkVideoList['High Definition MP4'] = nrkVideo;
 	nrkVideoFound = true;
       }
-      
+
       if (nrkVideoFound) {
 	/* Create Player */
 	nrkDefaultVideo = 'Low Definition MP4';
@@ -2301,15 +2302,15 @@ else if (page.url.indexOf('nrk.no/') != -1) {
     }
     else {
       showMyMessage ('!content');
-    }      
+    }
   }
-      
+
 }
 
 // =====Euronews===== //
 
 else if (page.url.indexOf('euronews.com/') != -1) {
-  
+
   /* Get Player Window */
   var enPlayerWindow = getMyElement ('', 'div', 'class', 'videoWrapper', 0, false);
   if (!enPlayerWindow) {
@@ -2318,24 +2319,24 @@ else if (page.url.indexOf('euronews.com/') != -1) {
     else {
       /* Get Video Thumb */
       var enVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
       /* Get Video */
       var enVideo = getMyContent (page.url, 'file:\\s+"(.*?)"', false);
-      
-      /* My Player Window */ 
+
+      /* My Player Window */
       var myPlayerWindow = createMyElement ('div', '', '', '', '');
       styleMyElement (myPlayerWindow, {position: 'relative', width: '600px', height: '360px', backgroundColor: '#F4F4F4'});
       modifyMyElement (enPlayerWindow, 'div', '', true);
       styleMyElement (enPlayerWindow, {height: '100%'});
       appendMyElement (enPlayerWindow, myPlayerWindow);
-      
+
       /* Get Videos */
       if (enVideo) {
 	var enVideoList = {};
 	var enDefaultVideo = 'Low Definition MP4';
 	if (enVideo.indexOf('.flv') != -1) enDefaultVideo = 'Low Definition FLV';
 	enVideoList[enDefaultVideo] = enVideo;
-	
+
 	/* Create Player */
 	player = {'playerSocket': enPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': enVideoList, 'videoPlay': enDefaultVideo, 'videoThumb': enVideoThumb, 'playerWidth': 600, 'playerHeight': 360};
 	feature['container'] = false;
@@ -2349,13 +2350,13 @@ else if (page.url.indexOf('euronews.com/') != -1) {
 	showMyMessage ('!videos');
       }
     }
-      
+
 }
 
 // =====iFeng===== //
 
 else if (page.url.indexOf('ifeng.com/') != -1) {
-  
+
   /* Get Player Window */
   var ifPlayerWindow = getMyElement ('', 'div', 'class', 'long_video', 0, false);
   if (!ifPlayerWindow) ifPlayerWindow = getMyElement ('', 'div', 'class', 'player_main', 0, false);
@@ -2396,13 +2397,13 @@ else if (page.url.indexOf('ifeng.com/') != -1) {
     var ifVideo;
     if (window.location.hostname != 'v.ifeng.com') ifVideo = getMyContentGM ('http://v.ifeng.com/video_info_new/' + ifVideoPath, 'VideoPlayUrl="(.*?)"', false);
     else ifVideo = getMyContent ('http://v.ifeng.com/video_info_new/' + ifVideoPath, 'VideoPlayUrl="(.*?)"', false);
-    
+
     /* Get Videos */
     if (ifVideo) {
       var ifVideoList = {};
       var ifDefaultVideo = 'Standard Definition MP4';
       ifVideoList[ifDefaultVideo] = ifVideo;
- 
+
       /* Create Player */
       player = {'playerSocket': ifPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': ifVideoList, 'videoPlay': ifDefaultVideo, 'videoThumb': ifVideoThumb, 'playerWidth': ifPlayerWidth, 'playerHeight': 455};
       feature['container'] = false;
@@ -2422,7 +2423,7 @@ else if (page.url.indexOf('ifeng.com/') != -1) {
 // =====56===== //
 
 else if (page.url.indexOf('56.com/') != -1) {
-  
+
   /* Get Player Window */
   var fsPlayerWindow = getMyElement ('', 'div', 'id', 'player', -1, false);
   if (!fsPlayerWindow) {
@@ -2436,17 +2437,17 @@ else if (page.url.indexOf('56.com/') != -1) {
       fsAlbumID = RegExp.$1;
       fsVideoID = RegExp.$2;
     }
-    
+
     /* Get Videos Content */
     var fsVideosContent = getMyContentGM ('http://vxml.56.com/json/' + fsVideoID + '/', 'TEXT', false);
 
-    /* My Player Window */ 
+    /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '600px', height: '500px', backgroundColor: '#F4F4F4'});
     modifyMyElement (fsPlayerWindow, 'div', '', true);
     styleMyElement (fsPlayerWindow, {height: '100%'});
     appendMyElement (fsPlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (fsVideosContent) {
       var fsVideoList = {};
@@ -2468,7 +2469,7 @@ else if (page.url.indexOf('56.com/') != -1) {
       else fsVideoList['Very Low Definition MP4'] = fsHTML5Video;
       var fsVideoThumb = fsVideosContent.match(/"bimg":"(.*?)"/);
       fsVideoThumb = (fsVideoThumb) ? fsVideoThumb[1] : null;
- 
+
       if (fsVideoFound) {
 	/* Create Player */
 	var fsDefaultVideo = 'Very Low Definition FLV';
@@ -2486,13 +2487,13 @@ else if (page.url.indexOf('56.com/') != -1) {
       showMyMessage ('!content');
     }
   }
-            
+
 }
 
 // =====TeleMadrid===== //
 
 else if (page.url.indexOf('telemadrid.es/') != -1) {
-  
+
   /* Get Player Window */
   var tmPlayerWindow = getMyElement ('', 'div', 'class', 'field-items', 0, false);
   if (!tmPlayerWindow) {
@@ -2518,7 +2519,7 @@ else if (page.url.indexOf('telemadrid.es/') != -1) {
       tmVideoPlayer = tmVideoObject.match(/name="@videoPlayer"\s+value="(.*?)"/);
       tmVideoPlayer = (tmVideoPlayer) ? tmVideoPlayer[1] : null;
     }
-    
+
     /* Get Videos Content */
     var tmVideosContentURL, tmVideosContent;
     if (tmFlashID && tmPlayerID && tmPublisherID && tmIsVid && tmIsUI && tmDynamicStreaming && tmVideoPlayer) {
@@ -2526,13 +2527,13 @@ else if (page.url.indexOf('telemadrid.es/') != -1) {
       tmVideosContent = getMyContentGM(tmVideosContentURL, 'TEXT', false);
     }
     else return;
- 
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '630px', height: '370px', backgroundColor: '#F4F4F4'});
     modifyMyElement (tmPlayerWindow, 'div', '', true);
     styleMyElement (tmPlayerWindow, {height: '100%'});
-    appendMyElement (tmPlayerWindow, myPlayerWindow); 
+    appendMyElement (tmPlayerWindow, myPlayerWindow);
 
     /* Get Videos */
     if (tmVideosContent) {
@@ -2546,7 +2547,7 @@ else if (page.url.indexOf('telemadrid.es/') != -1) {
 	var tmVideo = tmVideos.match(/"defaultURL":"(.*?)"/);
 	tmVideo = (tmVideo) ? tmVideo[1] : null;
       }
-      
+
       if (tmVideo) {
 	/* Create Player */
 	var tmDefaultVideo = 'Low Definition MP4';
@@ -2569,7 +2570,7 @@ else if (page.url.indexOf('telemadrid.es/') != -1) {
       showMyMessage ('!content');
     }
   }
-                
+
 }
 
 // =====VK-Embeded===== //
@@ -2585,14 +2586,14 @@ else if (page.url.indexOf('vk.com/video_ext') != -1) {
   else {
     /* Get Videos Content */
     var vkVideosContent = getMyContent(page.url, '"flashvars"\\s+value="(.*?)"', false);
-        
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '380px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     modifyMyElement (vkPlayerWindow, 'div', '', true);
     styleMyElement (vkPlayerWindow, {backgroundColor: '#000000'});
     appendMyElement (vkPlayerWindow, myPlayerWindow);
- 
+
     /* Get Videos */
     if (vkVideosContent) {
       var vkVideoList = {};
@@ -2610,7 +2611,7 @@ else if (page.url.indexOf('vk.com/video_ext') != -1) {
       }
       var vkVideoThumb = vkVideosContent.match(/thumb=(.*?)&amp;/);
       vkVideoThumb = (vkVideoThumb) ? vkVideoThumb[1] : null;
-      
+
       if (vkVideoFound) {
 	/* Create Player */
 	var vkDefaultVideo = 'Very Low Definition MP4';
@@ -2629,21 +2630,21 @@ else if (page.url.indexOf('vk.com/video_ext') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====VK-Site===== //
 
 else if (page.url.indexOf('vk.com/video') != -1) {
-  
+
   page.win.setInterval(function() {
     var nurl = page.win.location.href;
     if (page.url != nurl) page.win.location.href = nurl;
   }, 500);
-  
+
   /* Video Page */
   if (!page.url.match(/video\d+_\d+/)) return;
- 
+
   /* Get Player Window */
   var vkPlayerWindow = page.body;
   if (!vkPlayerWindow) {
@@ -2663,7 +2664,7 @@ else if (page.url.indexOf('vk.com/video') != -1) {
     modifyMyElement (vkPlayerWindow, 'div', '', true);
     styleMyElement (vkPlayerWindow, {backgroundColor: '#000000'});
     appendMyElement (vkPlayerWindow, myPlayerWindow);
- 
+
     /* Get Videos */
     if (vkVideosContent) {
       var vkVideoList = {};
@@ -2681,7 +2682,7 @@ else if (page.url.indexOf('vk.com/video') != -1) {
       }
       var vkVideoThumb = vkVideosContent.match(/"jpg":"(.*?)"/);
       vkVideoThumb = (vkVideoThumb) ? cleanMyContent(vkVideoThumb[1], false) : null;
-      
+
       if (vkVideoFound) {
 	/* Create Player */
 	var vkDefaultVideo = 'Very Low Definition MP4';
@@ -2712,7 +2713,7 @@ else if (page.url.indexOf('vk.com/video') != -1) {
     styleMyElement (myBackLink, {marginTop: '30px', marginLeft: '40%', fontSize: '24px'});
     appendMyElement (vkPlayerWindow, myBackLink);
   }
-  
+
 }
 
 // =====TwitchTV===== //
@@ -2728,7 +2729,7 @@ else if (page.url.indexOf('twitch.tv') != -1) {
     /* Get Video Thumb */
     var twVideoThumb = getMyContent (page.url, 'content=\'(http://static-cdn.jtvnw.net/jtv.thumbs.*?)\'', false);
     if (!twVideoThumb) twVideoThumb = getMyContent (page.url, 'content=\'(http://static-cdn.jtvnw.net/jtv_user_pictures.*?)\'', false);
-    
+
     /* Video ID */
     var twVideoType, twChannel, twVideoId;
     twVideoId = page.url.match(/\/(v|c)\/(\d+)/);
@@ -2739,10 +2740,10 @@ else if (page.url.indexOf('twitch.tv') != -1) {
     else {
       var twChannel = getMyContent(page.url, 'TwitchPlayer.swf\\?channel=(.*?)&', false);
       if (twChannel) {
-	twVideoType = 'l';      
+	twVideoType = 'l';
       }
     }
-    
+
     /* Player Size */
     var twPlayerWidth, twPlayerHeight;
     var twScreenWidth, twScreenHeight;
@@ -2800,7 +2801,7 @@ else if (page.url.indexOf('twitch.tv') != -1) {
       }
       twPlayerWidth = twScreenWidth - (110 + twLWindowWidth + twRWindowWidth);
       twPlayerHeight = Math.round(twPlayerWidth / 1.77);
-    }    
+    }
 
     /* Parse Videos */
     function twHLS() {
@@ -2817,7 +2818,7 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	  twSource();
 	}
 	else {
-	  showMyMessage ('!videos');  
+	  showMyMessage ('!videos');
 	}
       }
       else if (twHLSStep == 2) {
@@ -2874,9 +2875,9 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	catch (e) {
 	  showMyMessage ('!content');
 	}
-      }    
+      }
     }
-    
+
     /* Get Videos */
     var twVideosContent;
     var twVideoList = {};
@@ -2959,7 +2960,7 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 // =====RedMediaTV===== //
 
 else if (page.url.indexOf('redmediatv.ru/video.php?id=') != -1) {
-  
+
   /* Get Player Window */
   var rmPlayerWindow = getMyElement ('', 'div', 'id', 'playerdiv_wrapper', -1, false);
   if (!rmPlayerWindow) rmPlayerWindow = getMyElement ('', 'div', 'id', 'playerdiv', -1, false);
@@ -2972,7 +2973,7 @@ else if (page.url.indexOf('redmediatv.ru/video.php?id=') != -1) {
 
     /* Get Video Thumb */
     var rmVideoThumb = getMyContent(page.url, '"image":\\s*"(.*?)"', false);
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '502px', backgroundColor: '#F4F4F4'});
@@ -2980,7 +2981,7 @@ else if (page.url.indexOf('redmediatv.ru/video.php?id=') != -1) {
     rmPlayerWindow.addEventListener('click', function(e){e.stopPropagation();e.preventDefault();}, false);
     styleMyElement (rmPlayerWindow, {backgroundColor: '#FFFFFF'});
     appendMyElement (rmPlayerWindow, myPlayerWindow);
-    
+
     if (rmVideo) {
       /* Create Player */
       var rmVideoList = {};
@@ -2994,19 +2995,19 @@ else if (page.url.indexOf('redmediatv.ru/video.php?id=') != -1) {
       option['container'] = 'MP4';
       option['definitions'] = ['Low Definition'];
       option['containers'] = ['MP4'];
-      createMyPlayer ();      
+      createMyPlayer ();
     }
     else {
-      showMyMessage ('!videos'); 
+      showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====RussiaToday===== //
 
 else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/films/') != -1) {
-  
+
   /* Get Player Window */
   var rtPlayerWindow = getMyElement ('', 'div', 'class', 'videoholder', 0, false);
   if (!rtPlayerWindow) {
@@ -3018,13 +3019,13 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
     if (rtCoverImage) {
       if(rtCoverImage.parentNode) removeMyElement(rtCoverImage.parentNode, rtCoverImage);
     }
-    
+
     /* Get Video Thumb */
     var rtVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Videos Content */
     var rtVideosContent = getMyContent(page.url, 'mega_playlist\\s*=\\s*\\{([\\S\\s]*?)\\};', false);
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '964px', height: '540px', backgroundColor: '#F4F4F4'});
@@ -3033,7 +3034,7 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
     if (rtPlayerWindow.parentNode) replaceMyElement(rtPlayerWindow.parentNode, rtPlayerWindowNew, rtPlayerWindow);
     styleMyElement (rtPlayerWindowNew, {marginTop: '50px'});
     appendMyElement (rtPlayerWindowNew, myPlayerWindow);
-    
+
     /* Get Videos */
     if (rtVideosContent) {
       var rtVideoList = {};
@@ -3122,8 +3123,8 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
 	    rtVideoList['High Definition MP4'] = rtHighVideo;
 	  }
 	}
-      }      
-	          
+      }
+
       /* Create Player */
       if (rtVideoFound) {
 	var rtDefaultVideo = rtVideoList['Low Definition MP4'] ? 'Low Definition MP4' : 'Low Definition MP4 Part 1';
@@ -3148,13 +3149,13 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====RuTube===== //
 
 else if (page.url.indexOf('rutube.ru/video') != -1) {
-  
+
   /* Get Player Window */
   var rutPlayerWindow = getMyElement ('', 'div', 'class', 'b-video__object', 0, false);
   if (!rutPlayerWindow) {
@@ -3163,17 +3164,17 @@ else if (page.url.indexOf('rutube.ru/video') != -1) {
   else {
     /* Get Video Thumb */
     var rutVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Video */
     var rutVideo = getMyContent (page.url.replace(/\/video\//, '/play/embed/'), '"m3u8":\\s*"(.*?)"', false);
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '728px', height: '432px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     modifyMyElement (rutPlayerWindow, 'div', '', true);
     //styleMyElement (rutPlayerWindow, {backgroundColor: '#FFFFFF'});
     appendMyElement (rutPlayerWindow, myPlayerWindow);
-    
+
     /* Create Player */
     if (rutVideo) {
       var rutVideoList = {};
@@ -3190,7 +3191,7 @@ else if (page.url.indexOf('rutube.ru/video') != -1) {
       showMyMessage ('!videos');
     }
   }
-  
+
 }
 
 // =====NowRu===== //
@@ -3205,7 +3206,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
   else {
     /* Get Page Source*/
     var nowPageSource = getMyContent (page.url, 'TEXT', false);
- 
+
     /* Get Video Thumb */
     var nowVideoThumb = nowPageSource.match(/meta\s+property="og:image"\s+content="(.*?)"/);
     nowVideoThumb = (nowVideoThumb) ? nowVideoThumb[1] : null;
@@ -3225,7 +3226,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
     modifyMyElement (nowPlayerWindow, 'div', '', true);
     styleMyElement (nowPlayerWindow, {backgroundColor: '#000000'});
     appendMyElement (nowPlayerWindow, myPlayerWindow);
-    
+
     /* Get Video */
     if (nowVideoSource) {
       if (nowVideoSource.indexOf('rutube.ru') != -1) {
@@ -3238,7 +3239,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
 	      if (nowVideosContent) {
 		var nowVideo = nowVideosContent.match(/"m3u8":\s*"(.*?)"/);
 		nowVideo = (nowVideo) ? nowVideo[1] : null;
-		
+
 		/* Create Player */
 		if (nowVideo) {
 		  var nowVideoList = {};
@@ -3276,7 +3277,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
 		if (nowVideosContent) {
 		  var nowVideo = nowVideosContent.match(/<to>(.*?)<\/to>/);
 		  nowVideo = (nowVideo) ? nowVideo[1] : null;
-		  
+
 		  /* Create Player */
 		  if (nowVideo) {
 		    nowVideo += nowVideoPath.replace(/.*vod\//, '');
@@ -3309,35 +3310,35 @@ else if (page.url.indexOf('now.ru/item') != -1) {
       showMyMessage ('!content');
     }
   }
-      
+
 }
 
 // =====VideoMoreRu===== //
 
 else if (page.url.indexOf('videomore.ru/') != -1) {
-  
+
   /* Get Page Type */
   var vmPageType = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+property="og:type"', false);
   if (!vmPageType || vmPageType.indexOf('video') == -1) return;
- 
+
   /* Get Player Window */
-  var vmPlayerWindow = getMyElement ('', 'div', 'id', 'playerholder', -1, false);  
+  var vmPlayerWindow = getMyElement ('', 'div', 'id', 'playerholder', -1, false);
   if (!vmPlayerWindow) {
     showMyMessage ('!player');
   }
   else {
     /* Get Video Thumb */
     var vmVideoThumb = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+property="og:image"', false);
- 
+
     /* Get Video ID */
     var vmVideoSource = getMyContent (page.url, 'config:\\s+"(.*?)"', false);
- 
+
     /* Get Video */
     var vmVideo;
     if (vmVideoSource) {
       vmVideo = getMyContent (vmVideoSource, '<video_url>(.*?)</video_url>', false);
     }
- 
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '704px', height: '414px', backgroundColor: '#EEEEEE', margin: '0px auto'});
@@ -3359,15 +3360,15 @@ else if (page.url.indexOf('videomore.ru/') != -1) {
       showMyMessage ('!videos');
     }
   }
- 
+
 }
 
 // =====Tvigle===== //
 
 else if (page.url.indexOf('tvigle.ru/video') != -1) {
-  
+
   /* Get Player Window */
-  var tviPlayerWindow = getMyElement ('', 'div', 'class', 'player-content', 0, false);  
+  var tviPlayerWindow = getMyElement ('', 'div', 'class', 'player-content', 0, false);
   if (!tviPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -3467,7 +3468,7 @@ else if (page.url.indexOf('tvigle.ru/video') != -1) {
 else if (page.url.indexOf('ivi.ru/watch/') != -1) {
 
   /* Get Player Window */
-  var iviPlayerWindow = getMyElement ('', 'div', 'id', 'js-player-area', -1, false);  
+  var iviPlayerWindow = getMyElement ('', 'div', 'id', 'js-player-area', -1, false);
   if (!iviPlayerWindow) {
     //showMyMessage ('!player');
   }
@@ -3477,7 +3478,7 @@ else if (page.url.indexOf('ivi.ru/watch/') != -1) {
 
     /* Get Video ID */
     var iviVideoId = getMyContent (page.url, 'data-id="(.*?)"', false);
-      
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '978px', height: '550px', backgroundColor: '#F4F4F4'});
@@ -3543,13 +3544,13 @@ else if (page.url.indexOf('ivi.ru/watch/') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====Megogo===== //
 
 else if (page.url.indexOf('megogo.net/') != -1) {
-  
+
   /* Get Player Window */
   //var mePlayerWindow = getMyElement ('', 'div', 'id', 'playerPlace', -1, false);
   var mePlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
@@ -3559,17 +3560,17 @@ else if (page.url.indexOf('megogo.net/') != -1) {
   else {
     /* Get Video Thumb */
     var meVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Video ID */
     var meVideoId = page.url.replace(/.*\//, '').replace(/-.*/, '');
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '690px', height: '406px', backgroundColor: '#E4E4E4', margin: '0px auto'});
     modifyMyElement (mePlayerWindow, 'div', '', true);
     styleMyElement (mePlayerWindow, {height: '410px'});
     appendMyElement (mePlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (meVideoId) {
       GM_xmlhttpRequest({
@@ -3617,7 +3618,7 @@ else if (page.url.indexOf('megogo.net/') != -1) {
 				    meVideoFound = true;
 				    meVideoList['Low Definition MP4'] = meVideo;
 				  }
-				  
+
 				  /* Create Player */
 				  if (meVideo) {
 				    var meDefaultVideo = 'Low Definition MP4';
@@ -3699,13 +3700,13 @@ else if (page.url.indexOf('megogo.net/') != -1) {
       showMyMessage ('!content');
     }
   }
-    
+
 }
 
 // =====AlkislarlaYasiyorum===== //
 
 else if (page.url.indexOf('alkislarlayasiyorum.com/icerik') != -1) {
-  
+
   /* Get Player Window */
   var ayPlayerWindow = getMyElement ('', 'div', 'id', 'playerContainer', -1, false);
   if (!ayPlayerWindow) {
@@ -3714,10 +3715,10 @@ else if (page.url.indexOf('alkislarlayasiyorum.com/icerik') != -1) {
   else {
     /* Get Video Thumb */
     var ayVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
     /* Get Video */
     var ayVideo = getMyContent (page.url, 'streamurl:"(.*?)"', true);
-      
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#E6E9D4', margin: '0px auto'});
@@ -3738,14 +3739,14 @@ else if (page.url.indexOf('alkislarlayasiyorum.com/icerik') != -1) {
     else {
       showMyMessage ('!videos');
     }
-  }  
-  
+  }
+
 }
 
 // =====Hurriyet===== //
 
 else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
-  
+
   /* Get Video Contents */
   var huVideosContent = getMyContent (page.url, 'src="(http://webtv.hurriyet.com.tr/embed/\\?vid=.*?)&', false);
   if (!huVideosContent) return;
@@ -3758,7 +3759,7 @@ else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
   else {
     /* Get Video Thumb */
     var huVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '580px', height: '340px', backgroundColor: '#FFFFFF'});
@@ -3768,7 +3769,7 @@ else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
       huFlashWindow.src = '';
       styleMyElement(huFlashWindow, {display: 'none'});
     }
-    
+
     /* get Videos */
     var huVideo = getMyContentGM (huVideosContent, 'VideoCDNURL:\\s*\'(.*?)\',', true);
     if (huVideo) {
@@ -3783,8 +3784,8 @@ else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
       feature['container'] = false;
       feature['widesize'] = false;
       option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
-      option['containers'] = ['MP4'];      
-      createMyPlayer ();     
+      option['containers'] = ['MP4'];
+      createMyPlayer ();
     }
     else {
       showMyMessage ('!videos');
@@ -3796,16 +3797,16 @@ else if (page.url.indexOf('hurriyet.com.tr/') != -1) {
 // =====VEVO===== //
 
 else if (page.url.indexOf('vevo.com/watch') != -1) {
-  
+
   page.win.setInterval(function() {
     var nurl = page.win.location.href;
     if (page.url != nurl) page.win.location.href = nurl;
   }, 500);
-  
+
   function VEVO() {
     /* Get Video Thumb */
     var veVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
     /* Video ID */
     var veVideoId = getMyContent (page.url, 'meta\\s+property="og:video"\\s+content=".*?videoId=(.*?)&', false);
 
@@ -3819,7 +3820,7 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
     modifyMyElement (vePlayerWindow, 'div', '', true);
     styleMyElement (vePlayerWindow, {height: '100%', textAlign: 'center'});
     appendMyElement (vePlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (veVideosContent) {
       veVideosContent = cleanMyContent(veVideosContent, false);
@@ -3842,7 +3843,7 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
 	/* Hide player Buttons */
 	var vePlayerButtons = getMyElement ('', 'div', 'class', 'video-controls-directive', 0, false);
 	if (vePlayerButtons) styleMyElement(vePlayerButtons, {display: 'none'});
-	
+
 	/* Create Player */
 	var veDefaultVideo = 'Low Definition MP4';
 	player = {
@@ -3889,13 +3890,13 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
     }
     var vePlayerWaitInterval = page.win.setInterval(vePlayerWaitFunc, 500);
   }
-  
+
 }
 
 // =====Tu.TV===== //
 
 else if (page.url.indexOf('tu.tv/videos') != -1) {
-  
+
   /* Get Player Window */
   var tuPlayerWindow = getMyElement ('', 'div', 'id', 'div-player', -1, false);
   if (!tuPlayerWindow) {
@@ -3904,23 +3905,23 @@ else if (page.url.indexOf('tu.tv/videos') != -1) {
   else {
     /* Get Video Thumb */
     var tuVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Video ID */
     var tuVideoID = getMyContent (page.url, 'tu.tv/iframe/(.*?)/', false);
-    
+
     /* Get Video */
     var tuVideo;
     if (tuVideoID) {
       tuVideo = getMyContent ('http://tu.tv/flvurl.php?codVideo=' + tuVideoID, 'kpt=(.*?)&', false);
       if (tuVideo) tuVideo = atob(tuVideo);
     }
-      
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '630px', height: '378px', backgroundColor: '#EEEEEE', margin: '0px auto'});
     modifyMyElement (tuPlayerWindow, 'div', '', true);
     appendMyElement (tuPlayerWindow, myPlayerWindow);
-      
+
     /* Create Player */
     if (tuVideo) {
       var tuVideoList = {};
@@ -3935,14 +3936,14 @@ else if (page.url.indexOf('tu.tv/videos') != -1) {
     else {
       showMyMessage ('!videos');
     }
-  }   
-  
+  }
+
 }
 
 // =====WatchNBA===== //
 
 else if (page.url.indexOf('watch.nba.com/nba/video') != -1) {
-  
+
   /* Get Player Window */
   var nbaPlayerWindow = getMyElement ('', 'div', 'id', 'playerContainer', -1, false);
   if (!nbaPlayerWindow) {
@@ -3951,7 +3952,7 @@ else if (page.url.indexOf('watch.nba.com/nba/video') != -1) {
   else {
     /* Get Video Thumb */
     var nbaVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      
+
     /* Get Video ID */
     var nbaVideoID = getMyContent (page.url, 'programId\\s*=\\s*(.*?);', false);
 
@@ -3960,20 +3961,20 @@ else if (page.url.indexOf('watch.nba.com/nba/video') != -1) {
     if (nbaVideoID && nbaVideoID != 'undefined') {
       nbaVideo = getMyContent ('http://watch.nba.com/nba/servlets/publishpoint?type=video&isFlex=true&bitrate=1600&id=' + nbaVideoID, '(rtmp.*?)&aifp', false);
     }
-            
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '980px', height: '576px', backgroundColor: '#EEEEEE', margin: '0px auto'});
     modifyMyElement (nbaPlayerWindow, 'div', '', true);
     styleMyElement (nbaPlayerWindow, {height: '576px', width: '980px'});
     appendMyElement (nbaPlayerWindow, myPlayerWindow);
-    
+
     /* Get Watch Sidebar */
     var nbaSidebarWindow = getMyElement ('', 'div', 'class', 'rightBox', 0, false);
-    if (nbaSidebarWindow) styleMyElement (nbaSidebarWindow, {marginTop: '620px'});    
+    if (nbaSidebarWindow) styleMyElement (nbaSidebarWindow, {marginTop: '620px'});
 
     if (nbaVideo) {
-      /* Create Player */      
+      /* Create Player */
       var nbaVideoList = {};
       var nbaDefaultVideo = 'Low Definition MP4';
       nbaVideoList['Standard Definition MP4'] = nbaVideo;
@@ -3997,14 +3998,14 @@ else if (page.url.indexOf('watch.nba.com/nba/video') != -1) {
     else {
       showMyMessage ('!videos');
     }
-  }   
-  
+  }
+
 }
 
 // =====WIMP===== //
 
 else if (page.url.indexOf('wimp.com/') != -1) {
-  
+
   /* Get Player Window */
   var wiPlayerWindow = getMyElement ('', 'div', 'id', 'player', -1, false);
   if (!wiPlayerWindow) {
@@ -4021,17 +4022,17 @@ else if (page.url.indexOf('wimp.com/') != -1) {
       showMyMessage ('embed', ytVideoLink);
     }
   }
-   
+
 }
 
 // =====Marktplaats===== //
 
 else if (page.url.indexOf('marktplaats.nl/') != -1) {
-  
+
   /* Video Page */
   var mpVideoPlay = getMyElement ('', 'div', 'class', 'icon-mp-icon-video-play', 0, false);
   if (!mpVideoPlay) return;
- 
+
   /* Hide Video Link */
   var mpPhotoActions = getMyElement ('', 'div', 'id', 'photo-actions', -1, false);
   if (mpPhotoActions) {
@@ -4047,7 +4048,7 @@ else if (page.url.indexOf('marktplaats.nl/') != -1) {
   else {
     /* Video Thumbnail */
     mpVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Videos */
     var mpVideosContent;
     mpVideoUrl = getMyContent (page.url, 'videoUrl:\\s*\'(.*?)\'', false);
@@ -4057,12 +4058,12 @@ else if (page.url.indexOf('marktplaats.nl/') != -1) {
 	mpVideosContent = getMyContentGM (mpPlaylistUrl, 'TEXT', false);
       }
     }
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '604px', height: '362px', backgroundColor: '#F4F4F4', zIndex: 10});
     appendMyElement (mpPlayerWindow, myPlayerWindow);
-    
+
     if (mpVideosContent) {
       var mpVideoList = {};
       var mpVideoFound = false;
@@ -4096,7 +4097,7 @@ else if (page.url.indexOf('marktplaats.nl/') != -1) {
 	option['definitions'] = ['High Definition', 'Low Definition', 'Very Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
-	
+
 	/* Fix panel */
 	styleMyElement(player['playerContent'], {marginTop: '7px'});
       }
@@ -4108,13 +4109,13 @@ else if (page.url.indexOf('marktplaats.nl/') != -1) {
       showMyMessage('!content');
     }
   }
-       
+
 }
 
 // =====NPO===== //
 
 else if (page.url.indexOf('npo.nl/') != -1) {
-  
+
   /* Get Player Window */
   var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
   if (!npoPlayerWindow) {
@@ -4144,14 +4145,14 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	}
       }
     }
-    
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '580px', height: '350px', backgroundColor: '#F4F4F4', zIndex: 10});
     modifyMyElement (npoPlayerWindow, 'div', '', true);
-    appendMyElement (npoPlayerWindow, myPlayerWindow);    
+    appendMyElement (npoPlayerWindow, myPlayerWindow);
 
-    /* Create Player */    
+    /* Create Player */
     if (npoVideo) {
       var npoVideoList = {};
       var npoDefaultVideo = 'Low Definition MP4';
@@ -4174,21 +4175,21 @@ else if (page.url.indexOf('npo.nl/') != -1) {
     }
     else {
       showMyMessage ('!videos');
-    }    
+    }
 
   }
-            
+
 }
 
 // =====RTLXL===== //
 
 else if (page.url.indexOf('rtlxl.nl/') != -1) {
-  
+
   page.win.setInterval(function() {
     var nurl = page.win.location.href;
     if (page.url != nurl) location.reload();
   }, 500);
-  
+
   var myPlayerWindow;
   page.win.setTimeout(function() {
 
@@ -4231,7 +4232,7 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
       modifyMyElement (rtlPlayerWindow, 'div', '', true);
       appendMyElement (rtlPlayerWindow, myPlayerWindow);
 
-      /* Create Player */    
+      /* Create Player */
       if (rtlVideo) {
 	var rtlVideoThumb = "http://screenshots.rtl.nl/system/thumb/sz=355x200/uuid=" + rtlVideoID;
 	var rtlVideoList = {};
@@ -4252,7 +4253,7 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 	option['definitions'] = ['Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
-	
+
 	/* Fix panel */
 	styleMyElement(player['playerContent'], {marginTop: '3px'});
       }
@@ -4260,15 +4261,15 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 	showMyMessage ('!videos');
       }
     }
-  
+
   }, 5000);
-      
+
 }
 
 // =====NickelodeonNL===== //
 
 else if (page.url.indexOf('nickelodeon.nl/') != -1) {
-  
+
   /* Get Player Window */
   var nickPlayerWindow = getMyElement ('', 'div', 'class', 'col-2', 0, false);
   if (!nickPlayerWindow) {
@@ -4297,7 +4298,7 @@ else if (page.url.indexOf('nickelodeon.nl/') != -1) {
     if (nickLoader) styleMyElement(nickLoader, {display: 'none'});
     var nickRowPlayer = getMyElement ('', 'div', 'class', 'row player', 0, false);
     if (nickRowPlayer) styleMyElement(nickRowPlayer, {height: '500px'});
- 
+
     /* Create Player */
     if (nickVideo) {
       var nickVideoList = {};
@@ -4323,13 +4324,13 @@ else if (page.url.indexOf('nickelodeon.nl/') != -1) {
       showMyMessage ('!videos');
     }
   }
-                
+
 }
 
 // =====ORF TV Thek===== //
 
 else if (page.url.indexOf('orf.at/program/') != -1) {
-  
+
   /* Get Player Window */
   var orfPlayerWindow = getMyElement ('', 'div', 'class', 'player_viewport', 0, false);
   if (!orfPlayerWindow) {
@@ -4340,19 +4341,19 @@ else if (page.url.indexOf('orf.at/program/') != -1) {
     styleMyElement(orfPlayerWindow, {width: '800px', height: '400px'});
     var orfPlaylist = getMyElement ('', 'div', 'class', 'playlist_container', 0, false);
     if (orfPlaylist) styleMyElement(orfPlaylist, {width: '800px'});
- 
+
     /* Video Thumbnail */
     var orfVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    
+
     /* Get Videos Content */
     var orfVideosContent = getMyContent (page.url, '"sources":\\[(.*?)\\]', false);
-    
+
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4', zIndex: 10, margin: '0px auto'});
     modifyMyElement (orfPlayerWindow, 'div', '', true);
     appendMyElement (orfPlayerWindow, myPlayerWindow);
-    
+
     /* Get Videos */
     if (orfVideosContent) {
       var orfVideoList = {};
@@ -4381,7 +4382,7 @@ else if (page.url.indexOf('orf.at/program/') != -1) {
 	  }
 	}
       }
-      
+
       /* Create Player */
       if (orfVideoFound) {
 	player = {
@@ -4399,25 +4400,25 @@ else if (page.url.indexOf('orf.at/program/') != -1) {
 	option['definitions'] = ['Low Definition', 'Standard Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
-	
+
 	/* Fix panel */
 	styleMyElement(player['playerContent'], {marginTop: '5px'});
       }
       else {
 	showMyMessage ('!videos');
-      }      
+      }
     }
     else {
       showMyMessage('!content');
     }
   }
-  
+
 }
 
 // =====MeteoWeb===== //
 
 else if (page.url.indexOf('meteoweb.eu/video-gallery/') != -1) {
-  
+
   /* Get Player Window */
   var mwPlayerWindow = getMyElement ('', 'div', 'class', 'videoPost', 0, false);
   if (!mwPlayerWindow) {
@@ -4428,16 +4429,16 @@ else if (page.url.indexOf('meteoweb.eu/video-gallery/') != -1) {
     var mwURL = page.url.replace(/.*\.eu/, '').replace(/\/$/, '').replace(/\//g, '\\/');
     var mwVideoThumb = getMyContent (page.url, 'href="' + mwURL + '".*?src="(.*?)"', false);
     if (!mwVideoThumb) mwVideoThumb = 'http://www.meteoweb.eu/wp-content/uploads/2015/04/logo_meteoweb_new.png';
- 
+
     /* Get Video */
     var mwVideo = getMyContent (page.url, 'var\\s+src\\s*=\\s*"(http.*?)"', false);
- 
+
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '900px', height: '530px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     modifyMyElement (mwPlayerWindow, 'div', '', true);
     appendMyElement (mwPlayerWindow, myPlayerWindow);
- 
+
     /* Create Player */
     if (mwVideo) {
       var mwVideoList = {};
@@ -4458,7 +4459,7 @@ else if (page.url.indexOf('meteoweb.eu/video-gallery/') != -1) {
       option['definitions'] = ['Low Definition'];
       option['containers'] = ['MP4'];
       createMyPlayer ();
- 
+
       /* Fix panel */
       styleMyElement(player['playerContent'], {marginTop: '5px'});
     }
@@ -4466,13 +4467,13 @@ else if (page.url.indexOf('meteoweb.eu/video-gallery/') != -1) {
       showMyMessage ('!videos');
     }
   }
-      
+
 }
 
 // =====LiveLeak===== //
 
 else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
-  
+
   /* Get Player Window */
   var llPlayerWindow = getMyElement ('', 'div', 'id', 'wrapper', -1, false);
   if (!llPlayerWindow) {
@@ -4480,11 +4481,11 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
   }
   else {
     /* Video Thumbnail */
-    var llVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);	
-    
+    var llVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
     /* Get Videos Content */
     var llVideosContent = getMyContent (page.url, 'config:\\s*"(.*?)"', false);
-      
+
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '625px', height: '374px', backgroundColor: '#F4F4F4', margin: '0px auto'});
@@ -4511,12 +4512,12 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
 	  }
 	}
       }
-      
+
       if (llVideoFound) {
 	/* Get Watch Sidebar */
 	var llSidebarWindow = getMyElement ('', 'div', 'id', 'rightcol', -1, false);
 	var llSidebarMargin = (llPlayerWindow.offsetTop) ? llPlayerWindow.offsetTop + 500 : 1000;
-	
+
 	/* Create Player */
 	var llDefaultVideo = (llVideoList['Low Definition MP4']) ? 'Low Definition MP4' : 'Low Definition FLV';
 	player = {
@@ -4552,7 +4553,7 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
 // =====UnblockYouTube===== //
 
 else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
-  
+
   /* Get Player Window */
   var uyPlayerWindow = getMyElement ('', 'div', 'id', 'player-api', -1, false);
   if (!uyPlayerWindow) {
@@ -4565,10 +4566,10 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
 
     /* Get Video Title */
     var uyVideoTitle = getMyContent (page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
-  
+
     /* Get Videos Content */
     var uyVideosContent = getMyElement ('', 'div', 'class', 'video-js', 0, true);
-  
+
     /* Player Size */
     var ytPlayerWidth, ytPlayerHeight;
     var ytPlayerWideWidth, ytPlayerWideHeight;
@@ -4601,15 +4602,15 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
     }
 
     /* Get Sizes */
-    ytSizes();	      
-      
+    ytSizes();
+
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
     styleMyElement (uyPlayerWindow, {backgroundColor: '#F1F1F1'});
     modifyMyElement (uyPlayerWindow, 'div', '', false, true);
     appendMyElement (uyPlayerWindow, myPlayerWindow);
-    
+
     var blockObject = uyPlayerWindow;
     var blockInterval = 20;
     page.win.setInterval(function() {
@@ -4624,7 +4625,7 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
 	    }
 	  }
 	}
-	var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);    
+	var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);
 	if (elVideos.length > 0) {
 	  for (var v = 0; v < elVideos.length; v++) {
 	    var elVideo = elVideos[v];
@@ -4636,7 +4637,7 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
 	if (blockInterval > 0) blockInterval--;
       }
     }, 500);
-      
+
     /* Update Sizes */
     page.win.addEventListener('resize', function() {
       ytSizes();
@@ -4646,7 +4647,7 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
       player['playerWideHeight'] = ytPlayerWideHeight;
       player['sidebarMarginWide'] = ytSidebarMarginWide;
       resizeMyPlayer('widesize');
-    }, false);      
+    }, false);
 
     /* Sidebar Window */
     var ytSidebarWindow = getMyElement ('', 'div', 'id', 'watch7-sidebar', -1, false);
@@ -4656,7 +4657,7 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
     if (uyVideosContent) {
       var uyVideo = uyVideosContent.match(/src="(.*?)"\s+type="video\/mp4"/);
       uyVideo = (uyVideo) ? uyVideo[1].replace(/&amp;/g, '&') : null;
-      
+
       if (uyVideo) {
 	var uyVideoList = {};
 	var uyDefaultVideo = 'Low Definition MP4';
@@ -4690,13 +4691,13 @@ else if (page.url.indexOf('unblockyoutube.co.uk/permalink.php?url=') != -1) {
       showMyMessage ('!content');
     }
   }
-  
+
 }
 
 // =====JeuxVideo===== //
 
 else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
-  
+
   /* Get Player Window */
   var jvPlayerWindow = getMyElement ('', 'div', 'class', 'player-contenu', 0, false);
   if (!jvPlayerWindow) {
@@ -4704,7 +4705,7 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
   }
   else {
     /* Video Thumbnail */
-    var jvVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);	
+    var jvVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Get Videos Content */
     var jvVideosContent;
@@ -4712,7 +4713,7 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
     if (jvVideoID) {
       jvVideosContent = getMyContent (page.win.location.protocol + '//' + page.win.location.hostname + '/contenu/medias/video.php?q=config&id=' + jvVideoID, '"sources":\\[(.*?)\\]', false);
     }
-  
+
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '625px', height: '374px', backgroundColor: '#F4F4F4', margin: '0px auto'});
@@ -4735,11 +4736,11 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
 	  jvVideoList[jvVideoFormats[vCode]] = cleanMyContent(jvVideo, false);
 	}
       }
-      
+
       if (jvVideoFound) {
 	/* Get Watch Sidebar */
 	var jvSidebarWindow = getMyElement ('', 'div', 'class', 'col-droite-player', 0, false);
-      
+
 	/* Create Player */
 	var jvDefaultVideo = 'Low Definition MP4';
 	player = {
@@ -4762,7 +4763,7 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
 	createMyPlayer ();
 
 	/* Fix panel */
-	styleMyElement(player['playerContent'], {marginTop: '5px'});	
+	styleMyElement(player['playerContent'], {marginTop: '5px'});
       }
       else {
 	showMyMessage ('!videos');
@@ -4772,7 +4773,7 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
       showMyMessage ('!content');
     }
   }
-    
+
 }
 
 })();
