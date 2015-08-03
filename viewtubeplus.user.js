@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.07.30
+// @version		2015.08.03
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -246,7 +246,8 @@ var mimetypes = {
   'QT': 'video/quicktime',
   'VLC': 'application/x-vlc-plugin',
   'Totem': 'application/x-totem-plugin',
-  'Xine': 'application/x-xine-plugin'
+  'Xine': 'application/x-xine-plugin',
+  'M3U8': 'application/x-mpegurl'
 };
 
 // Links
@@ -276,16 +277,16 @@ function createMyElement (type, content, event, action, target) {
       obj.controls = 'controls';
       obj.autoplay = 'autoplay';
       obj.volume = 0.5;
-      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure your browser supports HTML5\'s Video and this video codec. If you think it\'s a script issue, please report it <a href="' + contact + '">here</a>.';
+      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure your browser supports HTML5\'s Video and this video codec. If you think it\'s a script issue, please report it <a href="' + contact + '" style="color:#00892C">here</a>.';
     }
     else if (type == 'object') {
       obj.data = content;
-      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure a video plugin is installed. If you think it\'s a script issue, please report it <a href="' + contact + '">here</a>.<param name="scale" value="aspect"><param name="stretchtofit" value="true"><param name="autostart" value="true"><param name="autoplay" value="true">';
+      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure a video plugin is installed. If you think it\'s a script issue, please report it <a href="' + contact + '" style="color:#00892C">here</a>.<param name="scale" value="aspect"><param name="stretchtofit" value="true"><param name="autostart" value="true"><param name="autoplay" value="true">';
     }
     else if (type == 'embed') {
       if (option['plugin'] == 'VLC') obj.setAttribute('target', content);
       else obj.src = content;
-      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure a video plugin is installed. If you think it\'s a script issue, please report it <a href="' + contact + '">here</a>.<param name="scale" value="aspect"><param name="stretchtofit" value="true"><param name="autostart" value="true"><param name="autoplay" value="true">';
+      obj.innerHTML = '<br><br>The video should be loading. If it doesn\'t load, make sure a video plugin is installed. If you think it\'s a script issue, please report it <a href="' + contact + '" style="color:#00892C">here</a>.<param name="scale" value="aspect"><param name="stretchtofit" value="true"><param name="autostart" value="true"><param name="autoplay" value="true">';
     }
   }
   if (type == 'video' || type == 'object' || type == 'embed') {
@@ -3154,19 +3155,27 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
 
 // =====RuTube===== //
 
-else if (page.url.indexOf('rutube.ru/video') != -1) {
+else if (page.url.indexOf('rutube.ru') != -1) {
+
+  page.win.setInterval(function() {
+    var nurl = page.win.location.href;
+    if (page.url != nurl) {
+      history.replaceState({} , 'History', page.url);
+      page.win.location.href = nurl;
+    }
+  }, 500);
 
   /* Get Player Window */
   var rutPlayerWindow = getMyElement ('', 'div', 'class', 'b-video__object', 0, false);
   if (!rutPlayerWindow) {
-    showMyMessage ('!player');
+    if (page.url.indexOf('rutube.ru/video') != -1) showMyMessage ('!player');
   }
   else {
     /* Get Video Thumb */
     var rutVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Get Video */
-    var rutVideo = getMyContent (page.url.replace(/\/video\//, '/play/embed/'), '"m3u8":\\s*"(.*?)"', false);
+    var rutVideo = getMyContent (page.url.replace(/\/video\//, '/play/embed/'), '&quot;m3u8&quot;:\\s*&quot;(.*?)&quot;', false);
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
