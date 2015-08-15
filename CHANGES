@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2015.08.15
+- adds YouTube Opus DASH streams
+- fixes YouTube player size
+
 #2015.08.05
 - fixes IMDb, Yahoo Screen
 
