@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.08.15
+// @version		2015.08.27
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -595,6 +595,10 @@ function playMyVideo (play) {
 	player['contentAudio'].play();
       }, false);
       player['contentVideo'].addEventListener ('pause', function() {
+	player['contentAudio'].pause();
+      }, false);
+      player['contentVideo'].addEventListener('ended', function() {
+	player['contentVideo'].pause();
 	player['contentAudio'].pause();
       }, false);
       player['contentVideo'].addEventListener('timeupdate', function() {
@@ -1624,14 +1628,18 @@ else if (page.url.indexOf('metacafe.com/watch') != -1) {
       }
     }
     else mcVideo = getMyContent (page.url, 'video\\s+src="(.*?)"', false);
+    /* New */
+    if (!mcVideosContent || !mcVideo) {
+      mcVideo = getMyContent (page.url, 'videoURL=(.*?)&', true);
+    }
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4', zIndex: 10});
-    modifyMyElement (mcPlayerWindow, 'div', '', false, true);
+    modifyMyElement (mcPlayerWindow, 'div', '', true);
     styleMyElement (mcPlayerWindow, {height: '100%'});
     appendMyElement (mcPlayerWindow, myPlayerWindow);
-    blockObject = mcPlayerWindow;
+    //blockObject = mcPlayerWindow;
 
     /* Get Videos */
     if (mcVideosContent || mcVideo) {
