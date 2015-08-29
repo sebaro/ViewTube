@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.08.27
+// @version		2015.08.29
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -12,6 +12,8 @@
 // @include		http://www.youtube.com*
 // @include		https://youtube.com*
 // @include		https://www.youtube.com*
+// @include		http://gaming.youtube.com*
+// @include		https://gaming.youtube.com*
 // @include		http://dailymotion.com*
 // @include		http://www.dailymotion.com*
 // @include		https://dailymotion.com*
@@ -914,6 +916,11 @@ page.win.setInterval(function() {
 // =====YouTube===== //
 
 if (page.url.indexOf('youtube.com/watch') != -1) {
+
+  /* Redirect Categories */
+  if (page.url.indexOf('gaming.youtube.com') != -1) {
+    page.win.location.href = page.url.replace('gaming', 'www');
+  }
 
   /* Video Availability */
   var ytVideoUnavailable = getMyElement ('', 'div', 'id', 'player-unavailable', -1, false);
