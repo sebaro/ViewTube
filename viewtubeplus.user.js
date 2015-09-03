@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.08.03
+// @version		2015.09.03
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -2831,13 +2831,14 @@ else if (page.url.indexOf('twitch.tv') != -1) {
 	  if (twHLSVideo.indexOf('/low/') != -1) twVideoList['Low Definition MP4'] = twHLSVideo;
 	  if (twHLSVideo.indexOf('/medium/') != -1) twVideoList['Standard Definition MP4'] = twHLSVideo;
 	  if (twHLSVideo.indexOf('/high/') != -1) twVideoList['High Definition MP4'] = twHLSVideo;
+	  if (twHLSVideo.indexOf('/chunked/') != -1) twVideoList['Full High Definition MP4'] = twHLSVideo;
 	}
 	/* Create Player */
 	var twDefaultVideo = 'Any Definition MP4';
 	player = {'playerSocket': twPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': twVideoList, 'videoPlay': twDefaultVideo, 'videoThumb': twVideoThumb, 'playerWidth': twPlayerWidth, 'playerHeight': twPlayerHeight};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
+	option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 	page.win.setInterval(function() {
