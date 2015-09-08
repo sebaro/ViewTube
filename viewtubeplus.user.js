@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.03
+// @version		2015.09.08
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -3224,7 +3224,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
     /* Get Video Source */
     var nowVideoSource = nowPageSource.match(/meta\s+property="og:video"\s+content="(.*?)"/);
     nowVideoSource = (nowVideoSource) ? nowVideoSource[1] : null;
-    if (nowVideoSource.indexOf('rutube.ru') != -1) nowVideoSource = nowVideoSource.replace('video.rutube.ru', 'rutube.ru/play/embed');
+    if (nowVideoSource && nowVideoSource.indexOf('rutube.ru') != -1) nowVideoSource = nowVideoSource.replace('video.rutube.ru', 'rutube.ru/play/embed');
     else {
       nowVideoSource = nowPageSource.match(/"smil":"(.*?)"/);
       nowVideoSource = (nowVideoSource) ? cleanMyContent(nowVideoSource[1], false) : null;
@@ -3247,7 +3247,7 @@ else if (page.url.indexOf('now.ru/item') != -1) {
 	    if (response.readyState === 4 && response.status === 200) {
 	      var nowVideosContent = response.responseText;
 	      if (nowVideosContent) {
-		var nowVideo = nowVideosContent.match(/"m3u8":\s*"(.*?)"/);
+		var nowVideo = nowVideosContent.match(/&quot;m3u8&quot;:\s*&quot;(.*?)&quot;/);
 		nowVideo = (nowVideo) ? nowVideo[1] : null;
 
 		/* Create Player */
