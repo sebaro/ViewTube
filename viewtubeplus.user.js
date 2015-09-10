@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.08
+// @version		2015.09.10
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4128,6 +4128,7 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 
   /* Get Player Window */
   var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
+  if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
   if (!npoPlayerWindow) {
     //showMyMessage ('!player');
   }
@@ -4137,14 +4138,34 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 
     /* Get Videos */
     var npoVideo;
-    var npoVideoID = page.url.replace(/.*\//, '');
+    //var npoVideoID = page.url.replace(/.*\//, '');
+    var npoVideoID = getMyContent (page.url, 'meta\\s+content=".*/(.*?)"\\s+name="og:video"', false);
     var npoToken = getMyContentGM ('http://ida.omroep.nl/npoplayer/i.js', 'token\\s*=\\s*"(.*?)"', false);
     if (npoVideoID && npoToken) {
+      var s = npoToken;
+      var s2 = '';
+      var fc, sc;
+      for (var i = 5; i <= s.length - 4; i++) {
+	if (s[i] >= 0) {
+	  if (!fc) fc = i;
+	  else if (!sc) sc = i;
+	}
+      }
+      if (!fc || !sc) {
+	fc = 12;
+	sc = 13;
+      }
+      for (var i = 0; i < s.length; i++) {
+	if (i == fc) s2 += s[sc];
+	else if (i == sc) s2 += s[fc];
+	else s2 += s[i]
+      }
+      npoToken = s2;
       //pubs -> "adaptive","h264_bb","h264_sb","h264_std"
       var npoStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + npoVideoID + '&puboptions=h264_std&adaptive=yes&token=' + npoToken, '"streams":\\["(.*?)"\\]', true);
       if (npoStreams) npoVideo = getMyContentGM (npoStreams, '"url":"(.*?)\\?', true);
       if (!npoVideo) {
-	var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/aflevering/' + npoVideoID, 'TEXT', false);
+	var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
 	if (npoVideoSource) {
 	  npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
 	  npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
