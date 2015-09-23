@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.10
+// @version		2015.09.23
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -182,6 +182,8 @@
 // @include		http://www.jeuxvideo.com/*
 // @include		https://jeuxvideo.com/*
 // @include		https://www.jeuxvideo.com/*
+// @include		http://tv.ilfattoquotidiano.it/*
+// @include		https://tv.ilfattoquotidiano.it/*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -4806,5 +4808,91 @@ else if (page.url.indexOf('jeuxvideo.com/videos') != -1) {
   }
 
 }
+
+// =====IlFattoQuotidiano===== //
+
+else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
+
+  /* Get Player Window */
+  var ifqPlayerWindow = getMyElement ('', 'div', 'class', 'internal-player', 0, false);
+  if (!ifqPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Get Videos Content URL */
+    var ifqFlashID, ifqPlayerID, ifqPublisherID, ifqIsVid, ifqIsUI, ifqDynamicStreaming, ifqVideoPlayer;
+    ifqVideoPlayer = getMyContent (page.url, 'videoId=(.*?)"', false);
+    var ifqVideoObject = getMyContent (page.url, 'myExperience' + ifqVideoPlayer + '(.*?)/object>', false);
+    if (ifqVideoObject) {
+      ifqVideoObject = ifqVideoObject.replace(/\\/g, '');
+      ifqFlashID = 'myExperience' + ifqVideoPlayer;
+      ifqPlayerID = ifqVideoObject.match(/name="playerID"\s+value="(.*?)"/);
+      ifqPlayerID = (ifqPlayerID) ? ifqPlayerID[1] : null;
+      ifqPublisherID = ifqVideoObject.match(/name="publisherID"\s+value="(.*?)"/);
+      ifqPublisherID = (ifqPublisherID) ? ifqPublisherID[1] : '1';
+      ifqIsVid = ifqVideoObject.match(/name="isVid"\s+value="(.*?)"/);
+      ifqIsVid = (ifqIsVid) ? ifqIsVid[1] : null;
+      ifqIsUI = ifqVideoObject.match(/name="isUI"\s+value="(.*?)"/);
+      ifqIsUI = (ifqIsUI) ? ifqIsUI[1] : null;
+      ifqDynamicStreaming = ifqVideoObject.match(/name="dynamicStreaming"\s+value="(.*?)"/);
+      ifqDynamicStreaming = (ifqDynamicStreaming) ? ifqDynamicStreaming[1] : null;
+    }
+
+    /* Get Videos Content */
+    var ifqVideosContentURL, ifqVideosContent;
+    if (ifqFlashID && ifqPlayerID && ifqPublisherID && ifqIsVid && ifqIsUI && ifqDynamicStreaming && ifqVideoPlayer) {
+      ifqVideosContentURL = 'http://c.brightcove.com/services/viewer/htmlFederated?flashID=' + ifqFlashID +'&playerID=' + ifqPlayerID + '&publisherID=' + ifqPublisherID + '&isVid=' + ifqIsVid + '&isUI=' + ifqIsUI + '&dynamicStreaming=' + ifqDynamicStreaming + '&@videoPlayer=' + ifqVideoPlayer;
+      ifqVideosContent = getMyContentGM(ifqVideosContentURL, 'TEXT', false);
+    }
+    else return;
+
+    /* My Player Window */
+    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '630px', height: '380px', backgroundColor: '#F4F4F4'});
+    modifyMyElement (ifqPlayerWindow, 'div', '', true);
+    styleMyElement (ifqPlayerWindow, {height: '100%'});
+    appendMyElement (ifqPlayerWindow, myPlayerWindow);
+
+    /* Get Videos */
+    if (ifqVideosContent) {
+      var ifqVideoThumb = ifqVideosContent.match(/"thumbnailURL":"(.*?)"/);
+      ifqVideoThumb = (ifqVideoThumb) ? cleanMyContent(ifqVideoThumb[1], false) : null;
+      var ifqVideos = ifqVideosContent.match(/"renditions":\[\{(.*?)\}\]/);
+      ifqVideos = (ifqVideos) ? ifqVideos[1] : null;
+      var ifqVideo;
+      var ifqVideoList = {};
+      if (ifqVideos) {
+       var ifqVideo = ifqVideos.match(/"defaultURL":"(.*?)"/);
+       ifqVideo = (ifqVideo) ? ifqVideo[1] : null;
+      }
+
+      if (ifqVideo) {
+	/* Create Player */
+	var ifqDefaultVideo = 'Low Definition MP4';
+	ifqVideoList[ifqDefaultVideo] = cleanMyContent(ifqVideo, false);
+	player = {'playerSocket': ifqPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': ifqVideoList, 'videoPlay': ifqDefaultVideo, 'videoThumb': ifqVideoThumb, 'playerWidth': 630, 'playerHeight': 380};
+	feature['container'] = false;
+	feature['definition'] = false;
+	feature['widesize'] = false;
+	option['definition'] = 'LD';
+	option['container'] = 'MP4';
+	option['definitions'] = ['Low Definition'];
+	option['containers'] = ['MP4'];
+	createMyPlayer ();
+
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '7px'});
+      }
+      else {
+	showMyMessage ('!videos');
+      }
+    }
+    else {
+      showMyMessage ('!content');
+    }
+  }
+
+}
+
 
 })();
