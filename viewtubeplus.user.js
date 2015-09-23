@@ -4820,31 +4820,21 @@ else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
   }
   else {
     /* Get Videos Content URL */
-    var ifqFlashID, ifqPlayerID, ifqPublisherID, ifqIsVid, ifqIsUI, ifqDynamicStreaming, ifqVideoPlayer;
-    ifqVideoPlayer = getMyContent (page.url, 'videoId=(.*?)"', false);
-    var ifqVideoObject = getMyContent (page.url, 'myExperience' + ifqVideoPlayer + '(.*?)/object>', false);
-    if (ifqVideoObject) {
-      ifqVideoObject = ifqVideoObject.replace(/\\/g, '');
-      ifqFlashID = 'myExperience' + ifqVideoPlayer;
-      ifqPlayerID = ifqVideoObject.match(/name="playerID"\s+value="(.*?)"/);
+    var ifqPlayerID, ifqVideoPlayer;
+    var ifqVideoData = getMyContent (page.url, 'meta\\s+property="og:video"\\s+content="(.*?)"', false);
+    if (ifqVideoData) {
+      ifqPlayerID = ifqVideoData.match(/playerID=(\d+)/);
       ifqPlayerID = (ifqPlayerID) ? ifqPlayerID[1] : null;
-      ifqPublisherID = ifqVideoObject.match(/name="publisherID"\s+value="(.*?)"/);
-      ifqPublisherID = (ifqPublisherID) ? ifqPublisherID[1] : '1';
-      ifqIsVid = ifqVideoObject.match(/name="isVid"\s+value="(.*?)"/);
-      ifqIsVid = (ifqIsVid) ? ifqIsVid[1] : null;
-      ifqIsUI = ifqVideoObject.match(/name="isUI"\s+value="(.*?)"/);
-      ifqIsUI = (ifqIsUI) ? ifqIsUI[1] : null;
-      ifqDynamicStreaming = ifqVideoObject.match(/name="dynamicStreaming"\s+value="(.*?)"/);
-      ifqDynamicStreaming = (ifqDynamicStreaming) ? ifqDynamicStreaming[1] : null;
+      ifqVideoPlayer = ifqVideoData.match(/videoId=(\d+)/);
+      ifqVideoPlayer = (ifqVideoPlayer) ? ifqVideoPlayer[1] : null;
     }
 
     /* Get Videos Content */
     var ifqVideosContentURL, ifqVideosContent;
-    if (ifqFlashID && ifqPlayerID && ifqPublisherID && ifqIsVid && ifqIsUI && ifqDynamicStreaming && ifqVideoPlayer) {
-      ifqVideosContentURL = 'http://c.brightcove.com/services/viewer/htmlFederated?flashID=' + ifqFlashID +'&playerID=' + ifqPlayerID + '&publisherID=' + ifqPublisherID + '&isVid=' + ifqIsVid + '&isUI=' + ifqIsUI + '&dynamicStreaming=' + ifqDynamicStreaming + '&@videoPlayer=' + ifqVideoPlayer;
+    if (ifqPlayerID && ifqVideoPlayer) {
+      ifqVideosContentURL = 'http://c.brightcove.com/services/viewer/htmlFederated?playerID=' + ifqPlayerID + '&@videoPlayer=' + ifqVideoPlayer;
       ifqVideosContent = getMyContentGM(ifqVideosContentURL, 'TEXT', false);
     }
-    else return;
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
