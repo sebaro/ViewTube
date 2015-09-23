@@ -4859,29 +4859,39 @@ else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
       ifqVideoThumb = (ifqVideoThumb) ? cleanMyContent(ifqVideoThumb[1], false) : null;
       var ifqVideos = ifqVideosContent.match(/"renditions":\[\{(.*?)\}\]/);
       ifqVideos = (ifqVideos) ? ifqVideos[1] : null;
-      var ifqVideo;
+      var ifqVideoFormats = {'360': 'Low Definition MP4', '368': 'Low Definition MP4', '404': 'Standard Definition MP4'};
+      var ifqVideoFound, ifqVideo;
       var ifqVideoList = {};
       if (ifqVideos) {
-       var ifqVideo = ifqVideos.match(/"defaultURL":"(.*?)"/);
-       ifqVideo = (ifqVideo) ? ifqVideo[1] : null;
+	var ifqVideos = ifqVideos.split('},');
+	for (var i = 0; i < ifqVideos.length; i++) {
+	  for (var c in ifqVideoFormats) {
+	    if (ifqVideos[i].indexOf('"frameHeight":' + c) != -1) {
+	      ifqVideo = ifqVideos[i].match(/"defaultURL":"(.*?)"/);
+	      ifqVideo = (ifqVideo) ? cleanMyContent(ifqVideo[1]) : null;
+	      if (ifqVideo) {
+		ifqVideoList[ifqVideoFormats[c]] = ifqVideo;
+		if (!ifqVideoFound) ifqVideoFound = true;
+	      }
+	    }
+	  }
+	}
       }
 
-      if (ifqVideo) {
+      if (ifqVideoFound) {
 	/* Create Player */
 	var ifqDefaultVideo = 'Low Definition MP4';
-	ifqVideoList[ifqDefaultVideo] = cleanMyContent(ifqVideo, false);
 	player = {'playerSocket': ifqPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': ifqVideoList, 'videoPlay': ifqDefaultVideo, 'videoThumb': ifqVideoThumb, 'playerWidth': 630, 'playerHeight': 380};
 	feature['container'] = false;
-	feature['definition'] = false;
 	feature['widesize'] = false;
 	option['definition'] = 'LD';
 	option['container'] = 'MP4';
-	option['definitions'] = ['Low Definition'];
+	option['definitions'] = ['Low Definition', 'Standard Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 
 	/* Fix panel */
-	styleMyElement(player['playerContent'], {marginTop: '7px'});
+	styleMyElement(player['playerContent'], {marginTop: '9px'});
       }
       else {
 	showMyMessage ('!videos');
