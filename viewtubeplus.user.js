@@ -3826,35 +3826,71 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
     if (page.url != nurl) page.win.location.href = nurl;
   }, 500);
 
+  var myPlayerWindow, vePlayerWindow;
   function VEVO() {
     /* Get Video Thumb */
     var veVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Video ID */
-    var veVideoId = getMyContent (page.url, 'meta\\s+property="og:video"\\s+content=".*?videoId=(.*?)&', false);
+    var veVideoId = getMyContent (page.url, 'link\\s+itemprop="embedURL"\\s+href=".*?videoId=(.*?)&', false);
 
     /* Get Videos Content */
-    var veVideosContent;
-    if (veVideoId) veVideosContent = getMyContent('http://videoplayer.vevo.com/VideoService/AuthenticateVideo?isrc=' + veVideoId, '\\{("version":(3|4).*?)\\}', false);
+    var veVideosContent, veVideosContentVP, veVideosContentSmil;
+    if (veVideoId) {
+      veVideosContentVP = getMyContent('http://videoplayer.vevo.com/VideoService/AuthenticateVideo?isrc=' + veVideoId, '"videoVersions":\\[(.*?)\\]', false);
+      if (veVideosContentVP) veVideosContent = veVideosContentVP;
+      if (veVideosContent && veVideosContent.indexOf('smil.lvl3.vevo.com') != -1) {
+	var veVideosContentSmilPattern = 'http?://smil.lvl3.vevo.com/.*?' + veVideoId + '/' + veVideoId.toLowerCase() + '.smil';
+	var veVideosContentSmilURL = veVideosContent.match(veVideosContentSmilPattern);
+	if (veVideosContentSmilURL) {
+	  veVideosContentSmil = getMyContentGM(veVideosContentSmilURL, 'TEXT', false);
+	  if (veVideosContentSmil) veVideosContent += veVideosContentSmil;
+	}
+      }
+    }
 
     /* My Player Window */
-    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '940px', height: '552px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     modifyMyElement (vePlayerWindow, 'div', '', true);
     styleMyElement (vePlayerWindow, {height: '100%', textAlign: 'center'});
     appendMyElement (vePlayerWindow, myPlayerWindow);
+    if (veWatchInfo) appendMyElement (vePlayerWindow, veWatchInfo);
 
     /* Get Videos */
     if (veVideosContent) {
       veVideosContent = cleanMyContent(veVideosContent, false);
-      var veVideoFormats = {'High': 'High Definition MP4', 'Med': 'Low Definition MP4', 'Low': 'Very Low Definition MP4'};
+      var veVideoFormats = {
+	'_med_480x360_h264_500_aac_128.mp4': 'Low Definition MP4',
+	'_high_1280x720_h264_2000_aac_128.mp4': 'High Definition MP4',
+	'_1328k_768x432_h264_1200_aac_128.mp4': 'Standard Definition MP4',
+	'_2528k_1280x720_h264_2400_aac_128.mp4': 'High Definition MP4',
+	'_3328k_1280x720_h264_3200_aac_128.mp4': 'High Definition MP4',
+	'_4392k_1920x1080_h264_4200_aac_128.mp4': 'Full High Definition MP4',
+	'_5392k_1920x1080_h264_5200_aac_128.mp4': 'Full High Definition MP4',
+	'_1328k_768x432_x264_1200_quicktime_128.mp4': 'Standard Definition MP4',
+	'_1728k_768x432_x264_1600_quicktime_128.mp4': 'Standard Definition MP4',
+	'_2528k_1280x720_x264_2400_quicktime_128.mp4': 'High Definition MP4',
+	'_3328k_1280x720_x264_3200_quicktime_128.mp4': 'High Definition MP4',
+	'_4392k_1920x1080_x264_4200_quicktime_192.mp4': 'Full High Definition MP4'
+      };
       var veVideoList = {};
       var veVideoFound = false;
-      var veVideoParser, veVideoParse, veVideo, myVideoCode;
+      var veVideoPattern, veVideo, myVideoCode;
+      var veVideoHost = 'http://h264-lvl3.vevo.com/';
       for (var veVideoCode in veVideoFormats) {
-	veVideoParser = 'name="' + veVideoCode + '"\\s+url="(.*?)"';
-	veVideoParse = veVideosContent.match (veVideoParser);
-	veVideo = (veVideoParse) ? veVideoParse[1] : null;
+	if (veVideoCode.indexOf('_med_') != -1 || veVideoCode.indexOf('_high_') != -1) {
+	  veVideoPattern = veVideoHost + 'v3/h264/[^x]*?' + veVideoId + '/[^x]*?' + veVideoId.toLowerCase() + veVideoCode;
+	  veVideo = veVideosContent.match(veVideoPattern);
+	}
+	else {
+	  veVideoPattern = '(Video|v3).*?' + veVideoId + '/' + veVideoId.toLowerCase() + veVideoCode;
+	  veVideo = veVideosContent.match(veVideoPattern);
+	  if (veVideo) {
+	    veVideo = veVideoHost + veVideo;
+	    veVideo = veVideo.replace(/,.*/, '');
+	  }
+	}
 	if (veVideo) {
 	  if (!veVideoFound) veVideoFound = true;
 	  myVideoCode = veVideoFormats[veVideoCode];
@@ -3880,7 +3916,7 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
 	};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['High Definition', 'Low Definition', 'Very Low Definition'];
+	option['definitions'] = ['High Definition', 'Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 	styleMyElement(player['playerContent'], {marginTop: '4px'});
@@ -3894,25 +3930,22 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
     }
   }
 
-  var vePlayerWindow = getMyElement ('', 'div', 'class', 'hero-player', 0, false);
-  if (vePlayerWindow) {
-    VEVO();
-  }
-  else {
-    var vePlayerWaitCount = 5;
-    function vePlayerWaitFunc() {
-      vePlayerWindow = getMyElement ('', 'div', 'class', 'hero-player', 0, false);
-      if (vePlayerWindow) {
-	page.win.clearInterval(vePlayerWaitInterval);
-	VEVO();
-      }
-      vePlayerWaitCount--;
-      if (vePlayerWaitCount == 0) {
-	page.win.clearInterval(vePlayerWaitInterval);
-      }
+  var veWatchInfo = getMyElement ('', 'div', 'class', 'watch-info', 0, false);
+  if (veWatchInfo) styleMyElement(veWatchInfo, {width: '940px', display: 'block', position: 'relative', cssFloat: 'none', margin: '0px auto'});
+
+  var vePlayerWaitCount = 10;
+  function vePlayerWaitFunc() {
+    vePlayerWindow = getMyElement ('', 'div', 'class', 'hero', 0, false);
+    vePlayerError = getMyElement ('', 'div', 'class', 'video-error', 0, false);
+    if (vePlayerWindow && vePlayerError) {
+      VEVO();
     }
-    var vePlayerWaitInterval = page.win.setInterval(vePlayerWaitFunc, 500);
+    vePlayerWaitCount--;
+    if (vePlayerWaitCount == 0) {
+      page.win.clearInterval(vePlayerWaitInterval);
+    }
   }
+  var vePlayerWaitInterval = page.win.setInterval(vePlayerWaitFunc, 1000);
 
 }
 
