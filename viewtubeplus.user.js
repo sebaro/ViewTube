@@ -3916,7 +3916,7 @@ else if (page.url.indexOf('vevo.com/watch') != -1) {
 	};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['High Definition', 'Low Definition'];
+	option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 	styleMyElement(player['playerContent'], {marginTop: '4px'});
