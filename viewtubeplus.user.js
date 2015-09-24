@@ -4893,7 +4893,7 @@ else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
       ifqVideoThumb = (ifqVideoThumb) ? cleanMyContent(ifqVideoThumb[1], false) : null;
       var ifqVideos = ifqVideosContent.match(/"renditions":\[\{(.*?)\}\]/);
       ifqVideos = (ifqVideos) ? ifqVideos[1] : null;
-      var ifqVideoFormats = {'360': 'Low Definition MP4', '368': 'Low Definition MP4', '404': 'Standard Definition MP4'};
+      var ifqVideoFormats = {'268': 'Very Low Definition MP4', '360': 'Low Definition MP4', '368': 'Low Definition MP4', '404': 'Standard Definition MP4'};
       var ifqVideoFound, ifqVideo;
       var ifqVideoList = {};
       if (ifqVideos) {
@@ -4920,7 +4920,7 @@ else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
 	feature['widesize'] = false;
 	option['definition'] = 'LD';
 	option['container'] = 'MP4';
-	option['definitions'] = ['Low Definition', 'Standard Definition'];
+	option['definitions'] = ['Very Low Definition', 'Low Definition', 'Standard Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 
