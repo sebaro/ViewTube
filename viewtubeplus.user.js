@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.23
+// @version		2015.09.24
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -480,11 +480,13 @@ function createMyPlayer () {
 
   /* Panel Logo */
   player['panelLogo'] = createMyElement ('div', userscript + ': ', 'click', 'logo', '');
+  player['panelLogo'].title = '{ViewTube: click to visit the script web page}';
   styleMyElement (player['panelLogo'], {height: panelItemHeight + 'px', padding: '0px', display: 'inline', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['panelLogo']);
 
   /* Panel Video Menu */
   player['videoMenu'] = createMyElement ('select', '', 'change', '', 'video');
+  player['videoMenu'].title = '{Videos: select the video format for playback}';
   styleMyElement (player['videoMenu'], {width: '200px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['videoMenu'] );
   for (var videoCode in player['videoList']) {
@@ -495,6 +497,7 @@ function createMyPlayer () {
 
   /* Panel Plugin Menu */
   player['pluginMenu'] = createMyElement ('select', '', 'change', '', 'plugin');
+  player['pluginMenu'].title = '{Plugins: select the video plugin for playback}';
   styleMyElement (player['pluginMenu'], {width: '70px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['pluginMenu'] );
   for (var p = 0; p < plugins.length; p++) {
@@ -506,26 +509,30 @@ function createMyPlayer () {
 
   /* Panel Play Button */
   player['buttonPlay'] = createMyElement ('div', 'Play', 'click', 'play', '');
+  player['buttonPlay'].title = '{Play/Stop: click to start/stop video playback}';
   styleMyElement (player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   if (option['autoplay']) styleMyElement (player['buttonPlay'], {display: 'none'});
   appendMyElement (player['playerPanel'], player['buttonPlay']);
 
-  /* Panel Get Button */
-  player['buttonGet'] = createMyElement ('div', 'Get', 'click', 'get', '');
-  styleMyElement (player['buttonGet'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C000C0', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
-  appendMyElement (player['playerPanel'], player['buttonGet']);
-
   /* Panel Autoplay Button */
   if (feature['autoplay']) {
     player['buttonAutoplay'] = createMyElement ('div', 'AP', 'click', 'autoplay', '');
+    player['buttonAutoplay'].title = '{Autoplay: click to enable/disable auto playback on page load}';
     styleMyElement (player['buttonAutoplay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', cursor: 'pointer'});
     if (option['autoplay']) styleMyElement (player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement (player['playerPanel'], player['buttonAutoplay']);
   }
 
+  /* Panel Get Button */
+  player['buttonGet'] = createMyElement ('div', 'Get', 'click', 'get', '');
+  player['buttonGet'].title = '{Get: click to download the selected video format}';
+  styleMyElement (player['buttonGet'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C000C0', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+  appendMyElement (player['playerPanel'], player['buttonGet']);
+
   /* Panel Definition Button */
   if (feature['definition']) {
     player['buttonDefinition'] = createMyElement ('div', option['definition'], 'click', 'definition', '');
+    player['buttonDefinition'].title = '{Definition: click to change the preferred video definition}';
     styleMyElement (player['buttonDefinition'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonDefinition']);
   }
@@ -533,6 +540,7 @@ function createMyPlayer () {
   /* Panel Container Button */
   if (feature['container']) {
     player['buttonContainer'] = createMyElement ('div', option['container'], 'click', 'container', '');
+    player['buttonContainer'].title = '{Container: click to change the preferred video container}';
     styleMyElement (player['buttonContainer'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonContainer']);
   }
@@ -541,6 +549,7 @@ function createMyPlayer () {
   if (feature['widesize']) {
     if (option['widesize']) player['buttonWidesize'] = createMyElement ('div', '&lt;', 'click', 'widesize', '');
     else player['buttonWidesize'] = createMyElement ('div', '&gt;', 'click', 'widesize', '');
+    player['buttonWidesize'].title = '{Widesize: click to enter player widesize or return to normal size}';
     styleMyElement (player['buttonWidesize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonWidesize']);
   }
@@ -549,6 +558,7 @@ function createMyPlayer () {
   if (feature['fullsize']) {
     if (option['fullsize']) player['buttonFullsize'] = createMyElement ('div', '-', 'click', 'fullsize', '');
     else player['buttonFullsize'] = createMyElement ('div', '+', 'click', 'fullsize', '');
+    player['buttonFullsize'].title = '{Fullsize: click to enter player fullsize or return to normal size}';
     styleMyElement (player['buttonFullsize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', cursor: 'pointer'});
     appendMyElement (player['playerPanel'], player['buttonFullsize']);
   }
@@ -563,6 +573,7 @@ function createMyPlayer () {
   /* The Video Thumbnail */
   if (player['videoThumb']) {
     player['contentImage'] = createMyElement ('img', player['videoThumb'], 'click', 'play', '');
+    player['contentImage'].title = '{Click to start video playback}';
     styleMyElement (player['contentImage'], {maxWidth: '100%', maxHeight: '100%', position: 'absolute', top: '0px', left: '0px', right: '0px', bottom: '0px', margin: 'auto', border: '0px', cursor: 'pointer'});
     player['contentImage'].addEventListener('load', function () {
       if (this.width/this.height >= player['contentWidth']/player['contentHeight']) {
