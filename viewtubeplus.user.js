@@ -298,6 +298,7 @@ function createMyElement (type, content, event, action, target) {
     else {
       obj.type = mimetypes[option['plugin']];
     }
+    obj.id = 'vtVideo';
   }
   if (event == 'change') {
     if (target == 'video') {
