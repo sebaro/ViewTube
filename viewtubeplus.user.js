@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.24
+// @version		2015.09.28
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -922,6 +922,34 @@ function showMyMessage (cause, content) {
 
 // ==========Websites========== //
 
+// Fixes
+var blockObject = null;
+var blockInterval = 30;
+page.win.setInterval(function() {
+  // Block videos
+  if (blockObject && blockInterval > 0) {
+    var elEmbeds = getMyElement (blockObject, 'embed', 'tag', '', -1, false) || getMyElement (blockObject, 'object', 'tag', '', -1, false);
+    if (elEmbeds.length > 0) {
+      for (var e = 0; e < elEmbeds.length; e++) {
+	var elEmbed = elEmbeds[e];
+	if (elEmbed && elEmbed.id != 'vtVideo' && elEmbed.parentNode) {
+	  removeMyElement (elEmbed.parentNode, elEmbed);
+	}
+      }
+    }
+    var elVideos = getMyElement (blockObject, 'video', 'tag', '', -1, false);
+    if (elVideos.length > 0) {
+      for (var v = 0; v < elVideos.length; v++) {
+	var elVideo = elVideos[v];
+	if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
+	  modifyMyElement (elVideo, 'video', 'none', true);
+	}
+      }
+    }
+    if (blockInterval > 0) blockInterval--;
+  }
+}, 500);
+
 // =====RAI===== //
 
 if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
@@ -938,8 +966,9 @@ if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
       /* My Player Window */
       myPlayerWindow = createMyElement ('div', '', '', '', '');
       styleMyElement (myPlayerWindow, {position: 'relative', width: '648px', height: '400px', backgroundColor: '#F4F4F4', zIndex: '99999'});
-      modifyMyElement (raiPlayerWindow, 'div', '', true);
+      modifyMyElement (raiPlayerWindow, 'div', '', false, true);
       appendMyElement (raiPlayerWindow, myPlayerWindow);
+      blockObject = raiPlayerWindow;
 
       /* Get Video Thumb */
       var raiVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
@@ -947,44 +976,64 @@ if (page.url.indexOf('rai.tv/dl/RaiTV') != -1) {
       /* Get Videos Content */
       var raiVideoList = {};
       var raiVideoFound, raiDefaultVideo;
-      var raiVideoDef = getMyContent (page.url, 'videoURL\\s+=\\s+"(.*?)";', true);
-      var raiVideoMP4 = getMyContent (page.url, 'videoURL_MP4\\s+=\\s+"(.*?)";', true);
-      if (raiVideoMP4) {
+      var raiVideo = getMyContent (page.url, 'videoURL_MP4\\s+=\\s+"(.*?)";', true);
+      var raiDefaultVideo = 'Low Definition MP4';
+      if (raiVideo) {
 	raiVideoFound = true;
-	raiVideoList['Low Definition MP4'] = raiVideoMP4;
-	raiDefaultVideo = 'Low Definition MP4';
+	raiVideoList[raiDefaultVideo] = raiVideo;
       }
-      if (raiVideoDef && raiVideoDef != raiVideoMP4) {
-	if (!raiVideoFound) raiVideoFound = true;
-	raiVideoList['Low Definition WMV'] = raiVideoDef;
-	if (!raiDefaultVideo) raiDefaultVideo = 'Low Definition WMV';
+      else {
+	raiVideo = getMyContent (page.url, 'videoURL\\s+=\\s+"(.*?)";', true);
+	if (raiVideo) {
+	  raiVideoFound = true;
+	  raiVideoList[raiDefaultVideo] = raiVideo;
+	}
       }
 
       if (raiVideoFound) {
-	/* Get Watch Sidebar */
-	var raiSidebarWindow = getMyElement ('', 'div', 'id', 'evidenzaSpalla', -1, false);
 
-	/* Create Player */
-	player = {
-	  'playerSocket': raiPlayerWindow,
-	  'playerWindow': myPlayerWindow,
-	  'videoList': raiVideoList,
-	  'videoPlay': raiDefaultVideo,
-	  'videoThumb': raiVideoThumb,
-	  'playerWidth': 648,
-	  'playerHeight': 400,
-	  'playerWideWidth': 970,
-	  'playerWideHeight': 510,
-	  'sidebarWindow': raiSidebarWindow,
-	  'sidebarMarginNormal': 0,
-	  'sidebarMarginWide': 530
-	};
-	feature['widesize'] = false;
-	feature['definition'] = false;
-	option['definition'] = 'LD';
-	option['definitions'] = ['Low Definition'];
-	option['containers'] = ['MP4', 'WMV', 'Any'];
-	createMyPlayer ();
+	function raiPlayer() {
+	  /* Get Watch Sidebar */
+	  var raiSidebarWindow = getMyElement ('', 'div', 'id', 'evidenzaSpalla', -1, false);
+
+	  /* Create Player */
+	  player = {
+	    'playerSocket': raiPlayerWindow,
+	    'playerWindow': myPlayerWindow,
+	    'videoList': raiVideoList,
+	    'videoPlay': raiDefaultVideo,
+	    'videoThumb': raiVideoThumb,
+	    'playerWidth': 648,
+	    'playerHeight': 400,
+	    'playerWideWidth': 970,
+	    'playerWideHeight': 510,
+	    'sidebarWindow': raiSidebarWindow,
+	    'sidebarMarginNormal': 0,
+	    'sidebarMarginWide': 530
+	  };
+	  feature['widesize'] = false;
+	  feature['container'] = false;
+	  feature['definition'] = false;
+	  option['definition'] = 'LD';
+	  option['definitions'] = ['Low Definition'];
+	  option['containers'] = ['MP4'];
+	  createMyPlayer ();
+	}
+
+	GM_xmlhttpRequest({
+	  method: 'HEAD',
+	  url: raiVideo,
+	  headers: {
+	    'User-Agent': 'Mozilla'
+	  },
+	  onload: function(response) {
+	    raiVideoList[raiDefaultVideo] = response.finalUrl;
+	    raiPlayer();
+	  },
+	  onerror: function() {
+	    raiPlayer();
+	  }
+	});
       }
       else {
 	showMyMessage ('!videos');
