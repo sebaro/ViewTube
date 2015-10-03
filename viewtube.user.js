@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.09.07
+// @version		2015.10.03
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -409,7 +409,7 @@ function createMyPlayer () {
 
   /* Panel Play Button */
   player['buttonPlay'] = createMyElement ('div', 'Play', 'click', 'play', '');
-  player['buttonPlay'].title = '{Play/Stop: click to start/stop video playback}'
+  player['buttonPlay'].title = '{Play/Stop: click to start/stop video playback}';
   styleMyElement (player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
   appendMyElement (player['playerPanel'], player['buttonPlay']);
 
@@ -593,8 +593,12 @@ function playMyVideo (play) {
 	player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')], '', '', '');
 	player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
       }
+      player['contentAudio'].pause();
+      player['contentAudioPaused'] = true;
       player['contentVideo'].addEventListener ('play', function() {
-	player['contentAudio'].play();
+	if (player['contentVideo'].readyState && player['contentVideo'].readyState >= 4) {
+	  player['contentAudio'].play();
+	}
       }, false);
       player['contentVideo'].addEventListener ('pause', function() {
 	player['contentAudio'].pause();
@@ -605,6 +609,9 @@ function playMyVideo (play) {
       }, false);
       player['contentVideo'].addEventListener('timeupdate', function() {
 	if (player['contentAudio'].readyState && player['contentAudio'].readyState >= 4) {
+	  if (player['contentAudioPaused']) {
+	    player['contentAudio'].play();
+	  }
 	  if (Math.abs(player['contentVideo'].currentTime - player['contentAudio'].currentTime) >= 0.30) {
 	    player['contentAudio'].currentTime = player['contentVideo'].currentTime;
 	  }
@@ -1827,7 +1834,6 @@ else if (page.url.indexOf('break.com/video') != -1 || page.url.indexOf('break.co
 
 	/* Create Player */
 	var brDefaultVideo = 'Low Definition MP4';
-	var brWindowWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
 	player = {
 	  'playerSocket': brPlayerWindow,
 	  'playerWindow': myPlayerWindow,
@@ -2477,7 +2483,7 @@ else if (page.url.indexOf('imdb.com') != -1) {
 else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
 
   /* Get Player Window */
-  var fbPlayerWindow = getMyElement ('', 'div', 'class', 'stageWrapper', 0, false);
+  var fbPlayerWindow = getMyElement ('', 'div', 'class', 'videoStage', 0, false);
   if (!fbPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -2493,8 +2499,9 @@ else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '720px', height: '428px', backgroundColor: '#F4F4F4'});
-    modifyMyElement (fbPlayerWindow, 'div', '', true);
+    modifyMyElement (fbPlayerWindow, 'div', '', false, true);
     appendMyElement (fbPlayerWindow, myPlayerWindow);
+    blockObject = fbPlayerWindow;
 
     /* Get Videos */
     if (fbVideosContent) {
