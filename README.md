@@ -1,20 +1,20 @@
 
-ViewTube is a browser user script for watching videos from video websites with a video plugin or the HTML5 video player.
+ViewTube is a browser user script for watching videos from video websites with a video plugin or the HTML5 video player.  
 
-![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)
+![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)  
 
-### Installation
+### Installation  
 
-Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc):
-== with Greasemonkey add-on:
--> https://addons.mozilla.org/firefox/addon/greasemonkey
-== or with Scriptish add-on:
--> https://addons.mozilla.org/firefox/addon/scriptish
+Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc):  
+== with Greasemonkey add-on:  
+-> https://addons.mozilla.org/firefox/addon/greasemonkey  
+== or with Scriptish add-on:  
+-> https://addons.mozilla.org/firefox/addon/scriptish  
 
-Chromium (or based on: Chrome, Iron etc):
-== no add-on needed, save the script and drag & drop it on the extensions page
-== or with Tampermonkey add-on:
--> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
+Chromium (or based on: Chrome, Iron etc):  
+== no add-on needed, save the script and drag & drop it on the extensions page  
+== or with Tampermonkey add-on:  
+-> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
 
 Opera:
 == for versions <= 12 no add-on needed, just place the script in the JavaScript files directory
