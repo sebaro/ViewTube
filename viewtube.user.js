@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.10.06
+// @version		2015.10.16
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -576,6 +576,120 @@ function selectMyVideo () {
   player['videoMenu'].value = player['videoPlay'];
 }
 
+function playDASHwithVLC () {
+  if (player['videoPlay'].indexOf('MP4') != -1) {
+    player['contentVideo'] = createMyElement ('embed', player['videoList'][player['videoPlay'].replace(/MP4/, 'Video MP4')], '', '', '');
+    if (player['videoList']['Medium Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('embed', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
+    }
+    else {
+      player['contentAudio'] = createMyElement ('embed', player['videoList']['Medium Bitrate Audio MP4'], '', '', '');
+    }
+  }
+  else {
+    player['contentVideo'] = createMyElement ('embed', player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')], '', '', '');
+    if (player['videoList']['Medium Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('embed', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
+    }
+    else {
+      player['contentAudio'] = createMyElement ('embed', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
+    }
+  }
+  styleMyElement (player['contentAudio'], {position: 'absolute', zIndex: '-1'});
+  appendMyElement (player['playerContent'], player['contentAudio']);
+  player['contentVLCInit'] = page.win.setInterval(function () {
+    if (player['contentAudio'].wrappedJSObject.playlist) {
+      player['contentAudio'].wrappedJSObject.playlist.pause();
+      player['contentVLCAudioPlaylistInit'] = true;
+    }
+    if (player['contentVideo'].wrappedJSObject.playlist) {
+      player['contentVideo'].wrappedJSObject.playlist.pause();
+      player['contentVLCVideoPlaylistInit'] = true;
+    }
+    if (player['contentAudio'].wrappedJSObject.input) {
+      player['contentAudio'].wrappedJSObject.input.time = 0;
+      player['contentVLCAudioInputInit'] = true;
+    }
+    if (player['contentVideo'].wrappedJSObject.input) {
+      player['contentVideo'].wrappedJSObject.input.time = 0;
+      player['contentVLCVideoInputInit'] = true;
+    }
+    if (player['contentVLCAudioPlaylistInit'] && player['contentVLCVideoPlaylistInit']
+	&& player['contentVLCAudioInputInit'] && player['contentVLCVideoInputInit']) {
+      player['contentAudio'].wrappedJSObject.playlist.play();
+      player['contentVideo'].wrappedJSObject.playlist.play();
+      page.win.setInterval(function () {
+	if (Math.abs(player['contentVideo'].wrappedJSObject.input.time - player['contentAudio'].wrappedJSObject.input.time) >= 500) {
+	  player['contentAudio'].wrappedJSObject.input.time = player['contentVideo'].wrappedJSObject.input.time;
+	}
+	if (player['contentVideo'].wrappedJSObject.input.state == '4') {
+	  player['contentAudio'].wrappedJSObject.playlist.pause();
+	  player['contentAudioPaused'] = true;
+	}
+	if (player['contentVideo'].wrappedJSObject.input.state == '6') {
+	  player['contentAudio'].wrappedJSObject.playlist.pause();
+	  player['contentAudioPaused'] = true;
+	}
+	if (player['contentVideo'].wrappedJSObject.input.state == '3' && player['contentAudioPaused']) {
+	  player['contentAudio'].wrappedJSObject.playlist.play();
+	  player['contentAudioPaused'] = false;
+	}
+      }, 1000);
+      page.win.clearInterval(player['contentVLCInit']);
+    }
+  }, 500);
+}
+
+function playDASHwithHTML5 () {
+  var prevPlugin = option['plugin'];
+  option['plugin'] = 'HTML5';
+  if (player['videoPlay'].indexOf('MP4') != -1) {
+    player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/MP4/, 'Video MP4')], '', '', '');
+    if (player['videoList']['Medium Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
+    }
+    else {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio MP4'], '', '', '');
+    }
+  }
+  else {
+    player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')], '', '', '');
+    if (player['videoList']['Medium Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
+    }
+    else {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
+    }
+  }
+  player['contentAudio'].pause();
+  player['contentAudioPaused'] = true;
+  player['contentVideo'].addEventListener ('play', function() {
+    if (player['contentVideo'].readyState && player['contentVideo'].readyState >= 4) {
+      player['contentAudio'].play();
+    }
+  }, false);
+  player['contentVideo'].addEventListener ('pause', function() {
+    player['contentAudio'].pause();
+  }, false);
+  player['contentVideo'].addEventListener('ended', function() {
+    player['contentVideo'].pause();
+    player['contentAudio'].pause();
+  }, false);
+  player['contentVideo'].addEventListener('timeupdate', function() {
+    if (player['contentAudio'].readyState && player['contentAudio'].readyState >= 4) {
+      if (player['contentAudioPaused']) {
+	player['contentAudio'].play();
+      }
+      if (Math.abs(player['contentVideo'].currentTime - player['contentAudio'].currentTime) >= 0.30) {
+	player['contentAudio'].currentTime = player['contentVideo'].currentTime;
+      }
+    }
+  }, false);
+  styleMyElement (player['contentAudio'], {display: 'none'});
+  appendMyElement (player['contentVideo'], player['contentAudio']);
+  option['plugin'] = prevPlugin;
+}
+
 function playMyVideo (play) {
   if (play) {
     player['isPlaying'] = true;
@@ -583,43 +697,12 @@ function playMyVideo (play) {
     styleMyElement (player['buttonPlay'], {color: '#AD0000'});
     modifyMyElement (player['playerContent'], 'div', '', true);
     if (player['videoList'][player['videoPlay']] == 'DASH') {
-      var prevPlugin = option['plugin'];
-      option['plugin'] = 'HTML5';
-      if (player['videoPlay'].indexOf('MP4') != -1) {
-	player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/MP4/, 'Video MP4')], '', '', '');
-	player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio MP4'], '', '', '');
+      if (option['plugin'] == 'VLC') {
+	playDASHwithVLC();
       }
       else {
-	player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')], '', '', '');
-	player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
+	playDASHwithHTML5();
       }
-      player['contentAudio'].pause();
-      player['contentAudioPaused'] = true;
-      player['contentVideo'].addEventListener ('play', function() {
-	if (player['contentVideo'].readyState && player['contentVideo'].readyState >= 4) {
-	  player['contentAudio'].play();
-	}
-      }, false);
-      player['contentVideo'].addEventListener ('pause', function() {
-	player['contentAudio'].pause();
-      }, false);
-      player['contentVideo'].addEventListener('ended', function() {
-	player['contentVideo'].pause();
-	player['contentAudio'].pause();
-      }, false);
-      player['contentVideo'].addEventListener('timeupdate', function() {
-	if (player['contentAudio'].readyState && player['contentAudio'].readyState >= 4) {
-	  if (player['contentAudioPaused']) {
-	    player['contentAudio'].play();
-	  }
-	  if (Math.abs(player['contentVideo'].currentTime - player['contentAudio'].currentTime) >= 0.30) {
-	    player['contentAudio'].currentTime = player['contentVideo'].currentTime;
-	  }
-	}
-      }, false);
-      styleMyElement (player['contentAudio'], {display: 'none'});
-      appendMyElement (player['contentVideo'], player['contentAudio']);
-      option['plugin'] = prevPlugin;
     }
     else {
       if (option['plugin'] == 'HTML5') player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay']], '', '', '');
@@ -1091,6 +1174,10 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     /* Hide Sidebar Ads */
     var ytSidebarAds = getMyElement ('', 'div', 'id', 'watch7-sidebar-ads', -1, false);
     if (ytSidebarAds) styleMyElement (ytSidebarAds, {display: 'none'});
+
+    /* Hide Autoplay */
+    var ytAutoplay = getMyElement ('', 'div', 'class', 'checkbox-on-off', 0, false);
+    if (ytAutoplay) styleMyElement (ytAutoplay, {display: 'none'});
 
     /* Playlist */
     var ytPlaylist = getMyElement ('', 'div', 'id', 'player-playlist', -1, false);

@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2015.10.16
+- adds support for DASH playback with VLC
+- use Opus instead of WebM/MP4 for DASH playback
+
 #2015.10.06
 - fixes Dailymotion
 
