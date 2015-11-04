@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.10.16
+// @version		2015.11.04
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -618,7 +618,10 @@ function playDASHwithVLC () {
 	&& player['contentVLCAudioInputInit'] && player['contentVLCVideoInputInit']) {
       player['contentAudio'].wrappedJSObject.playlist.play();
       player['contentVideo'].wrappedJSObject.playlist.play();
-      page.win.setInterval(function () {
+      player['contentVLCSync'] = page.win.setInterval(function () {
+	if (!player['contentVideo'] || !player['contentVideo'].wrappedJSObject || !player['contentVideo'].wrappedJSObject.input) {
+	  page.win.clearInterval(player['contentVLCSync']);
+	}
 	if (Math.abs(player['contentVideo'].wrappedJSObject.input.time - player['contentAudio'].wrappedJSObject.input.time) >= 500) {
 	  player['contentAudio'].wrappedJSObject.input.time = player['contentVideo'].wrappedJSObject.input.time;
 	}
@@ -2414,7 +2417,7 @@ else if (page.url.indexOf('crackle.com/') != -1) {
 else if (page.url.indexOf('viki.com/videos') != -1) {
 
   /* Get Player Window */
-  var vkPlayerWindow = getMyElement ('', 'div', 'id', 'viki-player', -1, false);
+  var vkPlayerWindow = getMyElement ('', 'div', 'class', 'video-placeholder', 0, false);
   if (!vkPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -2427,13 +2430,41 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
     var vkVideosContent;
     if (vkVideoID) vkVideosContent = getMyContent (page.win.location.protocol + '//' + page.win.location.host + '/player5_fragment/' + vkVideoID + 'v.json', 'TEXT', false);
 
+    /* Player Size */
+    var vkSidebarWidth = 320;
+    var vkSidebarWindow = getMyElement ('', 'div', 'class', 'col s12 l4 right', 0, false);
+    var vkPlayerWidth, vkPlayerHeight;
+    var vkPlayerWideWidth, vkPlayerWideHeight;
+    var vkSidebarMarginWide;
+    function vkGetSizes() {
+      vkPlayerWidth = vkPlayerWindow.clientWidth;
+      vkPlayerHeight = Math.ceil(vkPlayerWidth / (16 / 9)) + 22;
+      vkSidebarWidth = vkSidebarWindow.clientWidth;
+      vkPlayerWideWidth = vkPlayerWidth + vkSidebarWidth;
+      vkPlayerWideHeight = Math.ceil(vkPlayerWideWidth / (16 / 9)) + 22;
+      vkSidebarMarginWide = vkPlayerWideHeight + 20;
+    }
+    function vkUpdateSizes() {
+      vkGetSizes();
+      player['playerWidth'] = vkPlayerWidth;
+      player['playerHeight'] = vkPlayerHeight;
+      player['playerWideWidth'] = vkPlayerWideWidth;
+      player['playerWideHeight'] = vkPlayerWideHeight;
+      player['sidebarMarginWide'] = vkSidebarMarginWide;
+      resizeMyPlayer('widesize');
+    }
+    vkGetSizes();
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '950px', height: '556px', backgroundColor: '#F4F4F4'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
     modifyMyElement (vkPlayerWindow, 'div', '', false, true);
-    if (vkPlayerWindow.parentNode) styleMyElement (vkPlayerWindow.parentNode, {height: '558px'});
+    styleMyElement (vkPlayerWindow, {overflow: 'visible', height: '100%'});
     appendMyElement (vkPlayerWindow, myPlayerWindow);
     blockObject = vkPlayerWindow;
+
+    /* Resize Event */
+    page.win.addEventListener('resize', vkUpdateSizes, false);
 
     /* Get Videos */
     if (vkVideosContent) {
@@ -2453,16 +2484,24 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
 	  'videoList': vkVideoList,
 	  'videoPlay': vkDefaultVideo,
 	  'videoThumb': vkVideoThumb,
-	  'playerWidth': 950,
-	  'playerHeight': 556
+	  'playerWidth': vkPlayerWideHeight,
+	  'playerHeight': vkPlayerWideHeight,
+	  'playerWideWidth': vkPlayerWideWidth,
+	  'playerWideHeight': vkPlayerWideHeight,
+	  'sidebarWindow': vkSidebarWindow,
+	  'sidebarMarginNormal': 0,
+	  'sidebarMarginWide': vkSidebarMarginWide
 	};
 	feature['definition'] = false;
 	feature['container'] = false;
-	feature['widesize'] = false;
 	option['definition'] = 'LD';
 	option['definitions'] = ['Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
+	vkUpdateSizes ();
+
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '5px'});
       }
       else {
 	showMyMessage ('!videos');
