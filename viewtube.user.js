@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.11.11
+// @version		2015.11.13
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -665,14 +665,8 @@ function playDASHwithHTML5 () {
     }
   }
   player['contentAudio'].pause();
-  player['contentAudioPaused'] = true;
   player['contentVideo'].addEventListener ('play', function() {
-    if (player['contentVideo'].readyState && player['contentVideo'].readyState >= 4) {
-      if (player['contentAudio'].readyState && player['contentAudio'].readyState >= 4) {
-	player['contentAudio'].play();
-	player['contentAudioPaused'] = false;
-      }
-    }
+    player['contentAudio'].play();
   }, false);
   player['contentVideo'].addEventListener ('pause', function() {
     player['contentAudio'].pause();
@@ -682,16 +676,11 @@ function playDASHwithHTML5 () {
     player['contentAudio'].pause();
   }, false);
   player['contentVideo'].addEventListener('timeupdate', function() {
-    if (player['contentAudio'].readyState && player['contentAudio'].readyState >= 4) {
-      if (player['contentAudioPaused']) {
-	player['contentAudio'].play();
-      }
-      if (player['contentAudio'].paused && !player['contentVideo'].paused) {
-	player['contentAudio'].play();
-      }
-      if (Math.abs(player['contentVideo'].currentTime - player['contentAudio'].currentTime) >= 0.30) {
-	player['contentAudio'].currentTime = player['contentVideo'].currentTime;
-      }
+    if (player['contentAudio'].paused && !player['contentVideo'].paused) {
+      player['contentAudio'].play();
+    }
+    if (Math.abs(player['contentVideo'].currentTime - player['contentAudio'].currentTime) >= 0.30) {
+      player['contentAudio'].currentTime = player['contentVideo'].currentTime;
     }
   }, false);
   styleMyElement (player['contentAudio'], {display: 'none'});
@@ -1631,8 +1620,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
     /* Get Videos Content */
     var viVideosContent;
     if (viVideoSource) {
-      viVideosContent = getMyContent(viVideoSource, '"h264":\\{(.*?)\\}\\}', false);
-      if (!viVideosContent) viVideosContent = getMyContent(viVideoSource, '"vp6":\\{(.*?)\\}\\}', false);
+      viVideosContent = getMyContent(viVideoSource, '"progressive":\\[(.*?)\\]', false);
     }
 
     /* My Player Window */
@@ -1644,18 +1632,22 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 
     /* Get Videos */
     if (viVideosContent) {
-      var viVideoFormats = {'hd': 'High Definition MP4', 'sd': 'Low Definition MP4', 'mobile': 'Very Low Definition MP4'};
+      var viVideoFormats = {'720p': 'High Definition MP4', '360p': 'Low Definition MP4', '270p': 'Very Low Definition MP4'};
       var viVideoList = {};
       var viVideoFound = false;
-      var viPattern, viMatcher, viVideo, myVideoCode;
-      for (var viVideoCode in viVideoFormats) {
-	viPattern = '"' + viVideoCode + '":\\{.*?"url":"(.*?)"';
-	viMatcher = viVideosContent.match(viPattern);
-	viVideo = (viMatcher) ? viMatcher[1] : null;
-	if (viVideo) {
-	  if (!viVideoFound) viVideoFound = true;
-	  myVideoCode = viVideoFormats[viVideoCode];
-	  viVideoList[myVideoCode] = viVideo;
+      var viVideo, myVideoCode;
+      var viVideos = viVideosContent.split('},');
+      for (var i = 0; i < viVideos.length; i++) {
+	for (var viVideoCode in viVideoFormats) {
+	  if (viVideos[i].indexOf('"quality":"' + viVideoCode + '"') != -1) {
+	    viVideo = viVideos[i].match(/"url":"(.*?)"/);
+	    viVideo = (viVideo) ? viVideo[1] : null;
+	    if (viVideo) {
+	      if (!viVideoFound) viVideoFound = true;
+	      myVideoCode = viVideoFormats[viVideoCode];
+	      viVideoList[myVideoCode] = viVideo;
+	    }
+	  }
 	}
       }
 
