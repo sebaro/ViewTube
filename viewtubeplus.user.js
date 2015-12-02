@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.09.28
+// @version		2015.12.02
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -156,6 +156,8 @@
 // @include		http://www.npo.nl/*
 // @include		https://npo.nl/*
 // @include		https://www.npo.nl/*
+// @include		http://*.vara.nl/*
+// @include		https://*.vara.nl/*
 // @include		http://rtlxl.nl/*
 // @include		http://www.rtlxl.nl/*
 // @include		https://rtlxl.nl/*
@@ -512,7 +514,6 @@ function createMyPlayer () {
   player['buttonPlay'] = createMyElement ('div', 'Play', 'click', 'play', '');
   player['buttonPlay'].title = '{Play/Stop: click to start/stop video playback}';
   styleMyElement (player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
-  if (option['autoplay']) styleMyElement (player['buttonPlay'], {display: 'none'});
   appendMyElement (player['playerPanel'], player['buttonPlay']);
 
   /* Panel Autoplay Button */
@@ -4237,7 +4238,7 @@ else if (page.url.indexOf('npo.nl/') != -1) {
     //var npoVideoID = page.url.replace(/.*\//, '');
     var npoVideoID = getMyContent (page.url, 'meta\\s+content=".*/(.*?)"\\s+name="og:video"', false);
     var npoToken = getMyContentGM ('http://ida.omroep.nl/npoplayer/i.js', 'token\\s*=\\s*"(.*?)"', false);
-    if (npoVideoID && npoToken) {
+    if (npoToken) {
       var s = npoToken;
       var s2 = '';
       var fc, sc;
@@ -4257,17 +4258,30 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	else s2 += s[i]
       }
       npoToken = s2;
-      //pubs -> "adaptive","h264_bb","h264_sb","h264_std"
-      var npoStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + npoVideoID + '&puboptions=h264_std&adaptive=yes&token=' + npoToken, '"streams":\\["(.*?)"\\]', true);
-      if (npoStreams) npoVideo = getMyContentGM (npoStreams, '"url":"(.*?)\\?', true);
-      if (!npoVideo) {
-	var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
-	if (npoVideoSource) {
-	  npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
-	  npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
-	  if (npoVideo && !npoVideoThumb) {
-	    npoVideoThumb = npoVideoSource.match(/"url":"(https?.*?images.*?jpg)"/);
-	    npoVideoThumb = (npoVideoThumb) ? cleanMyContent(npoVideoThumb[1], false) : null;
+      // Live
+      if (page.url.indexOf('npo.nl/live') != -1) {
+	var npoLiveID = getMyContent (page.url, 'data-prid="(.*?)"', false);
+	if (npoLiveID) {
+	  var npoLiveStream = getMyContentGM ('http://e.omroep.nl/metadata/' + npoLiveID, '"hls","url":"(.*?)"', true);
+	  if (npoLiveStream) npoVideo = getMyContentGM ('http://ida.omroep.nl/aapi/?type=jsonp&stream=' + npoLiveStream + '&token=' + npoToken, '"stream":"(.*?)"', true);
+	}
+	//npoVideo = getMyContentGM (npoVideo, '"(.*?)"', true);
+      }
+      // Videos: pubs -> "adaptive","h264_bb","h264_sb","h264_std"
+      else {
+	if (npoVideoID) {
+	  var npoStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + npoVideoID + '&puboptions=h264_std&adaptive=yes&token=' + npoToken, '"streams":\\["(.*?)"\\]', true);
+	  if (npoStreams) npoVideo = getMyContentGM (npoStreams, '"url":"(.*?)\\?', true);
+	  if (!npoVideo) {
+	    var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
+	    if (npoVideoSource) {
+	      npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
+	      npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
+	      if (npoVideo && !npoVideoThumb) {
+		npoVideoThumb = npoVideoSource.match(/"url":"(https?.*?images.*?jpg)"/);
+		npoVideoThumb = (npoVideoThumb) ? cleanMyContent(npoVideoThumb[1], false) : null;
+	      }
+	    }
 	  }
 	}
       }
@@ -4304,6 +4318,99 @@ else if (page.url.indexOf('npo.nl/') != -1) {
       showMyMessage ('!videos');
     }
 
+  }
+
+}
+
+// =====Vara===== //
+
+else if (page.url.indexOf('.vara.nl/media') != -1) {
+
+  /* Get Player Window */
+  var varaPlayerWindow = getMyElement ('', 'div', 'class', 'module-body', 0, false);
+  if (!varaPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Video Thumbnail */
+    varaVideoThumb = getMyContent (page.url, 'image:\\s*"(.*?)",', false);
+    if (!varaVideoThumb) varaVideoThumb = getMyContent (page.url, '\'previewImageURL\'\\s*:\\s*"(.*?)"', false);
+
+    /* Get Videos */
+    var varaVideo;
+    var varaVideoID = getMyContent (page.url, 'prid:\\s*"(.*?)",', false);
+    var varaToken = getMyContentGM ('http://ida.omroep.nl/npoplayer/i.js', 'token\\s*=\\s*"(.*?)"', false);
+    if (varaToken) {
+      var s = varaToken;
+      var s2 = '';
+      var fc, sc;
+      for (var i = 5; i <= s.length - 4; i++) {
+	if (s[i] >= 0) {
+	  if (!fc) fc = i;
+	  else if (!sc) sc = i;
+	}
+      }
+      if (!fc || !sc) {
+	fc = 12;
+	sc = 13;
+      }
+      for (var i = 0; i < s.length; i++) {
+	if (i == fc) s2 += s[sc];
+	else if (i == sc) s2 += s[fc];
+	else s2 += s[i]
+      }
+      varaToken = s2;
+      if (varaVideoID) {
+	var varaStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + varaVideoID + '&puboptions=h264_std&adaptive=yes&token=' + varaToken, '"streams":\\["(.*?)"\\]', true);
+	if (varaStreams) varaVideo = getMyContentGM (varaStreams, '"url":"(.*?)\\?', true);
+      }
+    }
+    if (!varaVideo) {
+      varaVideoID = page.url.replace(/.*media\//, '');
+      varaVideo = getMyContentGM ('http://media-service.vara.nl/player.php?id=' + varaVideoID, 'file=(.*?)&', false);
+      if (!varaVideo) {
+	varaVideoID = getMyContentGM ('http://media-service.vara.nl/player.php?id=' + varaVideoID, 'prid:\\s*"(.*?)",', false);
+	if (varaVideoID) {
+	  var varaStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + varaVideoID + '&puboptions=h264_std&adaptive=yes&token=' + varaToken, '"streams":\\["(.*?)"\\]', true);
+	  if (varaStreams) varaVideo = getMyContentGM (varaStreams, '"url":"(.*?)\\?', true);
+	}
+      }
+    }
+
+    /* My Player Window */
+    var myPlayerWindow = createMyElement ('div', '', '', '', '');
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '580px', height: '350px', backgroundColor: '#F4F4F4', zIndex: 10});
+    modifyMyElement (varaPlayerWindow, 'div', '', true);
+    appendMyElement (varaPlayerWindow, myPlayerWindow);
+
+    /* Create Player */
+    if (varaVideo) {
+      var varaVideoList = {};
+      var varaDefaultVideo = 'Low Definition MP4';
+      varaVideoList[varaDefaultVideo] = varaVideo;
+      if (varaVideo.indexOf('.mp4') != -1) varaVideoList['High Definition MP4'] = varaVideo.replace('.mp4', '-hq.mp4');
+      player = {
+	'playerSocket': varaPlayerWindow,
+	'playerWindow': myPlayerWindow,
+	'videoList': varaVideoList,
+	'videoPlay': varaDefaultVideo,
+	'videoThumb': varaVideoThumb,
+	'playerWidth': 580,
+	'playerHeight': 350,
+      };
+      feature['container'] = false;
+      feature['definition'] = false;
+      feature['widesize'] = false;
+      option['definitions'] = ['Low Definition', 'High Definition MP4'];
+      option['containers'] = ['MP4'];
+      createMyPlayer ();
+
+      /* Fix panel */
+      styleMyElement(player['playerContent'], {marginTop: '5px'});
+    }
+    else {
+      showMyMessage ('!videos');
+    }
   }
 
 }
