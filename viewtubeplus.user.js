@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.12.02
+// @version		2015.12.12
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -837,17 +837,18 @@ function setMyOptions (key, value) {
   key = page.site + '_' + userscript.toLowerCase() + '_' + key;
   if (typeof GM_setValue === 'function') {
     GM_setValue(key, value);
+    if (typeof GM_getValue === 'function' && GM_getValue(key) == value) return;
   }
-  else {
-    try {
-      localStorage.setItem(key, value);
-    }
-    catch(e) {
-      var date = new Date();
-      date.setTime(date.getTime() + (356*24*60*60*1000));
-      var expires = '; expires=' + date.toGMTString();
-      page.doc.cookie = key + '=' + value + expires + '; path=/';
-    }
+  try {
+    localStorage.setItem(key, value);
+    if (localStorage.getItem(key) == value) return;
+    else throw false;
+  }
+  catch(e) {
+    var date = new Date();
+    date.setTime(date.getTime() + (356*24*60*60*1000));
+    var expires = '; expires=' + date.toGMTString();
+    page.doc.cookie = key + '=' + value + expires + '; path=/';
   }
 }
 
@@ -856,19 +857,24 @@ function getMyOptions () {
     if (option.hasOwnProperty(opt)) {
       var key = page.site + '_' + userscript.toLowerCase() + '_' + opt;
       if (typeof GM_getValue === 'function') {
-	option[opt] = (GM_getValue(key)) ? GM_getValue(key) : option[opt];
-      }
-      else {
-	try {
-	  option[opt] = (localStorage.getItem(key)) ? localStorage.getItem(key) : option[opt];
+	if (GM_getValue(key)) {
+	  option[opt] = GM_getValue(key);
+	  continue;
 	}
-	catch (e) {
-	  var cookies = page.doc.cookie.split(';');
-	  for (var i=0; i < cookies.length; i++) {
-	    var cookie = cookies[i];
-	    while (cookie.charAt(0) == ' ') cookie = cookie.substring(1, cookie.length);
-	    option[opt] = (cookie.indexOf(key) == 0) ? cookie.substring(key.length + 1, cookie.length) : option[opt];
-	  }
+      }
+      try {
+	if (localStorage.getItem(key)) {
+	  option[opt] = localStorage.getItem(key);
+	  continue;
+	}
+	else throw false;
+      }
+      catch (e) {
+	var cookies = page.doc.cookie.split(';');
+	for (var i=0; i < cookies.length; i++) {
+	  var cookie = cookies[i];
+	  while (cookie.charAt(0) == ' ') cookie = cookie.substring(1, cookie.length);
+	  option[opt] = (cookie.indexOf(key) == 0) ? cookie.substring(key.length + 1, cookie.length) : option[opt];
 	}
       }
     }
@@ -1483,6 +1489,7 @@ else if (page.url.indexOf('nicovideo.jp/watch') != -1) {
   /* Get Player Window */
   //var nicoPlayerWindow = getMyElement ('', 'div', 'id', 'nicoplayerContainerInner', -1, false);
   var nicoPlayerWindow = getMyElement ('', 'div', 'id', 'nicoplayerContainer', -1, false);
+  //var nicoPlayerWindow = getMyElement ('', 'div', 'id', 'playerNicoplayer', -1, false);
   if (!nicoPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1491,50 +1498,60 @@ else if (page.url.indexOf('nicovideo.jp/watch') != -1) {
     var nicoFlashMessage = getMyElement ('', 'div', 'class', 'notify_update_flash_player', 0, false);
     if (nicoFlashMessage && nicoFlashMessage.parentNode) removeMyElement(nicoFlashMessage.parentNode, nicoFlashMessage);
 
+    /* Get Video Thumbnail */
+    var nicoVideoThumb = getMyContent (page.url, 'thumbImage&quot;:&quot;(.*?)&', true);
+
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '672px', height: '465px', backgroundColor: '#F4F4F4', zIndex: '99999'});
     modifyMyElement (nicoPlayerWindow, 'div', '', true);
-    styleMyElement (nicoPlayerWindow, {marginTop: '-120px', width: '672px', height: '465px', backgroundColor: '#F4F4F4'});
+    //styleMyElement (nicoPlayerWindow, {marginTop: '-120px', width: '672px', height: '465px', backgroundColor: '#F4F4F4'});
     appendMyElement (nicoPlayerWindow, myPlayerWindow);
 
     /* Get Video ID */
     var nicoVideoID = page.url.match(/\/watch\/(\w*\d+)/);
     nicoVideoID = (nicoVideoID) ? nicoVideoID[1] : null;
 
-    /* Get Videos Content GM */
-    var nicoVideo;
-    if (nicoVideoID) nicoVideo = getMyContentGM ('http://flapi.nicovideo.jp/api/getflv/' + nicoVideoID, 'url=(.*?)(&|$)', true);
+    /* Get Videos GM */
+    if (nicoVideoID) {
+      GM_xmlhttpRequest({
+	method: 'GET',
+	url: 'http://flapi.nicovideo.jp/api/getflv/' + nicoVideoID,
+	onload: function(response) {
+	  if (response.readyState === 4 && response.status === 200) {
+	    var nicoVideosContent = response.responseText;
+	    var nicoVideo = nicoVideosContent.match(/url=(.*?)(&|$)/);
+	    nicoVideo = (nicoVideo) ? nicoVideo[1] : null;
+	    if (nicoVideo) {
+	      nicoVideo = cleanMyContent(nicoVideo, true);
+	      var nicoVideoList = {};
 
-    /* Get Videos */
-    if (nicoVideo) {
-      var nicoVideoList = {};
-
-      /* Get Video Thumbnail */
-      var nicoVideoThumb = getMyContent (page.url, 'thumbImage&quot;:&quot;(.*?)&', true);
-
-      /* Create Player */
-      var nicoDefaultVideo = 'Low Definition MP4';
-      nicoVideoList[nicoDefaultVideo] = nicoVideo;
-      player = {
-	'playerSocket': nicoPlayerWindow,
-	'playerWindow': myPlayerWindow,
-	'videoList': nicoVideoList,
-	'videoPlay': nicoDefaultVideo,
-	'videoThumb': nicoVideoThumb,
-	'playerWidth': 672,
-	'playerHeight': 465
-      };
-      feature['definition'] = false;
-      feature['container'] = false;
-      feature['widesize'] = false;
-      option['definition'] = 'LD';
-      option['definitions'] = ['Low Definition'];
-      option['containers'] = ['MP4'];
-      createMyPlayer ();
-    }
-    else {
-      showMyMessage ('!videos');
+	      /* Create Player */
+	      var nicoDefaultVideo = 'Low Definition MP4';
+	      nicoVideoList[nicoDefaultVideo] = nicoVideo;
+	      player = {
+		'playerSocket': nicoPlayerWindow,
+		'playerWindow': myPlayerWindow,
+		'videoList': nicoVideoList,
+		'videoPlay': nicoDefaultVideo,
+		'videoThumb': nicoVideoThumb,
+		'playerWidth': 672,
+		'playerHeight': 465
+	      };
+	      feature['definition'] = false;
+	      feature['container'] = false;
+	      feature['widesize'] = false;
+	      option['definition'] = 'LD';
+	      option['definitions'] = ['Low Definition'];
+	      option['containers'] = ['MP4'];
+	      createMyPlayer ();
+	    }
+	    else {
+	      showMyMessage ('!videos');
+	    }
+	  }
+	}
+      });
     }
   }
 
@@ -4232,11 +4249,11 @@ else if (page.url.indexOf('npo.nl/') != -1) {
   else {
     /* Video Thumbnail */
     npoVideoThumb = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+name="og:image"', false);
+    if (!npoVideoThumb) npoVideoThumb = getMyContent (page.url, 'meta\\s+content="([^>]*?)"\\s+itemprop="thumbnailUrl"', false);
 
     /* Get Videos */
     var npoVideo;
-    //var npoVideoID = page.url.replace(/.*\//, '');
-    var npoVideoID = getMyContent (page.url, 'meta\\s+content=".*/(.*?)"\\s+name="og:video"', false);
+    var npoVideoID = getMyContent (page.url, 'data-id\\s*=\\s*"(.*?)"', false);
     var npoToken = getMyContentGM ('http://ida.omroep.nl/npoplayer/i.js', 'token\\s*=\\s*"(.*?)"', false);
     if (npoToken) {
       var s = npoToken;
