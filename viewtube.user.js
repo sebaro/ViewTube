@@ -1400,6 +1400,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 		  if (response.readyState === 4 && response.status === 200 && response.responseText) {
 		    ytScriptSrc = response.responseText;
 		    ytDecryptFunction();
+		    ytVideos();
 		  }
 		  else {
 		    showMyMessage('other', 'Couldn\'t get the signature content. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
