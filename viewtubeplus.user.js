@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.12.12
+// @version		2015.12.19
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4292,8 +4292,12 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	  if (!npoVideo) {
 	    var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
 	    if (npoVideoSource) {
-	      npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
+	      npoVideo = npoVideoSource.match(/"h264","kwaliteit":\d+,"url":"(.*?)"/);
 	      npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
+	      if (!npoVideo) {
+		npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
+		npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
+	      }
 	      if (npoVideo && !npoVideoThumb) {
 		npoVideoThumb = npoVideoSource.match(/"url":"(https?.*?images.*?jpg)"/);
 		npoVideoThumb = (npoVideoThumb) ? cleanMyContent(npoVideoThumb[1], false) : null;
@@ -4735,12 +4739,13 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
     var llVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Get Videos Content */
-    var llVideosContent = getMyContent (page.url, 'config:\\s*"(.*?)"', false);
+    var llVideosContent = getMyContent (page.url, 'setup\\(\\{([\\S\\s]*?)\\}\\)', false);
 
     /* My Player Window */
     myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '625px', height: '374px', backgroundColor: '#F4F4F4', margin: '0px auto'});
-    modifyMyElement (llPlayerWindow, 'div', '', true);
+    modifyMyElement (llPlayerWindow, 'div', '', false, true);
+    blockObject = llPlayerWindow;
     appendMyElement (llPlayerWindow, myPlayerWindow);
 
     /* Get Videos */
@@ -4749,10 +4754,11 @@ else if (page.url.indexOf('liveleak.com/view?i=') != -1) {
       var llVideoFound = false;
       var llVideoFormats = {'.avi': 'Low Definition FLV', '_base': 'Low Definition MP4', '_270p': 'Low Definition MP4', '_720p': 'High Definition MP4'};
       var llVideo;
-      var llVideos = llVideosContent.match(new RegExp('file_url=(.*?)&', 'g'));
+      var llVideos = llVideosContent.match(new RegExp('file_url=.*?&', 'g'));
+      if (!llVideos) llVideos = llVideosContent.match(new RegExp('file\\s*:\\s*"http.*?"', 'g'));
       if (llVideos) {
 	for (var i = 0; i < llVideos.length; i++) {
-	  llVideo = cleanMyContent(llVideos[i].replace('file_url=', ''), true);
+	  llVideo = cleanMyContent(llVideos[i].replace('file_url=', '').replace(/file\s*:\s*/, '').replace('"', ''), true);
 	  if (llVideo) {
 	    for (var vCode in llVideoFormats) {
 	      if (llVideo.indexOf(vCode) != -1) {
