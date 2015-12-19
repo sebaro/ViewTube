@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.11.24
+// @version		2015.12.19
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -947,6 +947,9 @@ function showMyMessage (cause, content) {
       var myEmbedMess = 'This is an embedded video. You can watch it <a href="' + content + '" style="color:#00892C">here</a>.';
       modifyMyElement (myScriptMess, 'div', myEmbedMess, false);
     }
+    else if (cause == 'other') {
+      modifyMyElement (myScriptMess, 'div', content, false);
+    }
     appendMyElement (myPlayerWindow, myScriptMess);
   }
 }
@@ -1394,21 +1397,26 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 		method: 'GET',
 		url: ytScriptURL,
 		onload: function(response) {
-		  if (response.readyState === 4 && response.status === 200) {
+		  if (response.readyState === 4 && response.status === 200 && response.responseText) {
 		    ytScriptSrc = response.responseText;
+		    ytDecryptFunction();
 		  }
-		  if (ytScriptSrc) ytDecryptFunction();
-		  ytVideos();
+		  else {
+		    showMyMessage('other', 'Couldn\'t get the signature content. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+		  }
+		},
+		onerror: function() {
+		  showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
 		}
 	      });
 	    }
 	    catch (e) {
-	      ytVideos();
+	      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
 	    }
 	  }
 	}
 	else {
-	  ytVideos();
+	  showMyMessage('other', 'Couldn\'t get the signature link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
 	}
       }
       else {
@@ -1427,9 +1435,12 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	      method: 'GET',
 	      url: ytHLSVideos,
 	      onload: function(response) {
-		if (response.readyState === 4 && response.status === 200) {
+		if (response.readyState === 4 && response.status === 200 && response.responseText) {
 		  ytHLSContent = response.responseText;
 		}
+		ytHLS();
+	      },
+	      onerror: function() {
 		ytHLS();
 	      }
 	    });
