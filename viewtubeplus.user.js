@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2015.12.19
+// @version		2015.12.21
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4240,20 +4240,8 @@ else if (page.url.indexOf('marktplaats.nl/') != -1) {
 
 else if (page.url.indexOf('npo.nl/') != -1) {
 
-  /* Get Player Window */
-  var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
-  if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
-  if (!npoPlayerWindow) {
-    //showMyMessage ('!player');
-  }
-  else {
-    /* Video Thumbnail */
-    npoVideoThumb = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+name="og:image"', false);
-    if (!npoVideoThumb) npoVideoThumb = getMyContent (page.url, 'meta\\s+content="([^>]*?)"\\s+itemprop="thumbnailUrl"', false);
-
-    /* Get Videos */
-    var npoVideo;
-    var npoVideoID = getMyContent (page.url, 'data-id\\s*=\\s*"(.*?)"', false);
+  /* Token */
+  function getToken() {
     var npoToken = getMyContentGM ('http://ida.omroep.nl/npoplayer/i.js', 'token\\s*=\\s*"(.*?)"', false);
     if (npoToken) {
       var s = npoToken;
@@ -4275,38 +4263,64 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	else s2 += s[i]
       }
       npoToken = s2;
-      // Live
-      if (page.url.indexOf('npo.nl/live') != -1) {
-	var npoLiveID = getMyContent (page.url, 'data-prid="(.*?)"', false);
-	if (npoLiveID) {
-	  var npoLiveStream = getMyContentGM ('http://e.omroep.nl/metadata/' + npoLiveID, '"hls","url":"(.*?)"', true);
-	  if (npoLiveStream) npoVideo = getMyContentGM ('http://ida.omroep.nl/aapi/?type=jsonp&stream=' + npoLiveStream + '&token=' + npoToken, '"stream":"(.*?)"', true);
+      return npoToken;
+    }
+    else return null;
+  }
+
+  /* Get Player Window */
+  var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
+  if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
+  if (!npoPlayerWindow) {
+    //showMyMessage ('!player');
+  }
+  else {
+    /* Video Thumbnail */
+    npoVideoThumb = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+name="og:image"', false);
+    if (!npoVideoThumb) npoVideoThumb = getMyContent (page.url, 'meta\\s+content="([^>]*?)"\\s+itemprop="thumbnailUrl"', false);
+
+    /* Get Videos */
+    var npoVideo;
+    // Live
+    if (page.url.indexOf('npo.nl/live') != -1) {
+      var npoLiveID = getMyContent (page.url, 'data-prid="(.*?)"', false);
+      if (npoLiveID) {
+	var npoLiveStream = getMyContentGM ('http://e.omroep.nl/metadata/' + npoLiveID, '"hls","url":"(.*?)"', true);
+	var npoToken = getToken();
+	if (npoLiveStream && npoToken) {
+	  npoVideo = getMyContentGM ('http://ida.omroep.nl/aapi/?type=jsonp&stream=' + npoLiveStream + '&token=' + npoToken, '"stream":"(.*?)"', true);
 	}
-	//npoVideo = getMyContentGM (npoVideo, '"(.*?)"', true);
       }
-      // Videos: pubs -> "adaptive","h264_bb","h264_sb","h264_std"
-      else {
-	if (npoVideoID) {
-	  var npoStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + npoVideoID + '&puboptions=h264_std&adaptive=yes&token=' + npoToken, '"streams":\\["(.*?)"\\]', true);
-	  if (npoStreams) npoVideo = getMyContentGM (npoStreams, '"url":"(.*?)\\?', true);
+      //npoVideo = getMyContentGM (npoVideo, '"(.*?)"', true);
+    }
+    // Videos
+    else {
+      var npoVideoID = getMyContent (page.url, 'data-id\\s*=\\s*"(.*?)"', false);
+      if (npoVideoID) {
+	var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
+	if (npoVideoSource) {
+	  npoVideo = npoVideoSource.match(/"h264","kwaliteit":\d+,"url":"(.*?)"/);
+	  npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
 	  if (!npoVideo) {
-	    var npoVideoSource = getMyContentGM ('http://e.omroep.nl/metadata/' + npoVideoID, 'TEXT', false);
-	    if (npoVideoSource) {
-	      npoVideo = npoVideoSource.match(/"h264","kwaliteit":\d+,"url":"(.*?)"/);
-	      npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
-	      if (!npoVideo) {
-		npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
-		npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
-	      }
-	      if (npoVideo && !npoVideoThumb) {
-		npoVideoThumb = npoVideoSource.match(/"url":"(https?.*?images.*?jpg)"/);
-		npoVideoThumb = (npoVideoThumb) ? cleanMyContent(npoVideoThumb[1], false) : null;
-	      }
-	    }
+	    npoVideo = npoVideoSource.match(/"kwaliteit":\d+,"url":"(.*?)"/);
+	    npoVideo = (npoVideo) ? cleanMyContent(npoVideo[1], false) : null;
+	  }
+	  if (npoVideo && !npoVideoThumb) {
+	    npoVideoThumb = npoVideoSource.match(/"url":"(https?.*?images.*?jpg)"/);
+	    npoVideoThumb = (npoVideoThumb) ? cleanMyContent(npoVideoThumb[1], false) : null;
+	  }
+	}
+	if (!npoVideo) {
+	  var npoToken = getToken();
+	  if (npoToken) {
+	    // pubs -> "adaptive","h264_bb","h264_sb","h264_std"
+	    var npoStreams = getMyContentGM ('http://ida.omroep.nl/odi/?prid=' + npoVideoID + '&puboptions=h264_std&adaptive=yes&token=' + npoToken, '"streams":\\["(.*?)"\\]', true);
+	    if (npoStreams) npoVideo = getMyContentGM (npoStreams, '"url":"(.*?)\\?', true);
 	  }
 	}
       }
     }
+    if (!npoVideoThumb) npoVideoThumb = 'http://www-assets.npo.nl/assets/placeholders/nederland_npo_thumb_large.png';
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
