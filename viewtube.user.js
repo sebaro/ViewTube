@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2015.12.19
+// @version		2016.01.05
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -947,9 +947,6 @@ function showMyMessage (cause, content) {
       var myEmbedMess = 'This is an embedded video. You can watch it <a href="' + content + '" style="color:#00892C">here</a>.';
       modifyMyElement (myScriptMess, 'div', myEmbedMess, false);
     }
-    else if (cause == 'other') {
-      modifyMyElement (myScriptMess, 'div', content, false);
-    }
     appendMyElement (myPlayerWindow, myScriptMess);
   }
 }
@@ -1397,27 +1394,21 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 		method: 'GET',
 		url: ytScriptURL,
 		onload: function(response) {
-		  if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		  if (response.readyState === 4 && response.status === 200) {
 		    ytScriptSrc = response.responseText;
-		    ytDecryptFunction();
-		    ytVideos();
 		  }
-		  else {
-		    showMyMessage('other', 'Couldn\'t get the signature content. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
-		  }
-		},
-		onerror: function() {
-		  showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+		  if (ytScriptSrc) ytDecryptFunction();
+		  ytVideos();
 		}
 	      });
 	    }
 	    catch (e) {
-	      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+	      ytVideos();
 	    }
 	  }
 	}
 	else {
-	  showMyMessage('other', 'Couldn\'t get the signature link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+	  ytVideos();
 	}
       }
       else {
@@ -1436,12 +1427,9 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	      method: 'GET',
 	      url: ytHLSVideos,
 	      onload: function(response) {
-		if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		if (response.readyState === 4 && response.status === 200) {
 		  ytHLSContent = response.responseText;
 		}
-		ytHLS();
-	      },
-	      onerror: function() {
 		ytHLS();
 	      }
 	    });
@@ -1469,7 +1457,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
   }
 
   /* Get Player Window */
-  var dmPlayerWindow = getMyElement ('', 'div', 'id', 'player_container', -1, false);
+  var dmPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
   if (!dmPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1506,7 +1494,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
       player['playerWideHeight'] = dmPlayerWideHeight;
       player['sidebarMarginWide'] = dmSidebarMarginWide;
       resizeMyPlayer('widesize');
-      styleMyElement (dmPlayerWindow, {overflow: 'visible', height: '100%'});
+      styleMyElement (dmPlayerWindow.parentNode, {minHeight: player['contentHeight'] + 50 + 'px'});
     }
     dmGetSizes();
 
@@ -1517,15 +1505,11 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
     appendMyElement (dmPlayerWindow, myPlayerWindow);
     blockObject = dmPlayerWindow;
 
-    /* Fix Visibility & Height */
-    var dmPlayerJSBox = getMyElement ('', 'div', 'class', 'js-player-box', 0, false);
-    if (dmPlayerJSBox) styleMyElement(dmPlayerJSBox, {overflow: 'visible', height: '100%', backgroundColor: '#FFFFFF'});
-    else styleMyElement(dmPlayerWindow.parentNode, {overflow: 'visible', height: '100%', backgroundColor: '#FFFFFF'});
-    page.win.setTimeout(function() {styleMyElement (dmPlayerWindow, {overflow: 'visible', height: '100%', backgroundColor: '#FFFFFF'});}, 2000);
-
-    /* Fix Video Info Position */
-    var dmPlayerInfos = getMyElement ('', 'div', 'class', 'pl_video_infos', 0, false);
-    if (dmPlayerInfos) styleMyElement(dmPlayerInfos, {marginTop: '10px'});
+    /* Fix Info Position On Start */
+    page.win.setTimeout(function() {
+      var dmInfoboxHeight = (player['contentHeight']) ? player['contentHeight'] + 50 + 'px' : '100%';
+      styleMyElement (dmPlayerWindow.parentNode, {minHeight: dmInfoboxHeight});
+    }, 2000);
 
     /* Fix Right Ad Issue */
     var dmMcRight = getMyElement ('', 'div', 'id', 'mc_Right', -1, false);
@@ -1594,8 +1578,13 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
 
-	/* Fix panel */
+	/* Fix Panel */
 	styleMyElement(player['playerContent'], {marginTop: '7px'});
+
+	/* Fix Info Position On Widesize */
+	player['buttonWidesize'].addEventListener('click', function() {
+	  styleMyElement (dmPlayerWindow.parentNode, {minHeight: player['contentHeight'] + 50 + 'px'});
+	}, false);
       }
       else {
 	showMyMessage ('!videos');
