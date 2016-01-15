@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.01.05
+// @version		2016.01.15
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -62,7 +62,6 @@
 // @include		http://www.facebook.com*
 // @include		https://facebook.com*
 // @include		https://www.facebook.com*
-// @include		https://screen.yahoo.com*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -71,7 +70,7 @@
 
 /*
 
-  Copyright (C) 2010 - 2015 Sebastian Luncan
+  Copyright (C) 2010 - 2016 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1998,11 +1997,13 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '970px', height: '570px', backgroundColor: '#F4F4F4', margin: '0px auto'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '968px', height: '570px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     var fodPlayerSocket = createMyElement ('div', '', '', '', '');
     styleMyElement (fodPlayerSocket, {height: '570px', backgroundColor: '#252525'});
-    replaceMyElement(fodPlayerWindow.parentNode, fodPlayerSocket, fodPlayerWindow);
+    styleMyElement (fodPlayerWindow, {display: 'none'});
+    appendMyElement (fodPlayerWindow.parentNode, fodPlayerSocket);
     appendMyElement (fodPlayerSocket, myPlayerWindow);
+    blockObject = fodPlayerWindow;
 
     /* Get Videos */
     if (fodVideosContent) {
@@ -2012,7 +2013,7 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
       var fodVideoPath, fodVideoCodes, fodVideo, myVideoCode;
       fodVideoPath = fodVideosContent.match(/src="(.*?)v\d+.*?\.mp4"/);
       fodVideoPath = (fodVideoPath) ? fodVideoPath[1] : null;
-      fodVideoCodes = fodVideosContent.match (/v,(.*?),\./);
+      fodVideoCodes = fodVideosContent.match (/v([^\/]*?)\/master/);
       fodVideoCodes = (fodVideoCodes) ? fodVideoCodes[1] : '';
       if (fodVideoPath) {
 	if (fodVideoCodes) {
@@ -2046,7 +2047,7 @@ else if (page.url.indexOf('funnyordie.com/videos') != -1) {
 	  'videoList': fodVideoList,
 	  'videoPlay': fodDefaultVideo,
 	  'videoThumb': fodVideoThumb,
-	  'playerWidth': 970,
+	  'playerWidth': 968,
 	  'playerHeight': 570
 	};
 	feature['container'] = false;
@@ -2682,99 +2683,6 @@ else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
 	option['definitions'] = ['High Definition', 'Low Definition'];
 	option['containers'] = ['MP4', 'FLV', 'Any'];
 	createMyPlayer ();
-      }
-      else {
-	showMyMessage ('!videos');
-      }
-    }
-    else {
-      showMyMessage ('!content');
-    }
-  }
-
-}
-
-// =====YahooScreen===== //
-
-else if (page.url.indexOf('screen.yahoo.com') != -1) {
-
-  /* Get Player Window */
-  var ysPlayerWindow = getMyElement ('', 'div', 'class', 'vp-container', 0, false);
-  if (!ysPlayerWindow) {
-    showMyMessage ('!player');
-  }
-  else {
-    /* Get Videos Content */
-    var ysVideosContent;
-    var ysVideoID = getMyContent (page.url, '"first_videoid":"(.*?)"', false);
-    if (ysVideoID) ysVideosContent = getMyContent('https://video.media.yql.yahoo.com/v1/video/sapi/streams/' + ysVideoID + '?protocol=http&region=US', '"streams":\\[(.*?)\\]', false);
-
-    /* Get Video Thumbnail */
-    var ysVideoThumb = getMyContent (page.url, '"thumbnails":\\[\\{"tag":"original","url":"(.*?)"', false);
-    if (!ysVideoThumb) ysVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-
-    /* My Player Window */
-    var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '920px', height: '540px', backgroundColor: '#F4F4F4', margin: '0px auto'});
-    modifyMyElement (ysPlayerWindow, 'div', '', true);
-    styleMyElement (ysPlayerWindow, {height: '100%', width: '1050px', backgroundColor: '#17151D'});
-    appendMyElement (ysPlayerWindow, myPlayerWindow);
-
-    /* Restyle */
-    var ysStage = getMyElement ('', 'div', 'class', 'y-stage', 0, false);
-    if (ysStage) styleMyElement (ysStage, {height: '1150px', maxHeight: '1150px'});
-    var ysOverlay = getMyElement ('', 'div', 'class', 'vp-overlay', 0, false);
-    if (ysOverlay) styleMyElement (ysOverlay, {marginTop: '580px', width: '1000px'});
-
-    /* Get Videos */
-    if (ysVideosContent) {
-      var ysVideoList = {};
-      var ysVideoFound = false;
-      var ysVideoFormats = {'240': 'Very Low Definition', '360': 'Low Definition', '432': 'Low Definition', '540': 'Standard Definition', '720': 'High Definition', '1080': 'Full High Definition'};
-      var ysVideoParts = ysVideosContent.split('},');
-      var ysVideoPart, ysVideoPath, ysVideoHost, ysVideoHeight, ysVideoType, myVideoCode;
-      for (var i = 0; i < ysVideoParts.length; i++) {
-	ysVideoPart = ysVideoParts[i];
-	ysVideoPath = ysVideoPart.match(/"path":"(.*?)"/);
-	ysVideoPath = (ysVideoPath) ? ysVideoPath[1] : null;
-	ysVideoHost = ysVideoPart.match(/"host":"(.*?)"/);
-	ysVideoHost = (ysVideoHost) ? ysVideoHost[1] : null;
-	ysVideoHeight = ysVideoPart.match(/"height":(\d+),/);
-	ysVideoHeight = (ysVideoHeight) ? ysVideoHeight[1] : null;
-	ysVideoType = ysVideoPart.match(/"mime_type":"(.*?)"/);
-	ysVideoType = (ysVideoType) ? ysVideoType[1] : null;
-	if (ysVideoPath && ysVideoHost && ysVideoHeight && ysVideoType) {
-	  for (var ysVideoCode in ysVideoFormats) {
-	    if (ysVideoCode == ysVideoHeight) {
-	      if (!ysVideoFound) ysVideoFound = true;
-	      myVideoCode = ysVideoFormats[ysVideoCode]
-	      if (ysVideoType == 'video/mp4') myVideoCode += ' MP4';
-	      else if (ysVideoType == 'video/webm') myVideoCode += ' WebM';
-	      ysVideoList[myVideoCode] = ysVideoHost + ysVideoPath;
-	    }
-	  }
-	}
-      }
-
-      if (ysVideoFound) {
-	/* Create Player */
-	var ysDefaultVideo = 'Low Definition MP4';
-	player = {
-	  'playerSocket': ysPlayerWindow,
-	  'playerWindow': myPlayerWindow,
-	  'videoList': ysVideoList,
-	  'videoPlay': ysDefaultVideo,
-	  'videoThumb': ysVideoThumb,
-	  'playerWidth': 920,
-	  'playerHeight': 540
-	};
-	feature['widesize'] = false;
-	option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
-	option['containers'] = ['MP4', 'WebM', 'Any'];
-	createMyPlayer ();
-
-	/* Fix panel */
-	styleMyElement(player['playerContent'], {marginTop: '5px'});
       }
       else {
 	showMyMessage ('!videos');
