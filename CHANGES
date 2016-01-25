@@ -3,8 +3,12 @@
 /* ViewTube Changelog */
 
 
+#2016.01.25
+- fixes Vimeo
+
 #2016.01.15
 - fixes FunnyOrDie
+- drops support for Yahoo Screen, site closed down
 
 #2016.01.05
 - fixes Dailymotion

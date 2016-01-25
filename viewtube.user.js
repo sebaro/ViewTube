@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.01.15
+// @version		2016.01.25
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1610,13 +1610,18 @@ else if (page.url.indexOf('dailymotion.com/video') != -1 || page.url.indexOf('da
 
 // =====Vimeo===== //
 
-else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels\/[^\/]*($|\/page|\/\d+)/) || page.url.match(/vimeo.com\/originals\/[^\/]*\/\d+/) || page.url.match(/vimeo.com\/album\/\d+\/video\/\d+/)) {
+else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels\/[^\/]*($|\/$|\/page|\/\d+)/) || page.url.match(/vimeo.com\/originals\/[^\/]*($|\/$|\/\d+)/) || page.url.match(/vimeo.com\/album\/\d+\/video\/\d+/)) {
 
   /* Multi Video Page */
   if (getMyElement('', 'div', 'class', 'player_container', -1, false).length > 1) return;
 
+  /* Video Page Type */
+  var viVideoPage = (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/album\/\d+\/video\/\d+/)) ? true : false;
+
   /* Get Player Window */
-  var viPlayerWindow = getMyElement ('', 'div', 'class', 'player_container', 0, false);
+  var viPlayerWindow;
+  if (viVideoPage) viPlayerWindow = getMyElement ('', 'div', 'class', 'player_area', 0, false);
+  else viPlayerWindow = getMyElement ('', 'div', 'class', 'player_container', 0, false);
   if (!viPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -1626,6 +1631,10 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="image"\\s+content="(.*?)"', false);
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
     if (!viVideoThumb) viVideoThumb = getMyContent (page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
+    if (!viVideoThumb) {
+      viVideoThumb = getMyContent (page.url, 'src="(https://i.vimeocdn.com/video/.*?.jpg)"', false);
+      if (viVideoThumb) viVideoThumb = viVideoThumb.replace(/_.*/, '_960x540.jpg');
+    }
 
     /* Get Content Source */
     var viVideoSource = getMyContent (page.url, 'data-config-url="(.*?)"', false).replace(/&amp;/g, '&');
@@ -1638,10 +1647,17 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '960px', height: '562px', backgroundColor: '#F4F5F7'});
-    modifyMyElement (viPlayerWindow, 'div', '', true);
-    styleMyElement (viPlayerWindow, {height: '100%'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '960px', height: '562px', margin: '0px auto', backgroundColor: '#F4F5F7'});
+    if (viVideoPage) {
+      styleMyElement (viPlayerWindow, {minHeight: '562px', position: 'relative', zIndex: 'auto', transformStyle: 'flat'});
+      if (viPlayerWindow.parentNode) styleMyElement (viPlayerWindow.parentNode, {minHeight: '562px', position: 'relative', zIndex: 'auto'});
+    }
+    else {
+      styleMyElement (viPlayerWindow, {height: '100%'});
+    }
+    modifyMyElement (viPlayerWindow, 'div', '', false, true);
     appendMyElement (viPlayerWindow, myPlayerWindow);
+    blockObject = viPlayerWindow;
 
     /* Get Videos */
     if (viVideosContent) {
@@ -1665,7 +1681,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
       }
 
       /* Channels Sidebar */
-      if (page.url.indexOf('/channels/staffpicks') == -1) {
+      if (page.url.indexOf('/channels') != -1 && page.url.indexOf('/channels/staffpicks') == -1) {
 	var viSidebar = getMyElement ('', 'div', 'class', 'col_small', 0, false);
 	if (viSidebar) {
 	  styleMyElement (viSidebar, {marginTop: '570px'});
@@ -1696,7 +1712,8 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 	createMyPlayer ();
 
 	/* Fix panel */
-	styleMyElement(player['playerContent'], {marginTop: '3px'});
+	if (viVideoPage) styleMyElement(player['playerContent'], {marginTop: '7px'});
+	else styleMyElement(player['playerContent'], {marginTop: '3px'});
       }
       else {
 	showMyMessage ('!videos');
