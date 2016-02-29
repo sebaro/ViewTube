@@ -965,13 +965,13 @@ page.win.setInterval(function() {
   if (page.url != nurl) {
     // YouTube
     if (nurl.indexOf('youtube.com') != -1) {
-      if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.replace(nurl.replace(/&spfreload=\d+/, ''));
+      if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.href = nurl;
       else if (player['isPlaying']) playMyVideo(false);
     }
     // Facebook
     else if (nurl.indexOf('facebook.com') != -1) {
       if (nurl.match('facebook.com/(video.php|.*/videos/)')) {
-	page.win.location.replace(nurl.replace('&theater', ''));
+	page.win.location.href = nurl.replace('&theater', '');
       }
     }
     // Others
