@@ -976,7 +976,7 @@ page.win.setInterval(function() {
     }
     // Others
     else {
-      page.win.location.replace(nurl);
+      page.win.location.href = nurl;
     }
   }
   // Block videos
