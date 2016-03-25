@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2016.03.25
+- fixes the full-size feature
+- drops support for closed sites
+
 #2016.03.11
 - fixes Vimeo
 
