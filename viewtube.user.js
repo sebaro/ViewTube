@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.04.14
+// @version		2016.04.16
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1293,6 +1293,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	    }
 	    if (ytVideo.match(/type=(video|audio).*?&/)) ytVideo = ytVideo.replace(/type=(video|audio).*?&/, '');
 	    else ytVideo = ytVideo.replace(/&type=(video|audio).*$/, '');
+	    if (ytVideo.match(/&xtags=/)) ytVideo = ytVideo.replace(/&xtags=/, '');
 	    if (ytVideo.match(/&sig=/)) ytVideo = ytVideo.replace (/&sig=/, '&signature=');
 	    else if (ytVideo.match(/&s=/)) {
 	      var ytSig = ytVideo.match(/&s=(.*?)(&|$)/);
