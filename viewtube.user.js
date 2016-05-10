@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.04.16
+// @version		2016.05.10
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -635,7 +635,10 @@ function playDASHwithHTML5 () {
   option['plugin'] = 'HTML5';
   if (player['videoPlay'].indexOf('MP4') != -1) {
     player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/MP4/, 'Video MP4')], '', '', '');
-    if (player['videoList']['Medium Bitrate Audio Opus']) {
+    if (player['videoList']['High Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['High Bitrate Audio Opus'], '', '', '');
+    }
+    else if (player['videoList']['Medium Bitrate Audio Opus']) {
       player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
     }
     else {
@@ -644,7 +647,10 @@ function playDASHwithHTML5 () {
   }
   else {
     player['contentVideo'] = createMyElement ('video', player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')], '', '', '');
-    if (player['videoList']['Medium Bitrate Audio Opus']) {
+    if (player['videoList']['High Bitrate Audio Opus']) {
+      player['contentAudio'] = createMyElement ('video', player['videoList']['High Bitrate Audio Opus'], '', '', '');
+    }
+    else if (player['videoList']['Medium Bitrate Audio Opus']) {
       player['contentAudio'] = createMyElement ('video', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
     }
     else {
@@ -958,7 +964,7 @@ var blockInterval = 30;
 page.win.setInterval(function() {
   // Force page reload on href change
   nurl = page.win.location.href;
-  if (page.url != nurl) {
+  if (page.url.split('#')[0] != nurl.split('#')[0]) {
     // YouTube
     if (nurl.indexOf('youtube.com') != -1) {
       if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.href = nurl;
