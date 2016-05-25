@@ -3,7 +3,7 @@ ViewTube is a browser user script for watching videos from video websites with a
 
 ![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)  
 
-## Installation  
+# Installation  
 
 Mozilla (Firefox, Seamonkey, IceWeasel, IceCat, TenFourFox etc):  
 == with Greasemonkey add-on:  
@@ -56,9 +56,9 @@ Internet Explorer:
 == with IE7Pro extension:  
 -> http://ie7pro.com  
 
-## Players
+# Players
 
-### Plugins
+## Plugins
 
 Linux:  
 -> MPlayerPlug-In: http://mplayerplug-in.sourceforge.net  
@@ -81,15 +81,15 @@ Mac:
 -> QuickTime: http://apple.com/quicktime  
 -> VLC: http://videolan.org/vlc  
 
-### External  
+## External  
 
 If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://isebaro.com/viewtube/protocol  
 
-### Internal  
+## Internal  
 
 If no video plugin is installed the browser will use the HTML5 video player for video playback. If it doesn't work, select it from the second menu to force its use.  
      
-## Options  
+# Options  
 
 Plugin (second menu):  
 -> You can choose from: Auto, Alt, HTML5, MPEG, MP4, FLV, VLC, MPV, WMP, WMP2, QT, Totem, Xine  
