@@ -1,5 +1,5 @@
 
-ViewTube is a browser user script for watching videos from video websites with a video plugin or the HTML5 video player.  
+ViewTube is a browser user script for watching videos from video websites with a video plugin, an external video player or the HTML5 video player.  
 
 ![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)  
 
@@ -44,8 +44,10 @@ Midori:
 QupZilla:  
 == with the Greasemonkey plugin  
 
-Maxthon:  
-== with Violentmonkey extension:  
+Maxthon: 
+== with ViewTube extension:  
+-> https://github.com/sebaro/ViewTube/tree/master/Maxthon   
+== or with Violentmonkey extension:  
 -> http://extension.maxthon.com/detail/index.php?view_id=1680  
 == or with Tampermonkey Chrome extension:  
 -> https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
@@ -54,7 +56,9 @@ Internet Explorer:
 == with IE7Pro extension:  
 -> http://ie7pro.com  
 
-### Plugins  
+### Players
+
+# Plugins
 
 Linux:  
 -> MPlayerPlug-In: http://mplayerplug-in.sourceforge.net  
@@ -68,8 +72,8 @@ Linux:
 -> MPlayer (with MozPlugger): http://mplayerhq.hu  
 -> mpv (with MozPlugger): http://mpv.io  
 
- Windows:  
- -> Windows Media Player: http://www.interoperabilitybridges.com/windows-media-player-firefox-plugin-download  
+Windows:  
+-> Windows Media Player: http://www.interoperabilitybridges.com/windows-media-player-firefox-plugin-download  
 -> QuickTime: http://apple.com/quicktime  
 -> VLC: http://videolan.org/vlc  
 
@@ -77,6 +81,14 @@ Mac:
 -> QuickTime: http://apple.com/quicktime  
 -> VLC: http://videolan.org/vlc  
 
+# External  
+
+If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://isebaro.com/viewtube/protocol  
+
+# Internal  
+
+If no video plugin is installed the browser will use the HTML5 video player for video playback. If it doesn't work, select it from the second menu to force its use.  
+     
 ### Options  
 
 Plugin (second menu):  
@@ -91,6 +103,7 @@ Plugin (second menu):
 -> QT: videos are played by the QuickTime video plugin (Windows and Mac)  
 -> Totem: videos are played by the Totem video plugin (Linux)  
 -> Xine: videos are played by the Xine video plugin (Linux)  
+-> VTP: videos are played by an external video player (see Players/External)  
 
 Autoplay (AP):  
 -> Click 'Autoplay' button to turn autoplay on/off. If it's on, the video starts to play when the video page is loaded or when a new video format is selected. If it's off, a video thumbnail and a 'Play' button are shown.  

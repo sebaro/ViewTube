@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.05.10
+// @version		2016.05.25
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -101,7 +101,7 @@ var option = {'plugin': 'Auto', 'autoplay': false, 'autoget': false, 'definition
 var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'FLV'];
 if (navigator.platform.indexOf('Win') != -1) plugins = plugins.concat(['WMP', 'WMP2', 'QT']);
 else if (navigator.platform.indexOf('Mac') != -1) plugins = plugins.concat(['QT']);
-else plugins = plugins.concat(['MPV', 'Totem', 'Xine']);
+else plugins = plugins.concat(['MPV', 'Totem', 'Xine', 'VTP']);
 var mimetypes = {
   'MPEG': 'video/mpeg',
   'MP4': 'video/mp4',
@@ -683,6 +683,10 @@ function playDASHwithHTML5 () {
 
 function playMyVideo (play) {
   if (play) {
+    if (option['plugin'] == 'VTP') {
+      page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      return;
+    }
     player['isPlaying'] = true;
     modifyMyElement (player['buttonPlay'], 'div', 'Stop', false);
     styleMyElement (player['buttonPlay'], {color: '#AD0000'});

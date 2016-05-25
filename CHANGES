@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2016.05.25
+- adds support for external players through protocols
+
 #2016.05.10
 - don't reload page on hash change
 - use high bitrate Opus for YouTube DASH playback
