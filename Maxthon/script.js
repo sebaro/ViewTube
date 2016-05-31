@@ -1,13 +1,13 @@
 ﻿// ==UserScript==
 // @name		ViewTube
-// @version		2016.05.10
+// @version		2016.05.31
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
 // @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
 // @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
-// @icon		http://s3.amazonaws.com/uso_ss/icon/87011/large.png
+// @icon		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.png
 // @include		http://youtube.com*
 // @include		http://www.youtube.com*
 // @include		https://youtube.com*
@@ -101,7 +101,7 @@ var option = {'plugin': 'Auto', 'autoplay': false, 'autoget': false, 'definition
 var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'FLV'];
 if (navigator.platform.indexOf('Win') != -1) plugins = plugins.concat(['WMP', 'WMP2', 'QT']);
 else if (navigator.platform.indexOf('Mac') != -1) plugins = plugins.concat(['QT']);
-else plugins = plugins.concat(['MPV', 'Totem', 'Xine']);
+else plugins = plugins.concat(['MPV', 'Totem', 'Xine', 'VTP']);
 var mimetypes = {
   'MPEG': 'video/mpeg',
   'MP4': 'video/mp4',
@@ -683,6 +683,10 @@ function playDASHwithHTML5 () {
 
 function playMyVideo (play) {
   if (play) {
+    if (option['plugin'] == 'VTP') {
+      page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      return;
+    }
     player['isPlaying'] = true;
     modifyMyElement (player['buttonPlay'], 'div', 'Stop', false);
     styleMyElement (player['buttonPlay'], {color: '#AD0000'});
