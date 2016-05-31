@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.05.25
+// @version		2016.05.31
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
 // @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
 // @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
-// @icon		http://s3.amazonaws.com/uso_ss/icon/87011/large.png
+// @icon		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.png
 // @include		http://youtube.com*
 // @include		http://www.youtube.com*
 // @include		https://youtube.com*
