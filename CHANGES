@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2016.07.08
+- drops support for Facebook
+- improves page requests
+
 #2016.05.31
 - changes icon url
 

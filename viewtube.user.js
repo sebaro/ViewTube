@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.05.31
+// @version		2016.07.08
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -46,10 +46,6 @@
 // @include		http://www.imdb.com*
 // @include		https://imdb.com*
 // @include		https://www.imdb.com*
-// @include		http://facebook.com*
-// @include		http://www.facebook.com*
-// @include		https://facebook.com*
-// @include		https://www.facebook.com*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_setValue
 // @grant		GM_getValue
@@ -119,6 +115,7 @@ var mimetypes = {
   'Totem': 'application/x-totem-plugin',
   'Xine': 'application/x-xine-plugin'
 };
+var sources = {};
 
 // Links
 var website = 'http://isebaro.com/viewtube/?ln=en';
@@ -582,7 +579,7 @@ function playDASHwithVLC () {
       player['contentAudio'] = createMyElement ('embed', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
     }
   }
-  styleMyElement (player['contentAudio'], {position: 'absolute', zIndex: '-1'});
+  styleMyElement (player['contentAudio'], {position: 'absolute', zIndex: '-1', width: '1px', height: '1px'});
   appendMyElement (player['playerContent'], player['contentAudio']);
   player['contentVLCInit'] = page.win.setInterval(function () {
     if (player['contentAudio'].wrappedJSObject.playlist) {
@@ -831,9 +828,13 @@ function getMyContent (url, pattern, clean) {
   var myPageContent, myVideosParse, myVideosContent;
   var isIE = (navigator.appName.indexOf('Internet Explorer') != -1) ? true : false;
   var getMethod = (url != page.url || isIE) ? 'XHR' : 'DOM';
+  if (!sources[url]) sources[url] = {};
   if (getMethod == 'DOM') {
-    myPageContent = getMyElement ('', 'html', 'tag', '', 0, true);
-    if (!myPageContent) myPageContent = getMyElement ('', 'body', '', '', -1, true);
+    if (!sources[url]['DOM']) {
+      sources[url]['DOM'] = getMyElement ('', 'html', 'tag', '', 0, true);
+      if (!sources[url]['DOM']) sources[url]['DOM'] = getMyElement ('', 'body', '', '', -1, true);
+    }
+    myPageContent = sources[url]['DOM'];
     if (clean) myPageContent = cleanMyContent (myPageContent, true);
     myVideosParse = myPageContent.match (pattern);
     myVideosContent = (myVideosParse) ? myVideosParse[1] : null;
@@ -841,17 +842,22 @@ function getMyContent (url, pattern, clean) {
     else getMethod = 'XHR';
   }
   if (getMethod == 'XHR') {
-    var xmlHTTP = new XMLHttpRequest();
-    xmlHTTP.open('GET', url, false);
-    xmlHTTP.send();
+    if (!sources[url]['XHR']) sources[url]['XHR'] = {};
+    if ((pattern == 'XML' && !sources[url]['XHR']['XML']) || (pattern != 'XML' && !sources[url]['XHR']['TEXT'])) {
+      var xmlHTTP = new XMLHttpRequest();
+      xmlHTTP.open('GET', url, false);
+      xmlHTTP.send();
+      if (pattern == 'XML') sources[url]['XHR']['XML'] = xmlHTTP.responseXML;
+      else sources[url]['XHR']['TEXT'] = xmlHTTP.responseText;
+    }
     if (pattern == 'XML') {
-      myVideosContent = xmlHTTP.responseXML;
+      myVideosContent = sources[url]['XHR']['XML'];
     }
     else if (pattern == 'TEXT') {
-      myVideosContent = xmlHTTP.responseText;
+      myVideosContent = sources[url]['XHR']['TEXT'];
     }
     else {
-      myPageContent = xmlHTTP.responseText;
+      myPageContent = sources[url]['XHR']['TEXT'];
       if (clean) myPageContent = cleanMyContent (myPageContent, true);
       myVideosParse = myPageContent.match (pattern);
       myVideosContent = (myVideosParse) ? myVideosParse[1] : null;
@@ -974,12 +980,6 @@ page.win.setInterval(function() {
       if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.href = nurl;
       else if (player['isPlaying']) playMyVideo(false);
     }
-    // Facebook
-    else if (nurl.indexOf('facebook.com') != -1) {
-      if (nurl.match('facebook.com/(video.php|.*/videos/)')) {
-	page.win.location.href = nurl.replace('&theater', '');
-      }
-    }
     // Others
     else {
       page.win.location.href = nurl;
@@ -1060,9 +1060,9 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
   /* Player Size */
   var ytSidebarMarginNormal = 382;
   var ytSidebarWindow = getMyElement ('', 'div', 'id', 'watch7-sidebar', -1, false);
-  var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow);
-  if (ytSidebarWindow && ytSidebarWindowStyle) {
-    ytSidebarMarginNormal = -12 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
+  if (ytSidebarWindow) {
+    var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow);
+    if (ytSidebarWindowStyle) ytSidebarMarginNormal = -12 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
     styleMyElement (ytSidebarWindow, {marginTop: ytSidebarMarginNormal + 'px'});
   }
   var ytPlayerWidth, ytPlayerHeight;
@@ -2198,6 +2198,7 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
     /* Get Videos Content */
     var vkVideosContent;
     if (vkVideoID) vkVideosContent = getMyContent (page.win.location.protocol + '//' + page.win.location.host + '/player5_fragment/' + vkVideoID + 'v.json', 'TEXT', false);
+    if (vkVideosContent.replace(/\n/, '') == '{}') return;
 
     /* Player Size */
     var vkSidebarWidth = 320;
@@ -2361,82 +2362,6 @@ else if (page.url.indexOf('imdb.com') != -1) {
     }
     else {
       showMyMessage ('!videos');
-    }
-  }
-
-}
-
-// =====Facebook===== //
-
-else if (page.url.match('facebook.com/(video.php|.*/videos/)')) {
-
-  /* Get Player Window */
-  var fbPlayerWindow = getMyElement ('', 'div', 'class', 'videoStage', 0, false);
-  if (!fbPlayerWindow) {
-    showMyMessage ('!player');
-  }
-  else {
-    /* Get Videos Content */
-    var fbVideosContent = getMyContent(page.url, '"params","(.*?)"', false);
-    var fbPattern = /\\u([\d\w]{4})/gi;
-    fbVideosContent = fbVideosContent.replace(fbPattern, function (match, group) {
-      return String.fromCharCode(parseInt(group, 16));
-    });
-    fbVideosContent = unescape(fbVideosContent);
-
-    /* My Player Window */
-    var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '720px', height: '428px', backgroundColor: '#F4F4F4'});
-    modifyMyElement (fbPlayerWindow, 'div', '', false, true);
-    appendMyElement (fbPlayerWindow, myPlayerWindow);
-    blockObject = fbPlayerWindow;
-
-    /* Get Videos */
-    if (fbVideosContent) {
-      var fbVideoList = {};
-      var fbVideoFormats = {'sd_src': 'Low Definition MP4', 'hd_src': 'High Definition MP4'};
-      var fbVideoFound = false;
-      var fbVideoPattern, fbVideo, myVideoCode, fbVideoThumb, fbDefaultVideo;
-      for (var fbVideoCode in fbVideoFormats) {
-	fbVideoPattern = '"' + fbVideoCode + '":"(.*?)"';
-	fbVideo = fbVideosContent.match(fbVideoPattern);
-	fbVideo = (fbVideo) ? fbVideo[1] : null;
-	if (fbVideo) {
-	  fbVideo = cleanMyContent(fbVideo, false);
-	  if (!fbVideoFound) fbVideoFound = true;
-	  myVideoCode = fbVideoFormats[fbVideoCode];
-	  if (fbVideo.indexOf('.flv') != -1) myVideoCode = myVideoCode.replace('MP4', 'FLV');
-	  fbVideoList[myVideoCode] = fbVideo;
-	  if (!fbDefaultVideo) fbDefaultVideo = myVideoCode;
-	}
-	fbVideoThumb = fbVideosContent.match(/"thumbnail_src":"(.*?)"/);
-	fbVideoThumb = (fbVideoThumb) ? fbVideoThumb[1] : null;
-	if (fbVideoThumb) fbVideoThumb = cleanMyContent(fbVideoThumb, false);
-	else fbVideoThumb = 'https://www.facebook.com/images/fb_icon_325x325.png';
-      }
-
-      if (fbVideoFound) {
-	/* Create Player */
-	player = {
-	  'playerSocket': fbPlayerWindow,
-	  'playerWindow': myPlayerWindow,
-	  'videoList': fbVideoList,
-	  'videoPlay': fbDefaultVideo,
-	  'videoThumb': fbVideoThumb,
-	  'playerWidth': 720,
-	  'playerHeight': 428
-	};
-	feature['widesize'] = false;
-	option['definitions'] = ['High Definition', 'Low Definition'];
-	option['containers'] = ['MP4', 'FLV', 'Any'];
-	createMyPlayer ();
-      }
-      else {
-	showMyMessage ('!videos');
-      }
-    }
-    else {
-      showMyMessage ('!content');
     }
   }
 
