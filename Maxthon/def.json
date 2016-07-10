@@ -1,10 +1,10 @@
 ﻿[{
 	"author": "Sebaro (script) & A.S. (MX add-on)"
 	"website": "http://isebaro.com/viewtube/" 
-	"date": "31.05.2016"
+	"date": "08.07.2016"
 	"type":"extension",
-		"frameworkVersion":"1.0.0",
-		"version":"2016.05.31.0",
+	"frameworkVersion":"1.0.0",
+	"version":"2016.07.08.0",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
@@ -28,20 +28,12 @@
 			"break.com",
 			"*.funnyordie.com",
 			"funnyordie.com",
-			"*.videojug.com",
-			"videojug.com",
-			"*.blip.tv",
-			"blip.tv",
 			"*.veoh.com",
 			"veoh.com",
-			"*.crackle.com",
-			"crackle.com",
 			"*.viki.com",
 			"viki.com",
 			"*.imdb.com",
 			"imdb.com",
-			"*.facebook.com",
-			"facebook.com",
 			],
 		"js": ["script.js"],
 		}]
