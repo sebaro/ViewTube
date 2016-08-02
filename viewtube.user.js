@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.07.08
+// @version		2016.08.01
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -14,6 +14,8 @@
 // @include		https://www.youtube.com*
 // @include		http://gaming.youtube.com*
 // @include		https://gaming.youtube.com*
+// @include		http://m.youtube.com*
+// @include		https://m.youtube.com*
 // @include		http://dailymotion.com*
 // @include		http://www.dailymotion.com*
 // @include		https://dailymotion.com*
@@ -88,7 +90,7 @@ if (window.top != window.self) return;
 var userscript = 'ViewTube';
 
 // Page
-var page = {win: window, doc: document, body: document.body, url: window.location.href, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
+var page = {win: window, doc: document, body: document.body, url: window.location.href, title: document.title, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
 
 // Player
 var player = {};
@@ -972,19 +974,13 @@ function showMyMessage (cause, content) {
 var blockObject = null;
 var blockInterval = 30;
 page.win.setInterval(function() {
-  // Force page reload on href change
-  nurl = page.win.location.href;
-  if (page.url.split('#')[0] != nurl.split('#')[0]) {
-    // YouTube
-    if (nurl.indexOf('youtube.com') != -1) {
-      if (nurl.indexOf('youtube.com/watch') != -1) page.win.location.href = nurl;
-      else if (player['isPlaying']) playMyVideo(false);
-    }
-    // Others
-    else {
-      page.win.location.href = nurl;
-    }
+  // Force page reload on title and location change
+  if (page.title != page.doc.title && page.url != page.win.location.href) {
+    page.title = page.doc.title;
+    page.url = page.win.location.href;
+    page.win.location.reload();
   }
+
   // Block videos
   if (blockObject && blockInterval > 0) {
     var elEmbeds = getMyElement (blockObject, 'embed', 'tag', '', -1, false) || getMyElement (blockObject, 'object', 'tag', '', -1, false);
@@ -1103,7 +1099,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     if (!ytVideoThumb) ytVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
     if (!ytVideoThumb) {
       var ytVideoID = page.url.match (/(\?|&)v=(.*?)(&|$)/);
-      if (ytVideoID) ytVideoThumb = 'http://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
+      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
     }
 
     /* Get Video Title */
@@ -1123,15 +1119,15 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     var ytVideosContent, ytHLSContent;
     var ytVideosEncodedFmts, ytVideosAdaptiveFmts;
     ytVideosEncodedFmts = getMyContent(page.url, '"url_encoded_fmt_stream_map":\\s*"(.*?)"', false);
+    if (!ytVideosEncodedFmts) ytVideosEncodedFmts = getMyContent(page.url, '\\\\"url_encoded_fmt_stream_map\\\\":\\s*\\\\"(.*?)\\\\"', false);
     ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts":\\s*"(.*?)"', false);
+    if (!ytVideosAdaptiveFmts) ytVideosAdaptiveFmts = getMyContent(page.url, '\\\\"adaptive_fmts\\\\":\\s*\\\\"(.*?)\\\\"', false);
     if (ytVideosEncodedFmts) {
       ytVideosContent = ytVideosEncodedFmts;
     }
     else {
-      if (!ytVideoID) {
-	var ytVideoID = page.url.match (/(\?|&)v=(.*?)(&|$)/);
-	ytVideoID = (ytVideoID) ? ytVideoID[2] : null;
-      }
+      var ytVideoID = page.url.match (/(\?|&)v=(.*?)(&|$)/);
+      ytVideoID = (ytVideoID) ? ytVideoID[2] : null;
       if (ytVideoID) {
 	var ytVideoSts = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"sts"\\s*:\\s*(\\d+)', false);
 	var ytVideosInfoURL = page.win.location.protocol + '//' + page.win.location.hostname + '/get_video_info?video_id=' + ytVideoID + '&eurl=https://youtube.googleapis.com/v/' + ytVideoID + '&sts=' + ytVideoSts;
