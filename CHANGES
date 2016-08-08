@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2016.08.08
+- fixes YouTube live streams
+
 #2016.08.01
 - adds support for YouTube mobile
 - fixes page reload issues
