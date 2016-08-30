@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.08.29
+// @version		2016.08.30
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -163,7 +163,7 @@ function createMyElement(type, content, event, action, target) {
   }
   if (event == 'change') {
     if (target == 'video') {
-      obj.addEventListener('change', function () {
+      obj.addEventListener('change', function() {
 	player['videoPlay'] = this.value;
 	if (player['isGetting']) {
 	  modifyMyElement(player['buttonGet'] , 'div', 'Get', false);
@@ -173,7 +173,7 @@ function createMyElement(type, content, event, action, target) {
       }, false);
     }
     else if (target == 'plugin') {
-      obj.addEventListener('change', function () {
+      obj.addEventListener('change', function() {
 	option['plugin'] = this.value;
 	setMyOptions('plugin', option['plugin']);
 	if (player['isPlaying']) playMyVideo(true);
@@ -181,7 +181,7 @@ function createMyElement(type, content, event, action, target) {
     }
   }
   else if (event == 'click') {
-    obj.addEventListener('click', function () {
+    obj.addEventListener('click', function() {
       if (action == 'close') {
 	removeMyElement(page.body, target);
       }
@@ -478,7 +478,7 @@ function createMyPlayer() {
     player['contentImage'] = createMyElement('img', player['videoThumb'], 'click', 'play', '');
     player['contentImage'].title = '{Click to start video playback}';
     styleMyElement(player['contentImage'], {maxWidth: '100%', maxHeight: '100%', position: 'absolute', top: '0px', left: '0px', right: '0px', bottom: '0px', margin: 'auto', border: '0px', cursor: 'pointer'});
-    player['contentImage'].addEventListener('load', function () {
+    player['contentImage'].addEventListener('load', function() {
       if (this.width/this.height >= player['contentWidth']/player['contentHeight']) {
 	this.style.width = '100%';
       }
@@ -583,7 +583,7 @@ function playDASHwithVLC() {
   }
   styleMyElement(player['contentAudio'], {position: 'absolute', zIndex: '-1', width: '1px', height: '1px'});
   appendMyElement(player['playerContent'], player['contentAudio']);
-  player['contentVLCInit'] = page.win.setInterval(function () {
+  player['contentVLCInit'] = page.win.setInterval(function() {
     if (player['contentAudio'].wrappedJSObject.playlist) {
       player['contentAudio'].wrappedJSObject.playlist.pause();
       player['contentVLCAudioPlaylistInit'] = true;
@@ -604,7 +604,7 @@ function playDASHwithVLC() {
 	&& player['contentVLCAudioInputInit'] && player['contentVLCVideoInputInit']) {
       player['contentAudio'].wrappedJSObject.playlist.play();
       player['contentVideo'].wrappedJSObject.playlist.play();
-      player['contentVLCSync'] = page.win.setInterval(function () {
+      player['contentVLCSync'] = page.win.setInterval(function() {
 	if (!player['contentVideo'] || !player['contentVideo'].wrappedJSObject || !player['contentVideo'].wrappedJSObject.input) {
 	  page.win.clearInterval(player['contentVLCSync']);
 	}
@@ -1028,8 +1028,8 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 
   /* Decrypt Signature */
   var ytScriptSrc;
-  function ytDecryptSignature (s) {return null;}
-  function ytDecryptFunction () {
+  function ytDecryptSignature(s) {return null;}
+  function ytDecryptFunction() {
     var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
     ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
     ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*(.*?)\(/);
@@ -1669,7 +1669,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 
     /* Get Videos */
     if (viVideosContent) {
-      var viVideoFormats = {'1080p': 'Full High Definition MP4', '720p': 'High Definition MP4', '360p': 'Low Definition MP4', '270p': 'Very Low Definition MP4'};
+      var viVideoFormats = {'1080p': 'Full High Definition MP4', '720p': 'High Definition MP4', '480p': 'Standard Definition MP4', '360p': 'Low Definition MP4', '270p': 'Very Low Definition MP4'};
       var viVideoList = {};
       var viVideoFound = false;
       var viVideo, myVideoCode;
@@ -1715,7 +1715,7 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 	};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['High Definition', 'Low Definition', 'Very Low Definition'];
+	option['definitions'] = ['High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer();
 
