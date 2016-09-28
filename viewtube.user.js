@@ -972,12 +972,33 @@ function showMyMessage(cause, content) {
 
 // Fixes
 
-var elVideo = document.querySelector('video');
-if (elVideo) elVideo.pause();
+var blockObject = page.doc;
+var blockInterval = 20;
 
-var blockObject = null;
-var blockInterval = 40;
+function blockVideos() {
+  var elEmbeds = getMyElement(blockObject, 'embed', 'tag', '', -1, false) || getMyElement(blockObject, 'object', 'tag', '', -1, false);
+  if (elEmbeds.length > 0) {
+    for (var e = 0; e < elEmbeds.length; e++) {
+      var elEmbed = elEmbeds[e];
+      if (elEmbed && elEmbed.id != 'vtVideo' && elEmbed.parentNode) {
+	removeMyElement(elEmbed.parentNode, elEmbed);
+      }
+    }
+  }
+  var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
+  if (elVideos.length > 0) {
+    for (var v = 0; v < elVideos.length; v++) {
+      var elVideo = elVideos[v];
+      if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
+	if (!elVideo.paused) elVideo.pause();
+      }
+    }
+  }
+}
+blockVideos();
+
 page.win.setInterval(function() {
+
   // Force page reload on title and location change
   if (page.title != page.doc.title && page.url != page.win.location.href) {
     page.title = page.doc.title;
@@ -987,26 +1008,10 @@ page.win.setInterval(function() {
 
   // Block videos
   if (blockObject && blockInterval > 0) {
-    var elEmbeds = getMyElement(blockObject, 'embed', 'tag', '', -1, false) || getMyElement(blockObject, 'object', 'tag', '', -1, false);
-    if (elEmbeds.length > 0) {
-      for (var e = 0; e < elEmbeds.length; e++) {
-	var elEmbed = elEmbeds[e];
-	if (elEmbed && elEmbed.id != 'vtVideo' && elEmbed.parentNode) {
-	  removeMyElement(elEmbed.parentNode, elEmbed);
-	}
-      }
-    }
-    var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
-    if (elVideos.length > 0) {
-      for (var v = 0; v < elVideos.length; v++) {
-	var elVideo = elVideos[v];
-	if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
-	  elVideo.pause();
-	}
-      }
-    }
+    blockVideos();
     if (blockInterval > 0) blockInterval--;
   }
+
 }, 250);
 
 // =====YouTube===== //
