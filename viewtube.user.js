@@ -972,15 +972,11 @@ function showMyMessage(cause, content) {
 
 // Fixes
 
-var blockHTML5Video = function() {
-  if (document.querySelector('video'))  {
-    document.querySelector('video').pause();
-    document.querySelector('video').src = '#';
-  }
+var elVideo = document.querySelector('video');
+if (elVideo)  {
+  elVideo.pause();
+  elVideo.src = '#';
 }
-var injectScript = document.createElement("script");
-injectScript.textContent = '(' +  blockHTML5Video + '())';
-document.documentElement.appendChild(injectScript);
 
 var blockObject = null;
 var blockInterval = 20;
