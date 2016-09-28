@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.08.30
+// @version		2016.09.28
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -318,7 +318,7 @@ function modifyMyElement(obj, type, content, clear, hide) {
     }
   }
   if (hide) {
-    for(var i = 0; i < obj.children.length; i++) {
+    for (var i = 0; i < obj.children.length; i++) {
       styleMyElement(obj.children[i], {display: 'none'});
     }
   }
@@ -786,7 +786,7 @@ function resizeMyPlayer(size) {
       appendMyElement(player['playerSocket'], player['playerWindow']);
       styleMyElement(page.body, {overflow: 'auto'});
       styleMyElement(page.body.parentNode, {overflow: 'auto'});
-      page.win.removeEventListener ('resize', player['resizeListener'], false);
+      page.win.removeEventListener('resize', player['resizeListener'], false);
       player['isFullsize'] = false;
       if (player['isPlaying']) {
 	if (player['contentVideo'] && player['contentVideo'].paused) player['contentVideo'].play();
@@ -904,7 +904,7 @@ function getMyOptions() {
 	}
 	else throw false;
       }
-      catch (e) {
+      catch(e) {
 	var cookies = page.doc.cookie.split(';');
 	for (var i=0; i < cookies.length; i++) {
 	  var cookie = cookies[i];
@@ -972,7 +972,7 @@ function showMyMessage(cause, content) {
 
 // Fixes
 var blockObject = null;
-var blockInterval = 30;
+var blockInterval = 50;
 page.win.setInterval(function() {
   // Force page reload on title and location change
   if (page.title != page.doc.title && page.url != page.win.location.href) {
@@ -997,13 +997,14 @@ page.win.setInterval(function() {
       for (var v = 0; v < elVideos.length; v++) {
 	var elVideo = elVideos[v];
 	if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
-	  modifyMyElement(elVideo, 'video', 'none', true);
+	  elVideo.pause();
+	  modifyMyElement(elVideo, 'video', '#', true);
 	}
       }
     }
     if (blockInterval > 0) blockInterval--;
   }
-}, 500);
+}, 250);
 
 // =====YouTube===== //
 
@@ -1095,6 +1096,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
     showMyMessage('!player');
   }
   else {
+    /* Get Video Thumbnail */
     var ytVideoThumb = getMyContent(page.url, 'link\\s+itemprop="thumbnailUrl"\\s+href="(.*?)"', false);
     if (!ytVideoThumb) ytVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
     if (!ytVideoThumb) {
@@ -1396,7 +1398,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	    if (ytScriptSrc) ytDecryptFunction();
 	    ytVideos();
 	  }
-	  catch (e) {
+	  catch(e) {
 	    try {
 	      GM_xmlhttpRequest({
 		method: 'GET',
@@ -1416,7 +1418,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 		}
 	      });
 	    }
-	    catch (e) {
+	    catch(e) {
 	      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
 	    }
 	  }
@@ -1435,7 +1437,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	  ytHLSContent = getMyContent(ytHLSVideos, 'TEXT', false);
 	  ytHLS();
 	}
-	catch (e) {
+	catch(e) {
 	  try {
 	    GM_xmlhttpRequest({
 	      method: 'GET',
@@ -1451,7 +1453,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	      }
 	    });
 	  }
-	  catch (e) {
+	  catch(e) {
 	    ytHLS();
 	  }
 	}
