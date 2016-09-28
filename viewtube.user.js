@@ -973,13 +973,10 @@ function showMyMessage(cause, content) {
 // Fixes
 
 var elVideo = document.querySelector('video');
-if (elVideo)  {
-  elVideo.pause();
-  elVideo.src = '#';
-}
+if (elVideo) elVideo.pause();
 
 var blockObject = null;
-var blockInterval = 20;
+var blockInterval = 40;
 page.win.setInterval(function() {
   // Force page reload on title and location change
   if (page.title != page.doc.title && page.url != page.win.location.href) {
@@ -1005,7 +1002,6 @@ page.win.setInterval(function() {
 	var elVideo = elVideos[v];
 	if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
 	  elVideo.pause();
-	  modifyMyElement(elVideo, 'video', '#', true);
 	}
       }
     }
