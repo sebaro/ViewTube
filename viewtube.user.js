@@ -971,8 +971,19 @@ function showMyMessage(cause, content) {
 // ==========Websites========== //
 
 // Fixes
+
+var blockHTML5Video = function() {
+  if (document.querySelector('video'))  {
+    document.querySelector('video').pause();
+    document.querySelector('video').src = '#';
+  }
+}
+var injectScript = document.createElement("script");
+injectScript.textContent = '(' +  blockHTML5Video + '())';
+document.documentElement.appendChild(injectScript);
+
 var blockObject = null;
-var blockInterval = 50;
+var blockInterval = 20;
 page.win.setInterval(function() {
   // Force page reload on title and location change
   if (page.title != page.doc.title && page.url != page.win.location.href) {
