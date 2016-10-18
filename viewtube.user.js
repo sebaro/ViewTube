@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2016.10.07
+// @version		2016.10.18
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -668,8 +668,10 @@ function playDASHwithHTML5() {
 
 function playMyVideo(play) {
   if (play) {
-    if (option['plugin'] == 'VTP' && player['videoList'][player['videoPlay']] != 'DASH') {
-      page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+    if (option['plugin'] == 'VTP') {
+      if (player['videoList'][player['videoPlay']] != 'DASH') {
+	page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      }
       return;
     }
     player['isPlaying'] = true;
@@ -959,9 +961,21 @@ function showMyMessage(cause, content) {
 // Fixes
 
 var blockObject = page.doc;
-var blockInterval = 20;
+var blockInterval = 50;
 
 function blockVideos() {
+  var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
+  if (elVideos.length > 0) {
+    for (var v = 0; v < elVideos.length; v++) {
+      var elVideo = elVideos[v];
+      if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
+	if (!elVideo.paused) {
+	  elVideo.pause();
+	  if (page.url.indexOf('youtube.com/watch') == -1) elVideo.src = "#";
+	}
+      }
+    }
+  }
   var elEmbeds = getMyElement(blockObject, 'embed', 'tag', '', -1, false) || getMyElement(blockObject, 'object', 'tag', '', -1, false);
   if (elEmbeds.length > 0) {
     for (var e = 0; e < elEmbeds.length; e++) {
@@ -971,12 +985,14 @@ function blockVideos() {
       }
     }
   }
-  var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
-  if (elVideos.length > 0) {
-    for (var v = 0; v < elVideos.length; v++) {
-      var elVideo = elVideos[v];
-      if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
-	if (!elVideo.paused) elVideo.pause();
+  if (blockObject !== page.doc) {
+    var elFrames = getMyElement(blockObject, 'iframe', 'tag', '', -1, false);
+    if (elFrames.length > 0) {
+      for (var e = 0; e < elFrames.length; e++) {
+	var elFrame = elFrames[e];
+	if (elFrame && elFrame.parentNode) {
+	  removeMyElement(elFrame.parentNode, elFrame);
+	}
       }
     }
   }
@@ -1544,12 +1560,12 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
     /* Get Videos */
     if (dmVideosContent) {
       var dmVideoFormats = {'240': 'Very Low Definition MP4', '380': 'Low Definition MP4', '480': 'Standard Definition MP4',
-	'720': 'High Definition MP4', '1080': 'Full High Definition MP4', '.*?x-mpegURL': 'HTTP Live Streaming M3U8'};
+	'720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
       var dmVideoList = {};
       var dmVideoFound = false;
       var dmVideoParser, dmVideoParse, myVideoCode, dmVideo;
       for (var dmVideoCode in dmVideoFormats) {
-	dmVideoParser = '"' + dmVideoCode + '".*?"url":"(.*?)"';
+	dmVideoParser = '"' + dmVideoCode + '".*?"type":"video.*?mp4","url":"(.*?)"';
 	dmVideoParse = dmVideosContent.match(dmVideoParser);
 	dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
 	if (dmVideo) {
