@@ -721,7 +721,7 @@ function getMyVideo() {
     vdoD = vdoD.replace(/\sFLV|\sMP4|\sWebM|\s3GP/g, '');
     vdoURL = vdoURL + '&title=' + player['videoTitle'] + vdoD;
   }
-  if (option['autoget'] && !player['videoPlay'].match(/(Video|Audio)/)) page.win.location.href = vdoURL;
+  if (option['autoget'] && player['videoPlay'] == 'High Definition MP4') page.win.location.href = vdoURL;
   else {
     var vdoLink = 'Get <a href="' + vdoURL + '" style="color:#00892C">Link</a>';
     modifyMyElement(player['buttonGet'] , 'div', vdoLink, false);

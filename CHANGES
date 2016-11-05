@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2016.11.05
+- YouTube direct download works for non-DASH HD only
+
 #2016.10.18
 - fixes Dailymotion
 
