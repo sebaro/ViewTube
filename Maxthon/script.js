@@ -1,6 +1,6 @@
 ﻿// ==UserScript==
 // @name		ViewTube
-// @version		2016.09.28
+// @version		2016.11.05
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -584,32 +584,18 @@ function playDASHwithVLC() {
   styleMyElement(player['contentAudio'], {position: 'absolute', zIndex: '-1', width: '1px', height: '1px'});
   appendMyElement(player['playerContent'], player['contentAudio']);
   player['contentVLCInit'] = page.win.setInterval(function() {
-    if (player['contentAudio'].wrappedJSObject.playlist) {
-      player['contentAudio'].wrappedJSObject.playlist.pause();
-      player['contentVLCAudioPlaylistInit'] = true;
-    }
-    if (player['contentVideo'].wrappedJSObject.playlist) {
-      player['contentVideo'].wrappedJSObject.playlist.pause();
-      player['contentVLCVideoPlaylistInit'] = true;
-    }
-    if (player['contentAudio'].wrappedJSObject.input) {
-      player['contentAudio'].wrappedJSObject.input.time = 0;
-      player['contentVLCAudioInputInit'] = true;
-    }
-    if (player['contentVideo'].wrappedJSObject.input) {
-      player['contentVideo'].wrappedJSObject.input.time = 0;
-      player['contentVLCVideoInputInit'] = true;
-    }
-    if (player['contentVLCAudioPlaylistInit'] && player['contentVLCVideoPlaylistInit']
-	&& player['contentVLCAudioInputInit'] && player['contentVLCVideoInputInit']) {
-      player['contentAudio'].wrappedJSObject.playlist.play();
-      player['contentVideo'].wrappedJSObject.playlist.play();
+    if (player['contentAudio'].wrappedJSObject.playlist && player['contentVideo'].wrappedJSObject.playlist
+      && player['contentAudio'].wrappedJSObject.input && player['contentVideo'].wrappedJSObject.input) {
+      player['contentVLCVideoPosition'] = 0;
       player['contentVLCSync'] = page.win.setInterval(function() {
 	if (!player['contentVideo'] || !player['contentVideo'].wrappedJSObject || !player['contentVideo'].wrappedJSObject.input) {
 	  page.win.clearInterval(player['contentVLCSync']);
 	}
-	if (Math.abs(player['contentVideo'].wrappedJSObject.input.time - player['contentAudio'].wrappedJSObject.input.time) >= 500) {
-	  player['contentAudio'].wrappedJSObject.input.time = player['contentVideo'].wrappedJSObject.input.time;
+	if (player['contentVideo'].wrappedJSObject.input.time != player['contentVLCVideoPosition']) {
+	  if (Math.abs(player['contentVideo'].wrappedJSObject.input.time - player['contentAudio'].wrappedJSObject.input.time) >= 500) {
+	    player['contentAudio'].wrappedJSObject.input.time = player['contentVideo'].wrappedJSObject.input.time;
+	  }
+	  player['contentVLCVideoPosition'] = player['contentVideo'].wrappedJSObject.input.time;
 	}
 	if (player['contentVideo'].wrappedJSObject.input.state == '4') {
 	  player['contentAudio'].wrappedJSObject.playlist.pause();
@@ -683,7 +669,9 @@ function playDASHwithHTML5() {
 function playMyVideo(play) {
   if (play) {
     if (option['plugin'] == 'VTP') {
-      page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      if (player['videoList'][player['videoPlay']] != 'DASH') {
+	page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      }
       return;
     }
     player['isPlaying'] = true;
@@ -733,7 +721,7 @@ function getMyVideo() {
     vdoD = vdoD.replace(/\sFLV|\sMP4|\sWebM|\s3GP/g, '');
     vdoURL = vdoURL + '&title=' + player['videoTitle'] + vdoD;
   }
-  if (option['autoget'] && !player['videoPlay'].match(/(Video|Audio)/)) page.win.location.href = vdoURL;
+  if (option['autoget'] && player['videoPlay'] == 'High Definition MP4') page.win.location.href = vdoURL;
   else {
     var vdoLink = 'Get <a href="' + vdoURL + '" style="color:#00892C">Link</a>';
     modifyMyElement(player['buttonGet'] , 'div', vdoLink, false);
@@ -973,9 +961,21 @@ function showMyMessage(cause, content) {
 // Fixes
 
 var blockObject = page.doc;
-var blockInterval = 20;
+var blockInterval = 50;
 
 function blockVideos() {
+  var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
+  if (elVideos.length > 0) {
+    for (var v = 0; v < elVideos.length; v++) {
+      var elVideo = elVideos[v];
+      if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
+	if (!elVideo.paused) {
+	  elVideo.pause();
+	  if (page.url.indexOf('youtube.com/watch') == -1) elVideo.src = "#";
+	}
+      }
+    }
+  }
   var elEmbeds = getMyElement(blockObject, 'embed', 'tag', '', -1, false) || getMyElement(blockObject, 'object', 'tag', '', -1, false);
   if (elEmbeds.length > 0) {
     for (var e = 0; e < elEmbeds.length; e++) {
@@ -985,12 +985,14 @@ function blockVideos() {
       }
     }
   }
-  var elVideos = getMyElement(blockObject, 'video', 'tag', '', -1, false);
-  if (elVideos.length > 0) {
-    for (var v = 0; v < elVideos.length; v++) {
-      var elVideo = elVideos[v];
-      if (elVideo && elVideo.id != 'vtVideo' && elVideo.currentSrc) {
-	if (!elVideo.paused) elVideo.pause();
+  if (blockObject !== page.doc) {
+    var elFrames = getMyElement(blockObject, 'iframe', 'tag', '', -1, false);
+    if (elFrames.length > 0) {
+      for (var e = 0; e < elFrames.length; e++) {
+	var elFrame = elFrames[e];
+	if (elFrame && elFrame.parentNode) {
+	  removeMyElement(elFrame.parentNode, elFrame);
+	}
       }
     }
   }
@@ -1001,6 +1003,7 @@ page.win.setInterval(function() {
 
   // Force page reload on title and location change
   if (page.title != page.doc.title && page.url != page.win.location.href) {
+    if (player['playerSocket']) styleMyElement(player['playerSocket'], {display: 'none'});
     page.title = page.doc.title;
     page.url = page.win.location.href;
     page.win.location.reload();
@@ -1012,7 +1015,7 @@ page.win.setInterval(function() {
     if (blockInterval > 0) blockInterval--;
   }
 
-}, 250);
+}, 500);
 
 // =====YouTube===== //
 
@@ -1308,7 +1311,8 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
 	    }
 	    if (ytVideo.match(/type=(video|audio).*?&/)) ytVideo = ytVideo.replace(/type=(video|audio).*?&/, '');
 	    else ytVideo = ytVideo.replace(/&type=(video|audio).*$/, '');
-	    if (ytVideo.match(/&xtags=/)) ytVideo = ytVideo.replace(/&xtags=/, '');
+	    if (ytVideo.match(/xtags=[^%=]*&/)) ytVideo = ytVideo.replace(/xtags=[^%=]*?&/, '');
+	    else if (ytVideo.match(/&xtags=[^%=]*$/)) ytVideo = ytVideo.replace(/&xtags=[^%=]*$/, '');
 	    if (ytVideo.match(/&sig=/)) ytVideo = ytVideo.replace(/&sig=/, '&signature=');
 	    else if (ytVideo.match(/&s=/)) {
 	      var ytSig = ytVideo.match(/&s=(.*?)(&|$)/);
@@ -1556,12 +1560,12 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
     /* Get Videos */
     if (dmVideosContent) {
       var dmVideoFormats = {'240': 'Very Low Definition MP4', '380': 'Low Definition MP4', '480': 'Standard Definition MP4',
-	'720': 'High Definition MP4', '1080': 'Full High Definition MP4', '.*?x-mpegURL': 'HTTP Live Streaming M3U8'};
+	'720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
       var dmVideoList = {};
       var dmVideoFound = false;
       var dmVideoParser, dmVideoParse, myVideoCode, dmVideo;
       for (var dmVideoCode in dmVideoFormats) {
-	dmVideoParser = '"' + dmVideoCode + '".*?"url":"(.*?)"';
+	dmVideoParser = '"' + dmVideoCode + '".*?"type":"video.*?mp4","url":"(.*?)"';
 	dmVideoParse = dmVideosContent.match(dmVideoParser);
 	dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
 	if (dmVideo) {

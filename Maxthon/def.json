@@ -1,10 +1,10 @@
 ﻿[{
 	"author": "Sebaro (script) & A.S. (MX add-on)"
 	"website": "http://isebaro.com/viewtube/" 
-	"date": "28.09.2016"
+	"date": "05.11.2016"
 	"type":"extension",
 	"frameworkVersion":"1.0.0",
-	"version":"2016.09.28.0",
+	"version":"2016.11.05.0",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
@@ -55,7 +55,7 @@
 				"type": "page",
 				"title": {"_t": "app.Changelog"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/viewtube/include/files/changelog"
+				"main": "http://isebaro.com/viewtube/include/files/CHANGES"
 				},
 			{"type": "separator"},
 				{
