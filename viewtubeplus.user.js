@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2016.11.29
+// @version		2017.01.14
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -196,7 +196,7 @@
 
 /*
 
-  Copyright (C) 2010 - 2016 Sebastian Luncan
+  Copyright (C) 2010 - 2017 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
