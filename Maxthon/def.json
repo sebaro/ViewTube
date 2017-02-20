@@ -1,10 +1,10 @@
 ﻿[{
 	"author": "Sebaro (script) & A.S. (MX add-on)"
 	"website": "http://isebaro.com/viewtube/" 
-	"date": "05.11.2016"
+	"date": "10.02.2017"
 	"type":"extension",
 	"frameworkVersion":"1.0.0",
-	"version":"2016.11.05.0",
+	"version":"2017.02.10.0",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
@@ -49,26 +49,26 @@
 				"type": "page",
 				"title": {"_t": "app.About"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/viewtube/?ln=en"
+				"main": "http://isebaro.com/viewtube/"
 				},
 				{
 				"type": "page",
-				"title": {"_t": "app.Changelog"},
+				"title": {"_t": "app.GitHub"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/viewtube/include/files/CHANGES"
+				"main": "https://github.com/sebaro/ViewTube"
 				},
 			{"type": "separator"},
 				{
 				"type": "page",
 				"title": {"_t": "app.Script"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/viewtube/include/files/viewtube.user.js"
+				"main": "https://github.com/sebaro/ViewTube/raw/master/viewtube.user.js"
 				},
 				{
 				"type": "page",
 				"title": {"_t": "app.Plus"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/viewtube/include/files/viewtubeplus.user.js"
+				"main": "https://github.com/sebaro/ViewTube/raw/master/viewtubeplus.user.js"
 				},
 				{
 				"type": "page",
@@ -81,7 +81,7 @@
 				"type": "page",
 				"title": {"_t": "app.ScriptDev"},
 				"icon": "point.png",
-				"main": "http://isebaro.com/?ln=en"
+				"main": "http://isebaro.com/"
 				},
 				{
 				"type": "page",
@@ -100,5 +100,5 @@
 		}
 		}]
 
-	"config": "http://isebaro.com/viewtube/?ln=en",
+	"config": "http://isebaro.com/viewtube/",
 }]
