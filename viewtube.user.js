@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.02.10
+// @version		2017.02.20
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1560,7 +1560,7 @@ else if (page.url.indexOf('dailymotion.com/video') != -1) {
     /* Get Videos */
     if (dmVideosContent) {
       var dmVideoFormats = {'auto': 'Low Definition MP4', '240': 'Very Low Definition MP4', '380': 'Low Definition MP4', '480': 'Standard Definition MP4',
-	'720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
+			    '720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
       var dmVideoList = {};
       var dmVideoFound = false;
       var dmVideoParser, dmVideoParse, myVideoCode, dmVideo;
@@ -1752,12 +1752,12 @@ else if (page.url.match(/vimeo.com\/\d+/) || page.url.match(/vimeo.com\/channels
 
 }
 
-// =====MetaCafe===== //
+// =====Metacafe===== //
 
 else if (page.url.indexOf('metacafe.com/watch') != -1) {
 
   /* Get Player Window */
-  mcPlayerWindow = getMyElement('', 'div', 'class', 'mc-video-player', 0, false);
+  mcPlayerWindow = getMyElement('', 'div', 'class', 'mc-player-wrap', 0, false);
   if (!mcPlayerWindow) {
     showMyMessage('!player');
   }
