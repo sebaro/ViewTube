@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.02.20
+// @version		2017.03.08
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1044,7 +1044,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
   function ytDecryptFunction() {
     var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
     ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
-    ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*(.*?)\(/);
+    ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
     ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
     if (ytSignFuncName) {
       ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
