@@ -1,10 +1,10 @@
 ﻿[{
 	"author": "Sebaro (script) & A.S. (MX add-on)"
 	"website": "http://isebaro.com/viewtube/" 
-	"date": "10.02.2017"
+	"date": "08.03.2017"
 	"type":"extension",
 	"frameworkVersion":"1.0.0",
-	"version":"2017.02.10.0",
+	"version":"2017.03.08.0",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
