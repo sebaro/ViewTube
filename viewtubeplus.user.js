@@ -4371,7 +4371,7 @@ else if (page.url.indexOf('npo.nl/') != -1) {
     var npoVideoID = getMyContent (page.url, 'data-prid="(.*?)"', false);
     var npoToken = getMyContentGM ('http://ida.omroep.nl/app.php/auth', '"token"\\s*:\\s*"(.*?)"', false);
     if (npoVideoID && npoToken) {
-      npoVideosContent = getMyContentGM ('http://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=no&token=' + npoToken, 'TEXT', false);
+      npoVideosContent = getMyContentGM ('http://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=yes&token=' + npoToken, 'TEXT', false);
     }
 
     /* My Player Window */
@@ -4390,7 +4390,7 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	var npoVideoDefinitions = ['Low Definition'];
       }
       else {
-	var npoVideoFormats = {'Hoog': 'Standard Definition MP4', 'Normaal': 'Low Definition MP4', 'Laag': 'Very Low Definition MP4'};
+	var npoVideoFormats = {'Adaptive': 'Standard Definition M3U8', 'Hoog': 'Standard Definition MP4', 'Normaal': 'Low Definition MP4', 'Laag': 'Very Low Definition MP4'};
 	var npoVideoContent = "odi";
 	var npoVideoDefinitions = ['Very Low Definition', 'Low Definition', 'Standard Definition'];
       }
@@ -4421,11 +4421,10 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	  'playerWidth': 580,
 	  'playerHeight': 350,
 	};
-	feature['container'] = false;
 	feature['widesize'] = false;
 	option['definition'] = 'SD';
 	option['definitions'] = npoVideoDefinitions;
-	option['containers'] = ['MP4'];
+	option['containers'] = ['MP4', 'M3U8'];
 	createMyPlayer ();
       }
       else {
