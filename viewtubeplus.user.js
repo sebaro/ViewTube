@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.03.13
+// @version		2017.03.23
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4569,12 +4569,18 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
     else {
       /* Get Videos */
       var rtlVideo;
+      var rtlVideoList = {};
+      var rtlVideoFound = false;
       var rtlVideoID = page.url.replace(/.*\//, '');
       var rtlVideoPath = getMyContentGM ('http://www.rtl.nl/system/s4m/vfd/version=2/uuid=' + rtlVideoID + '/fmt=flash/', '"videopath":"(.*?)"', false);
       if (rtlVideoID && rtlVideoPath) {
-	// TYPE: LD a2m/ SD a3m
-	var rtlVideoPath = rtlVideoPath.replace(/.*\/flash/, '').replace(/\.f4m/, '');
-	rtlVideo = 'http://pg.us.rtl.nl/rtlxl/network/a3m/progressive/' + rtlVideoPath + '.mp4';
+	// TYPE: LD a2m | SD a3m (a2t/a3t) | HD nettv
+	var rtlVideoPathHLS = rtlVideoPath.replace(/\/flash\//, '/adaptive/').replace(/\.f4m/, '.m3u8');
+	rtlVideoList["High Definition M3U8"] = 'http://manifest.us.rtl.nl' + rtlVideoPathHLS;
+	var rtlVideoPathMP4 = rtlVideoPath.replace(/.*\/flash/, '').replace(/\.f4m/, '.mp4');
+	rtlVideoList["Low Definition MP4"] = 'http://pg.us.rtl.nl/rtlxl/network/a3m/progressive' + rtlVideoPathMP4;
+	rtlVideoList["High Definition MP4"] = 'http://pg.us.rtl.nl/rtlxl/network/nettv/progressive' + rtlVideoPathMP4;
+	rtlVideoFound = true;
       }
 
       /* My Player Window */
@@ -4584,11 +4590,9 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
       appendMyElement (rtlPlayerWindow, myPlayerWindow);
 
       /* Create Player */
-      if (rtlVideo) {
+      if (rtlVideoFound) {
 	var rtlVideoThumb = "http://screenshots.rtl.nl/system/thumb/sz=355x200/uuid=" + rtlVideoID;
-	var rtlVideoList = {};
 	var rtlDefaultVideo = 'Low Definition MP4';
-	rtlVideoList[rtlDefaultVideo] = rtlVideo;
 	player = {
 	  'playerSocket': rtlPlayerWindow,
 	  'playerWindow': myPlayerWindow,
@@ -4598,11 +4602,9 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 	  'playerWidth': 852,
 	  'playerHeight': 502
 	};
-	feature['container'] = false;
-	feature['definition'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['Low Definition'];
-	option['containers'] = ['MP4'];
+	option['definitions'] = ['Low Definition', 'High Definition'];
+	option['containers'] = ['MP4', 'M3U8'];
 	createMyPlayer ();
 
 	/* Fix panel */
