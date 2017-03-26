@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.03.23
+// @version		2017.03.26
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -3200,10 +3200,28 @@ else if (page.url.indexOf('redmediatv.ru/video.php?id=') != -1) {
 
 // =====RussiaToday===== //
 
-else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/films/') != -1) {
+else if (page.url.indexOf('rt.com/') != -1) {
+
+  /* Video Page */
+  if (getMyElement('', 'div', 'class', 'media__social-player', 0, false)) {
+    var rtPlayerWindow = getMyElement('', 'div', 'class', 'media__social-player', 0, false);
+    var rtYouTubeEmbed = rtPlayerWindow.innerHTML.match(/youtube.com\/embed\/(.*?)(\?|&|$)/);
+    rtYouTubeEmbed = (rtYouTubeEmbed) ? rtYouTubeEmbed[1] : null;
+    if (rtYouTubeEmbed) {
+      var myPlayerWindow = createMyElement ('div', '', '', '', '');
+      styleMyElement (myPlayerWindow, {position: 'relative', width: '786px', height: '442px', backgroundColor: '#F4F4F4'});
+      modifyMyElement (rtPlayerWindow, 'div', '', true);
+      appendMyElement (rtPlayerWindow, myPlayerWindow);
+      showMyMessage ('embed', 'https://www.youtube.com/watch?v=' + rtYouTubeEmbed);
+    }
+    return;
+  }
+  else {
+    if (!getMyElement('', 'div', 'class', 'media__video', 0, false)) return;
+  }
 
   /* Get Player Window */
-  var rtPlayerWindow = getMyElement ('', 'div', 'class', 'videoholder', 0, false);
+  var rtPlayerWindow = getMyElement ('', 'div', 'class', 'media', 0, false);
   if (!rtPlayerWindow) {
     showMyMessage ('!player');
   }
@@ -3217,130 +3235,30 @@ else if (page.url.indexOf('rt.com/filmy/') != -1 || page.url.indexOf('rt.com/fil
     /* Get Video Thumb */
     var rtVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
-    /* Get Videos Content */
-    var rtVideosContent = getMyContent(page.url, 'mega_playlist\\s*=\\s*\\{([\\S\\s]*?)\\};', false);
+    /* Get Video */
+    var rtVideo = getMyContent(page.url, 'file:\\s*"(.*?)"', false);
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '964px', height: '540px', backgroundColor: '#F4F4F4'});
-    var rtPlayerWindowNew = createMyElement ('div', '', '', '', '');
-    styleMyElement (rtPlayerWindowNew, {position: 'relative', width: '964px', height: '540px', backgroundColor: '#F4F4F4'});
-    if (rtPlayerWindow.parentNode) replaceMyElement(rtPlayerWindow.parentNode, rtPlayerWindowNew, rtPlayerWindow);
-    styleMyElement (rtPlayerWindowNew, {marginTop: '50px'});
-    appendMyElement (rtPlayerWindowNew, myPlayerWindow);
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '786px', height: '442px', backgroundColor: '#F4F4F4'});
+    modifyMyElement (rtPlayerWindow, 'div', '', true);
+    appendMyElement (rtPlayerWindow, myPlayerWindow);
 
-    /* Get Videos */
-    if (rtVideosContent) {
-      var rtVideoList = {};
-      var rtVideoFound = false;
-      var rtLowVideoContent = rtVideosContent.match(/'Low':\s*([\S\s]*?)'Med'/);
-      rtLowVideoContent = (rtLowVideoContent) ? rtLowVideoContent[1] : null;
-      if (rtLowVideoContent) {
-	var rtLowVideos = rtLowVideoContent.split('filesize');
-	if (rtLowVideos.length > 2) {
-	  for (i = 0; i < rtLowVideos.length; i++) {
-	    var rtLowVideo = rtLowVideos[i].match(/file:\s*'(.*?)'.replace/);
-	    rtLowVideo = (rtLowVideo) ? rtLowVideo[1] : null;
-	    if (rtLowVideo) {
-	      if (!rtVideoFound) rtVideoFound = true;
-	      rtLowVideo = rtLowVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	      rtLowVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtLowVideo;
-	      rtLowVideo = rtLowVideo.replace(/\.mp4/, '-l.mp4');
-	      rtVideoList['Low Definition MP4 Part ' + (i + 1)] = rtLowVideo;
-	    }
-	  }
-	}
-	else {
-	  var rtLowVideo = rtLowVideos[0].match(/file:\s*'(.*?)'.replace/);
-	  rtLowVideo = (rtLowVideo) ? rtLowVideo[1] : null;
-	  if (rtLowVideo) {
-	    if (!rtVideoFound) rtVideoFound = true;
-	    rtLowVideo = rtLowVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	    rtLowVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtLowVideo;
-	    rtLowVideo = rtLowVideo.replace(/\.mp4/, '-l.mp4');
-	    rtVideoList['Low Definition MP4'] = rtLowVideo;
-	  }
-	}
-      }
-      var rtMedVideoContent = rtVideosContent.match(/'Med':\s*([\S\s]*?)'High'/);
-      rtMedVideoContent = (rtMedVideoContent) ? rtMedVideoContent[1] : null;
-      if (rtMedVideoContent) {
-	var rtMedVideos = rtLowVideoContent.split('filesize');
-	if (rtMedVideos.length > 2) {
-	  for (i = 0; i < rtMedVideos.length; i++) {
-	    var rtMedVideo = rtMedVideos[i].match(/file:\s*'(.*?)'.replace/);
-	    rtMedVideo = (rtMedVideo) ? rtMedVideo[1] : null;
-	    if (rtMedVideo) {
-	      if (!rtVideoFound) rtVideoFound = true;
-	      rtMedVideo = rtMedVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	      rtMedVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtMedVideo;
-	      rtVideoList['Standard Definition MP4 Part ' + (i + 1)] = rtMedVideo;
-	    }
-	  }
-	}
-	else {
-	  var rtMedVideo = rtMedVideos[0].match(/file:\s*'(.*?)'.replace/);
-	  rtMedVideo = (rtMedVideo) ? rtMedVideo[1] : null;
-	  if (rtMedVideo) {
-	    if (!rtVideoFound) rtVideoFound = true;
-	    rtMedVideo = rtMedVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	    rtMedVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtMedVideo;
-	    rtVideoList['Standard Definition MP4'] = rtMedVideo;
-	  }
-	}
-      }
-      var rtHighVideoContent = rtVideosContent.match(/'High':\s*([\S\s]*?)$/);
-      rtHighVideoContent = (rtHighVideoContent) ? rtHighVideoContent[1] : null;
-      if (rtHighVideoContent) {
-	var rtHighVideos = rtHighVideoContent.split('filesize');
-	if (rtHighVideos.length > 2) {
-	  for (i = 0; i < rtHighVideos.length; i++) {
-	    var rtHighVideo = rtHighVideos[i].match(/file:\s*'(.*?)'.replace/);
-	    rtHighVideo = (rtHighVideo) ? rtHighVideo[1] : null;
-	    if (rtHighVideo) {
-	      if (!rtVideoFound) rtVideoFound = true;
-	      rtHighVideo = rtHighVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	      rtHighVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtHighVideo;
- 	      rtHighVideo = rtHighVideo.replace(/\.mp4/, '-h.mp4');
-	      rtVideoList['High Definition MP4 Part ' + (i + 1)] = rtHighVideo;
-	    }
-	  }
-	}
-	else {
-	  var rtHighVideo = rtHighVideos[0].match(/file:\s*'(.*?)'.replace/);
-	  rtHighVideo = (rtHighVideo) ? rtHighVideo[1] : null;
-	  if (rtHighVideo) {
-	    if (!rtVideoFound) rtVideoFound = true;
-	    rtHighVideo = rtHighVideo.replace(/\'/g, '').replace(/\s/g, '').replace('+', '');
-	    rtHighVideo = page.win.location.protocol + '//' + page.win.location.hostname + rtHighVideo;
- 	    rtHighVideo = rtHighVideo.replace(/\.mp4/, '-h.mp4');
-	    rtVideoList['High Definition MP4'] = rtHighVideo;
-	  }
-	}
-      }
-
-      /* Create Player */
-      if (rtVideoFound) {
-	var rtDefaultVideo = rtVideoList['Low Definition MP4'] ? 'Low Definition MP4' : 'Low Definition MP4 Part 1';
-	player = {'playerSocket': rtPlayerWindowNew, 'playerWindow': myPlayerWindow, 'videoList': rtVideoList, 'videoPlay': rtDefaultVideo, 'videoThumb': rtVideoThumb, 'playerWidth': 964, 'playerHeight': 540};
+    /* Create Player */
+    if (rtVideo) {
+	var rtDefaultVideo = 'Standard Definition MP4';
+	var rtVideoList = {};
+	rtVideoList[rtDefaultVideo] = rtVideo;
+	player = {'playerSocket': rtPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': rtVideoList, 'videoPlay': rtDefaultVideo, 'videoThumb': rtVideoThumb, 'playerWidth': 786, 'playerHeight': 442};
 	feature['container'] = false;
 	feature['widesize'] = false;
-	option['definitions'] = ['Low Definition', 'Standard Definition', 'High Definition'];
+	option['definition'] = 'SD';
+	option['definitions'] = ['Standard Definition'];
 	option['containers'] = ['MP4'];
 	createMyPlayer ();
-      }
-      else {
-	var rtYouTubeEmbed = rtVideosContent.match(/youtube.com\/watch/);
-	if (rtYouTubeEmbed) {
-	  showMyMessage ('embed', 'https://www.youtube.com/user/RussiaToday');
-	}
-	else {
-	  showMyMessage ('!videos');
-	}
-      }
     }
     else {
-      showMyMessage ('!content');
+      showMyMessage ('!videos');
     }
   }
 
