@@ -4273,6 +4273,7 @@ else if (page.url.indexOf('npo.nl/') != -1) {
   /* Get Player Window */
   var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
   if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
+  if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'video-player-container', 0, false);
   if (!npoPlayerWindow) {
     //showMyMessage ('!player');
   }
