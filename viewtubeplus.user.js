@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.03.26
+// @version		2017.05.20
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -160,10 +160,10 @@
 // @include		https://www.npo.nl/*
 // @include		http://*.vara.nl/*
 // @include		https://*.vara.nl/*
-// @include		http://rtlxl.nl/*
-// @include		http://www.rtlxl.nl/*
-// @include		https://rtlxl.nl/*
-// @include		https://www.rtlxl.nl/*
+// @include		http://rtl.nl/*
+// @include		http://www.rtl.nl/*
+// @include		https://rtl.nl/*
+// @include		https://www.rtl.nl/*
 // @include		http://nickelodeon.nl/*
 // @include		http://www.nickelodeon.nl/*
 // @include		https://nickelodeon.nl/*
@@ -4453,7 +4453,7 @@ else if (page.url.indexOf('.vara.nl/media') != -1) {
 
 // =====RTLXL===== //
 
-else if (page.url.indexOf('rtlxl.nl/') != -1) {
+else if (page.url.indexOf('rtl.nl/') != -1) {
 
   page.win.setInterval(function() {
     var nurl = page.win.location.href;
@@ -4464,11 +4464,12 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
   page.win.setTimeout(function() {
 
     /* Video Page */
-    if (page.url == 'http://rtlxl.nl/#!/' || page.url == 'http://www.rtlxl.nl/#!/') return;
-    if (page.url.indexOf('rtlxl.nl/#!/gemist') != -1 && page.url.indexOf('rtlxl.nl/#!/vooruitkijken' != -1)) return;
+    if (page.url == 'http://rtl.nl/#!/' || page.url == 'http://www.rtl.nl/#!/') return;
+    if (page.url.indexOf('rtl.nl/#!/gemist') != -1 && page.url.indexOf('rtl.nl/#!/vooruitkijken' != -1)) return;
 
     /* Get Player Window */
     var rtlPlayerWindow = getMyElement ('', 'div', 'id', 'dont-turn-off-the-lights', -1, false);
+    if (!rtlPlayerWindow) rtlPlayerWindow = getMyElement ('', 'div', 'id', 'rtlxl-player', -1, false);
     if (!rtlPlayerWindow) {
       var rtlVideoDetails = getMyElement ('', 'div', 'class', 'video-details', 0, false);
       if (rtlVideoDetails) {
@@ -4490,21 +4491,21 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
       var rtlVideo;
       var rtlVideoList = {};
       var rtlVideoFound = false;
-      var rtlVideoID = page.url.replace(/.*\//, '');
+      var rtlVideoID = page.url.replace(/\/$/, '').replace(/.*\//, '');
       var rtlVideoPath = getMyContentGM ('http://www.rtl.nl/system/s4m/vfd/version=2/uuid=' + rtlVideoID + '/fmt=flash/', '"videopath":"(.*?)"', false);
       if (rtlVideoID && rtlVideoPath) {
 	// TYPE: LD a2m | SD a3m (a2t/a3t) | HD nettv
 	var rtlVideoPathHLS = rtlVideoPath.replace(/\/flash\//, '/adaptive/').replace(/\.f4m/, '.m3u8');
 	rtlVideoList["High Definition M3U8"] = 'http://manifest.us.rtl.nl' + rtlVideoPathHLS;
 	var rtlVideoPathMP4 = rtlVideoPath.replace(/.*\/flash/, '').replace(/\.f4m/, '.mp4');
-	rtlVideoList["Low Definition MP4"] = 'http://pg.us.rtl.nl/rtlxl/network/a3m/progressive' + rtlVideoPathMP4;
-	rtlVideoList["High Definition MP4"] = 'http://pg.us.rtl.nl/rtlxl/network/nettv/progressive' + rtlVideoPathMP4;
+	rtlVideoList["Low Definition MP4"] = 'http://pg.us.rtl.nl/rtl/network/a3m/progressive' + rtlVideoPathMP4;
+	rtlVideoList["High Definition MP4"] = 'http://pg.us.rtl.nl/rtl/network/nettv/progressive' + rtlVideoPathMP4;
 	rtlVideoFound = true;
       }
 
       /* My Player Window */
       myPlayerWindow = createMyElement ('div', '', '', '', '');
-      styleMyElement (myPlayerWindow, {position: 'relative', width: '852px', height: '502px', backgroundColor: '#F4F4F4', zIndex: 10, margin: '0px auto'});
+      styleMyElement (myPlayerWindow, {position: 'relative', width: '830px', height: '490px', backgroundColor: '#F4F4F4', zIndex: 10, margin: '0px auto'});
       modifyMyElement (rtlPlayerWindow, 'div', '', true);
       appendMyElement (rtlPlayerWindow, myPlayerWindow);
 
@@ -4518,8 +4519,8 @@ else if (page.url.indexOf('rtlxl.nl/') != -1) {
 	  'videoList': rtlVideoList,
 	  'videoPlay': rtlDefaultVideo,
 	  'videoThumb': rtlVideoThumb,
-	  'playerWidth': 852,
-	  'playerHeight': 502
+	  'playerWidth': 830,
+	  'playerHeight': 490
 	};
 	feature['widesize'] = false;
 	option['definitions'] = ['Low Definition', 'High Definition'];
