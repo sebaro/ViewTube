@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.05.20
+// @version		2017.05.21
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4451,7 +4451,7 @@ else if (page.url.indexOf('.vara.nl/media') != -1) {
 
 }
 
-// =====RTLXL===== //
+// =====RTLNL===== //
 
 else if (page.url.indexOf('rtl.nl/') != -1) {
 
@@ -4468,20 +4468,13 @@ else if (page.url.indexOf('rtl.nl/') != -1) {
     if (page.url.indexOf('rtl.nl/#!/gemist') != -1 && page.url.indexOf('rtl.nl/#!/vooruitkijken' != -1)) return;
 
     /* Get Player Window */
-    var rtlPlayerWindow = getMyElement ('', 'div', 'id', 'dont-turn-off-the-lights', -1, false);
-    if (!rtlPlayerWindow) rtlPlayerWindow = getMyElement ('', 'div', 'id', 'rtlxl-player', -1, false);
-    if (!rtlPlayerWindow) {
-      var rtlVideoDetails = getMyElement ('', 'div', 'class', 'video-details', 0, false);
-      if (rtlVideoDetails) {
-	styleMyElement(rtlVideoDetails, {height: '100%'});
-	rtlPlayerWindow = createMyElement ('div', '', '', '', '');
-	styleMyElement(rtlPlayerWindow, {width: '852px', height: '502px', margin: '-21px 0px 20px -21px'});
-	if (rtlVideoDetails.childNodes[0]) {
-	  rtlVideoDetails.insertBefore(rtlPlayerWindow, rtlVideoDetails.childNodes[0]);
-	}
-	var rtlVideoRecom = getMyElement ('', 'ui', 'class', 'video-recom', 0, false);
-	if (rtlVideoRecom) styleMyElement(rtlVideoRecom, {marginTop: '0px'});
-      }
+    var rtlPlayerWindow = rtlPlayerWindow = getMyElement ('', 'div', 'class', 'login-wall---foreground', 0, false);
+    if (rtlPlayerWindow) {
+      if (rtlPlayerWindow.parentNode) styleMyElement(rtlPlayerWindow.parentNode, {width: '830px', height: '490px', paddingTop: '0px', fontSize: '12px'});
+    }
+    else {
+      rtlPlayerWindow = getMyElement ('', 'div', 'id', 'rtlxl-player', -1, false);
+      if (rtlPlayerWindow.parentNode) rtlPlayerWindow = rtlPlayerWindow.parentNode;
     }
     if (!rtlPlayerWindow) {
       //showMyMessage ('!player');
@@ -4492,7 +4485,7 @@ else if (page.url.indexOf('rtl.nl/') != -1) {
       var rtlVideoList = {};
       var rtlVideoFound = false;
       var rtlVideoID = page.url.replace(/\/$/, '').replace(/.*\//, '');
-      var rtlVideoPath = getMyContentGM ('http://www.rtl.nl/system/s4m/vfd/version=2/uuid=' + rtlVideoID + '/fmt=flash/', '"videopath":"(.*?)"', false);
+      var rtlVideoPath = getMyContent('https://www.rtl.nl/system/s4m/vfd/version=2/uuid=' + rtlVideoID + '/fmt=flash/', '"videopath":"(.*?)"', false);
       if (rtlVideoID && rtlVideoPath) {
 	// TYPE: LD a2m | SD a3m (a2t/a3t) | HD nettv
 	var rtlVideoPathHLS = rtlVideoPath.replace(/\/flash\//, '/adaptive/').replace(/\.f4m/, '.m3u8');
@@ -4511,7 +4504,7 @@ else if (page.url.indexOf('rtl.nl/') != -1) {
 
       /* Create Player */
       if (rtlVideoFound) {
-	var rtlVideoThumb = "http://screenshots.rtl.nl/system/thumb/sz=355x200/uuid=" + rtlVideoID;
+	var rtlVideoThumb = "https://screenshots.rtl.nl/system/thumb/sz=355x200/uuid=" + rtlVideoID;
 	var rtlDefaultVideo = 'Low Definition MP4';
 	player = {
 	  'playerSocket': rtlPlayerWindow,
