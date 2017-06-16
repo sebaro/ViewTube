@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.03.08
+// @version		2017.06.15
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1142,6 +1142,7 @@ if (page.url.indexOf('youtube.com/watch') != -1) {
       if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsvp\\\\":\\s*\\\\"(.*?)\\\\"', false);
       if (ytHLSVideos) {
 	ytHLSVideos = cleanMyContent(ytHLSVideos, false);
+	if (ytHLSVideos.indexOf('keepalive/yes/') != -1) ytHLSVideos = ytHLSVideos.replace('keepalive/yes/', '');
       }
       else {
 	var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
@@ -1878,57 +1879,43 @@ else if (page.url.indexOf('break.com/video') != -1 || page.url.indexOf('break.co
     var brVideosContent = getMyContent(brSource, 'TEXT', false);
 
     /* Player Size */
-    var brScreenWidth;
+    var brSidebarWidth = 300;
+    var brSidebarWindow = getMyElement('', 'div', 'class', 'Sidebar', 0, false);
+    var brSidebarWindowStyle = (brSidebarWindow) ? brSidebarWindow.currentStyle || window.getComputedStyle(brSidebarWindow) : null;
     var brPlayerWidth, brPlayerHeight;
     var brPlayerWideWidth, brPlayerWideHeight;
-    var brSidebarMarginWide = 720;
-    function brSizes() {
-      brScreenWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
-      if (page.url.indexOf('break.com/movies') != -1) {
-	if (brScreenWidth >= 1400) {
-	  brPlayerWidth = 1152;
-	  brPlayerHeight = 690;
-	}
-	else {
-	  brPlayerWidth = 912;
-	  brPlayerHeight = 546;
-	}
-      }
-      else {
-	if (brScreenWidth >= 1400) {
-	  brPlayerWidth = 832;
-	  brPlayerHeight = 490;
-	  brPlayerWideWidth = 1152;
-	  brPlayerWideHeight = 690;
-	  brSidebarMarginWide = 850;
-	}
-	else {
-	  brPlayerWidth = 592;
-	  brPlayerHeight = 356;
-	  brPlayerWideWidth = 910;
-	  brPlayerWideHeight = 534;
-	}
-      }
+    var brSidebarMarginWide;
+    function brGetSizes() {
+      brPlayerWidth = brPlayerWindow.clientWidth;
+      brPlayerHeight = Math.ceil(brPlayerWidth / (16 / 9)) + 22;
+      if (brSidebarWindow && brSidebarWindowStyle) brSidebarWidth = parseInt(brSidebarWindowStyle.width);
+      brPlayerWideWidth = brPlayerWidth + brSidebarWidth + 45;
+      brPlayerWideHeight = Math.ceil(brPlayerWideWidth / (16 / 9)) + 22;
+      brSidebarMarginWide = 30;
     }
-    brSizes();
-
-    /* My Player Window */
-    var myPlayerWindow = createMyElement('div', '', '', '', '');
-    styleMyElement(myPlayerWindow, {position: 'relative', width: brPlayerWidth + 'px', height: brPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
-    modifyMyElement(brPlayerWindow, 'div', '', true);
-    styleMyElement(brPlayerWindow, {height: '100%', overflow: 'visible', paddingBottom: '20px'});
-    appendMyElement(brPlayerWindow, myPlayerWindow);
-
-    /* Update Sizes */
-    page.win.addEventListener('resize', function() {
-      brSizes();
+    function brUpdateSizes() {
+      brGetSizes();
       player['playerWidth'] = brPlayerWidth;
       player['playerHeight'] = brPlayerHeight;
       player['playerWideWidth'] = brPlayerWideWidth;
       player['playerWideHeight'] = brPlayerWideHeight;
       player['sidebarMarginWide'] = brSidebarMarginWide;
       resizeMyPlayer('widesize');
-    }, false);
+    }
+    brGetSizes();
+
+    /* Hide Ads */
+    var brTopAd = getMyElement('', 'div', 'id', 'js-ad-takeover-wrapper', -1, false);
+    if (brTopAd && brTopAd.parentNode) removeMyElement(brTopAd.parentNode, brTopAd);
+
+    /* My Player Window */
+    var myPlayerWindow = createMyElement('div', '', '', '', '');
+    styleMyElement(myPlayerWindow, {position: 'relative', width: brPlayerWidth + 'px', height: brPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
+    modifyMyElement(brPlayerWindow, 'div', '', true);
+    appendMyElement(brPlayerWindow, myPlayerWindow);
+
+    /* Resize Event */
+    page.win.addEventListener('resize', brUpdateSizes, false);
 
     /* Get Videos */
     if (brVideosContent) {
@@ -1962,9 +1949,6 @@ else if (page.url.indexOf('break.com/video') != -1 || page.url.indexOf('break.co
       }
 
       if (brVideoFound) {
-	/* Get Watch Sidebar */
-	var brSidebarWindow = getMyElement('', 'aside', 'class', 'sidebar', 0, false);
-
 	/* Create Player */
 	var brDefaultVideo = 'Low Definition MP4';
 	player = {
@@ -1985,6 +1969,11 @@ else if (page.url.indexOf('break.com/video') != -1 || page.url.indexOf('break.co
 	option['definitions'] = ['Very Low Definition', 'Low Definition', 'Standard Definition', 'High Definition', 'Full High Definition'];
 	option['containers'] = ['MP4', 'FLV', 'Any'];
 	createMyPlayer();
+
+	/* Fix Panel */
+	styleMyElement(player['playerContent'], {marginTop: '20px'});
+	player['videoMenu'].style.setProperty('font-size', '12px', 'important');
+	player['pluginMenu'].style.setProperty('font-size', '12px', 'important');
       }
       else {
 	var ytVideoId =  brVideosContent.match(/"youtubeId":\s"(.*?)"/);
