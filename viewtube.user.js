@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.06.15
+// @version		2017.06.23
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -671,6 +671,14 @@ function playMyVideo(play) {
     if (option['plugin'] == 'VTP') {
       if (player['videoList'][player['videoPlay']] != 'DASH') {
 	page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
+      }
+      else {
+	if (player['videoPlay'].indexOf('MP4') != -1) {
+	  page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay'].replace(/MP4/, 'Video MP4')] + '|' + player['videoList']['High Bitrate Audio Opus'];
+	}
+	else {
+	  page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay'].replace(/WebM/, 'Video WebM')] + '|' + player['videoList']['High Bitrate Audio Opus'];
+	}
       }
       return;
     }
