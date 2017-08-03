@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.05.21
+// @version		2017.08.03
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -4274,28 +4274,27 @@ else if (page.url.indexOf('npo.nl/') != -1) {
   var npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-span', 0, false);
   if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'player-container', 0, false);
   if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'video-player-container', 0, false);
+  if (!npoPlayerWindow) npoPlayerWindow = getMyElement ('', 'div', 'class', 'npo-header-episode-thumb', 0, false);
   if (!npoPlayerWindow) {
     //showMyMessage ('!player');
   }
   else {
     /* Video Thumbnail */
-    npoVideoThumb = getMyContent (page.url, 'meta\\s+content="(.*?)"\\s+name="og:image"', false);
-    if (!npoVideoThumb) npoVideoThumb = getMyContent (page.url, 'meta\\s+content="([^>]*?)"\\s+itemprop="thumbnailUrl"', false);
-    if (!npoVideoThumb) npoVideoThumb = getMyContent (page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
-    if (npoVideoThumb) npoVideoThumb = npoVideoThumb.replace(/s\d{3}\/c\d{3}x\d{2,3}/, 's980/c980x550');
-    else npoVideoThumb = '//www-assets.npo.nl/assets/npo_logo-18cd7223c325ef23806032109b2a3e3c46d1bfc6a368202da20b2bfe214fb48a.png';
+    npoVideoThumb = getMyContent (page.url, 'background-image:\\s*url\\("(.*?)"\\)', false);
+    if (!npoVideoThumb) npoVideoThumb = '//www-assets.npo.nl/assets/npo_logo-18cd7223c325ef23806032109b2a3e3c46d1bfc6a368202da20b2bfe214fb48a.png';
 
     /* Get Videos Source */
     var npoVideosContent;
-    var npoVideoID = getMyContent (page.url, 'data-prid="(.*?)"', false);
-    var npoToken = getMyContentGM ('http://ida.omroep.nl/app.php/auth', '"token"\\s*:\\s*"(.*?)"', false);
+    var npoVideoID = getMyContent (page.url, 'media-id="(.*?)"', false);
+    var npoToken = getMyContentGM ('https://ida.omroep.nl/app.php/auth', '"token"\\s*:\\s*"(.*?)"', false);
     if (npoVideoID && npoToken) {
-      npoVideosContent = getMyContentGM ('http://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=yes&token=' + npoToken, 'TEXT', false);
+      npoVideosContent = getMyContentGM ('https://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=yes&token=' + npoToken, 'TEXT', false);
     }
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '580px', height: '350px', backgroundColor: '#F4F4F4', zIndex: 10});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '540px', height: '326px', backgroundColor: '#F4F4F4', zIndex: 10, marginTop: '-320px'});
+    styleMyElement (npoPlayerWindow, {position: 'relative', width: '540px', height: '300px'});
     modifyMyElement (npoPlayerWindow, 'div', '', true);
     appendMyElement (npoPlayerWindow, myPlayerWindow);
 
@@ -4322,9 +4321,11 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	  npoVideo = cleanMyContent(npoVideo);
 	  if (page.url.indexOf('/live/') != -1) npoVideo = getMyContentGM (npoVideo, '\"(.*?)\"', false);
 	  else npoVideo = getMyContentGM (npoVideo, '"url":"(.*?)"', false);
-	  if (!npoVideoFound) npoVideoFound = true;
-	  myVideoCode = npoVideoFormats[npoVideoCode];
-	  npoVideoList[myVideoCode] = cleanMyContent(npoVideo);
+	  if (npoVideo) {
+	    if (!npoVideoFound) npoVideoFound = true;
+	    myVideoCode = npoVideoFormats[npoVideoCode];
+	    npoVideoList[myVideoCode] = cleanMyContent(npoVideo);
+	  }
 	}
       }
 
@@ -4337,14 +4338,17 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	  'videoList': npoVideoList,
 	  'videoPlay': npoDefaultVideo,
 	  'videoThumb': npoVideoThumb,
-	  'playerWidth': 580,
-	  'playerHeight': 350,
+	  'playerWidth': 540,
+	  'playerHeight': 326,
 	};
 	feature['widesize'] = false;
 	option['definition'] = 'SD';
 	option['definitions'] = npoVideoDefinitions;
 	option['containers'] = ['MP4', 'M3U8'];
 	createMyPlayer ();
+
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '17px'});
       }
       else {
 	showMyMessage ('!videos');
