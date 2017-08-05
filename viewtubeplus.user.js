@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.08.03
+// @version		2017.08.05
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -2433,19 +2433,22 @@ else if (page.url.indexOf('nrk.no/') != -1) {
     var nrkVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
     /* Get Videos Content */
-    var nrkVideosContent = getMyContent (page.url + '?foo', 'data-hls-media="(.*?master.m3u8)', false);
+    var nrkVideosContent;
+    var nrkProgramId = getMyContent (page.url, 'programId:\\s*"(.*?)"', false);
+    if (nrkProgramId) nrkVideosContent = getMyContentGM ("https://psapi-ne.nrk.no/mediaelement/" + nrkProgramId, '"mediaUrl":"(.*?)"', false);
 
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
-    styleMyElement (myPlayerWindow, {position: 'relative', width: '960px', height: '564px', backgroundColor: '#F4F4F4', zIndex: '9999999999'});
+    styleMyElement (myPlayerWindow, {position: 'relative', width: '1180px', height: '664px', backgroundColor: '#F4F4F4', zIndex: '9999999999'});
     var nrkPlayerWindowNew = createMyElement ('div', '', '', '', '');
     modifyMyElement (nrkPlayerWindow, 'div', '', true);
-    styleMyElement (nrkPlayerWindowNew, {position: 'relative', width: '960px', height: '564px', backgroundColor: '#F4F4F4'});
+    styleMyElement (nrkPlayerWindowNew, {position: 'relative', width: '1180px', height: '664px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     if (nrkPlayerWindow.parentNode) replaceMyElement(nrkPlayerWindow.parentNode, nrkPlayerWindowNew, nrkPlayerWindow);
     appendMyElement (nrkPlayerWindowNew, myPlayerWindow);
 
     /* Get Videos */
     if (nrkVideosContent) {
+      nrkVideosContent = nrkVideosContent.replace('/z/', '/i/').replace('manifest.f4m', 'master.m3u8');
       var nrkVideoList = {};
       var nrkVideo;
       var nrkVideoFound;
@@ -2473,7 +2476,7 @@ else if (page.url.indexOf('nrk.no/') != -1) {
       if (nrkVideoFound) {
 	/* Create Player */
 	nrkDefaultVideo = 'Low Definition MP4';
-	player = {'playerSocket': nrkPlayerWindowNew, 'playerWindow': myPlayerWindow, 'videoList': nrkVideoList, 'videoPlay': nrkDefaultVideo, 'videoThumb': nrkVideoThumb, 'playerWidth': 960, 'playerHeight': 564};
+	player = {'playerSocket': nrkPlayerWindowNew, 'playerWindow': myPlayerWindow, 'videoList': nrkVideoList, 'videoPlay': nrkDefaultVideo, 'videoThumb': nrkVideoThumb, 'playerWidth': 1180, 'playerHeight': 664};
 	feature['container'] = false;
 	feature['widesize'] = false;
 	option['definitions'] = ['Very Low Definition', 'Low Definition', 'Standard Definition', 'High Definition'];
@@ -4286,9 +4289,9 @@ else if (page.url.indexOf('npo.nl/') != -1) {
     /* Get Videos Source */
     var npoVideosContent;
     var npoVideoID = getMyContent (page.url, 'media-id="(.*?)"', false);
-    var npoToken = getMyContentGM ('https://ida.omroep.nl/app.php/auth', '"token"\\s*:\\s*"(.*?)"', false);
+    var npoToken = getMyContent ('https://ida.omroep.nl/app.php/auth', '"token"\\s*:\\s*"(.*?)"', false);
     if (npoVideoID && npoToken) {
-      npoVideosContent = getMyContentGM ('https://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=yes&token=' + npoToken, 'TEXT', false);
+      npoVideosContent = getMyContent ('https://ida.omroep.nl/app.php/' + npoVideoID + '?adaptive=yes&token=' + npoToken, 'TEXT', false);
     }
 
     /* My Player Window */
@@ -4319,8 +4322,8 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	npoVideo = (npoVideoParse) ? npoVideoParse[1] : null;
 	if (npoVideo) {
 	  npoVideo = cleanMyContent(npoVideo);
-	  if (page.url.indexOf('/live/') != -1) npoVideo = getMyContentGM (npoVideo, '\"(.*?)\"', false);
-	  else npoVideo = getMyContentGM (npoVideo, '"url":"(.*?)"', false);
+	  if (page.url.indexOf('/live/') != -1) npoVideo = getMyContent (npoVideo, '\"(.*?)\"', false);
+	  else npoVideo = getMyContent (npoVideo, '"url":"(.*?)"', false);
 	  if (npoVideo) {
 	    if (!npoVideoFound) npoVideoFound = true;
 	    myVideoCode = npoVideoFormats[npoVideoCode];
