@@ -4322,8 +4322,8 @@ else if (page.url.indexOf('npo.nl/') != -1) {
 	npoVideo = (npoVideoParse) ? npoVideoParse[1] : null;
 	if (npoVideo) {
 	  npoVideo = cleanMyContent(npoVideo);
-	  if (page.url.indexOf('/live/') != -1) npoVideo = getMyContent (npoVideo, '\"(.*?)\"', false);
-	  else npoVideo = getMyContent (npoVideo, '"url":"(.*?)"', false);
+	  if (page.url.indexOf('/live/') != -1) npoVideo = getMyContentGM (npoVideo, '\"(.*?)\"', false);
+	  else npoVideo = getMyContentGM (npoVideo, '"url":"(.*?)"', false);
 	  if (npoVideo) {
 	    if (!npoVideoFound) npoVideoFound = true;
 	    myVideoCode = npoVideoFormats[npoVideoCode];
