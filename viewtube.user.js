@@ -2290,7 +2290,6 @@ else if (page.url.indexOf('viki.com/videos') != -1) {
       /* Create Player */
       if (vkVideoFound) {
 	var vkDefaultVideo = 'Low Definition MP4';
-	vkVideoList[vkDefaultVideo] = vkVideo
 	player = {
 	  'playerSocket': vkPlayerWindow,
 	  'playerWindow': myPlayerWindow,
