@@ -4,7 +4,7 @@
 	"date": "02.09.2017"
 	"type":"extension",
 	"frameworkVersion":"1.0.0",
-	"version":"2017.09.02.0",
+	"version":"2017.09.02.1",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
@@ -36,6 +36,11 @@
 			"*.imdb.com",
 			"imdb.com",
 			],
+		"exclude": [
+			"*.gooogle.com",
+			"google.com",
+			"*mail.google.com",
+			"mail.google.com",],
 		"js": ["script.js"],
 		}]
 
