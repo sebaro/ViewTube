@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.09.14
+// @version		2017.10.26
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -1966,156 +1966,130 @@ else if (page.url.indexOf('youtube.com/watch') != -1) {
 
 }
 
-// =====DailyMotion===== //
+// =====Dailymotion===== //
 
 else if (page.url.indexOf('dailymotion.com/video') != -1) {
 
-  /* Get Player Window */
-  var dmPlayerWindow = getMyElement('', 'div', 'class', 'player-container', 0, false);
-  if (!dmPlayerWindow) {
-    showMyMessage('!player');
+  /* Player Sizea */
+  var dmPlayerWidth, dmPlayerHeight;
+  function dmSizes() {
+    if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth;
+    if (dmPlayerWidth) dmPlayerHeight = Math.ceil(dmPlayerWidth / (16 / 9)) + 22;
   }
-  else {
-    /* Get Video Thumbnail */
-    var dmVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
-    /* Get Videos Content */
-    var dmVideosContent = getMyContent(page.url, '"qualities":\\{(.*?)\\]\\},', false);
-    if (!dmVideosContent) dmVideosContent = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"qualities":\\{(.*?)\\]\\},', false);
+  /* Resize Event */
+  page.win.addEventListener('resize', function() {
+    dmSizes();
+    player['playerWidth'] = dmPlayerWidth;
+    player['playerHeight'] = dmPlayerHeight;
+    resizeMyPlayer('widesize');
+  }, false);
 
-    /* Player Size */
-    var dmSidebarWidth = 320;
-    var dmSidebarWindow = getMyElement('', 'div', 'class', 'sidebar', 0, false);
-    var dmSidebarWindowStyle = (dmSidebarWindow) ? dmSidebarWindow.currentStyle || window.getComputedStyle(dmSidebarWindow) : null;
-    var dmPlayerWidth, dmPlayerHeight;
-    var dmPlayerWideWidth, dmPlayerWideHeight;
-    var dmSidebarMarginWide;
-    function dmGetSizes() {
-      dmPlayerWidth = dmPlayerWindow.clientWidth;
-      dmPlayerHeight = Math.ceil(dmPlayerWidth / (16 / 9)) + 22;
-      if (dmSidebarWindow && dmSidebarWindowStyle) dmSidebarWidth = parseInt(dmSidebarWindowStyle.width);
-      dmPlayerWideWidth = dmPlayerWidth + dmSidebarWidth;
-      dmPlayerWideHeight = Math.ceil(dmPlayerWideWidth / (16 / 9)) + 22;
-      dmSidebarMarginWide = dmPlayerWideHeight + 30;
+  /* My Player Window */
+  var myPlayerWindow = createMyElement('div', '', '', '', '');
+
+  /* Get Objects */
+  var dmVideosReady = false;
+  var dmPlayerWindow;
+  var dmWaitForLoops = 50;
+  var dmWaitForObject = page.win.setInterval(function() {
+    if (!dmPlayerWindow) {
+      dmPlayerWindow = getMyElement('', 'div', 'class', 'Player', 0, false);
+      if (dmPlayerWindow) {
+	modifyMyElement(dmPlayerWindow, 'div', '', false, true);
+	appendMyElement(dmPlayerWindow, myPlayerWindow);
+	blockObject = dmPlayerWindow;
+	dmSizes();
+	styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
+	styleMyElement(dmPlayerWindow, {marginTop: '-20px'});
+	if (dmVideosReady) dmPlayer();
+      }
     }
-    function dmUpdateSizes() {
-      dmGetSizes();
-      player['playerWidth'] = dmPlayerWidth;
-      player['playerHeight'] = dmPlayerHeight;
-      player['playerWideWidth'] = dmPlayerWideWidth;
-      player['playerWideHeight'] = dmPlayerWideHeight;
-      player['sidebarMarginWide'] = dmSidebarMarginWide;
-      resizeMyPlayer('widesize');
-      styleMyElement(dmPlayerWindow.parentNode, {minHeight: player['contentHeight'] + 50 + 'px'});
+    ytWaitForLoops--;
+    if (ytWaitForLoops == 0) {
+      if (!dmPlayerWindow) showMyMessage('!player');
+      clearInterval(dmWaitForObject);
     }
-    dmGetSizes();
+  }, 500);
 
-    /* My Player Window */
-    var myPlayerWindow = createMyElement('div', '', '', '', '');
-    styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
-    modifyMyElement(dmPlayerWindow, 'div', '', false, true);
-    appendMyElement(dmPlayerWindow, myPlayerWindow);
-    blockObject = dmPlayerWindow;
+  /* Create Player */
+  var dmDefaultVideo = 'Low Definition MP4';
+  function dmPlayer() {
+    player = {
+      'playerSocket': dmPlayerWindow,
+      'playerWindow': myPlayerWindow,
+      'videoList': dmVideoList,
+      'videoPlay': dmDefaultVideo,
+      'videoThumb': dmVideoThumb,
+      'playerWidth': dmPlayerWidth,
+      'playerHeight': dmPlayerHeight
+    };
+    feature['container'] = false;
+    feature['widesize'] = false;
+    option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
+    option['containers'] = ['MP4'];
+    createMyPlayer();
 
-    /* Fix Info Position On Start */
-    page.win.setTimeout(function() {
-      var dmInfoboxHeight = (player['contentHeight']) ? player['contentHeight'] + 50 + 'px' : '100%';
-      styleMyElement(dmPlayerWindow.parentNode, {minHeight: dmInfoboxHeight});
-    }, 2000);
+    /* Fix Panel */
+    styleMyElement(player['playerContent'], {marginTop: '7px'});
 
-    /* Fix Right Ad Issue */
-    var dmMcRight = getMyElement('', 'div', 'id', 'mc_Right', -1, false);
-    if (dmMcRight) {
-      var dmWaitForAdTime = 20;
-      var dmPlayerWidthPrev = dmPlayerWidth;
-      var dmWaitForAdFunc = page.win.setInterval(function() {
-	if(dmMcRight.clientWidth) {
-	  dmUpdateSizes();
-	  if (dmPlayerWidth != dmPlayerWidthPrev) clearInterval(dmWaitForAdFunc);
-	}
-	dmWaitForAdTime--;
-	if (dmWaitForAdTime == 0) clearInterval(dmWaitForAdFunc);
-      }, 500);
-    }
+    /* Fix Title */
+    page.win.setInterval(function() {
+      if (page.title != page.doc.title) page.doc.title = page.title;
+    }, 1000);
+  }
 
-    /* Resize Event */
-    page.win.addEventListener('resize', dmUpdateSizes, false);
+  /* Get Video Title */
+  var dmVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+  if (dmVideoTitle) {
+    if (page.title == '- video - Dailymotion') page.title = dmVideoTitle;
+    if (page.doc.title == '- video - Dailymotion') page.doc.title = dmVideoTitle;
+  }
 
-    /* Hide Top Ads */
-    var dmMcTop = getMyElement('', 'div', 'id', 'mc_Top', -1, false);
-    if (dmMcTop) styleMyElement(dmMcTop, {display: 'none'});
+  /* Get Video Thumbnail */
+  var dmVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
-    /* Get Videos */
-    if (dmVideosContent) {
-      var dmVideoFormats = {'auto': 'Low Definition MP4', '240': 'Very Low Definition MP4', '380': 'Low Definition MP4', '480': 'Standard Definition MP4',
+  /* Get Videos Content */
+  var dmVideosContent = getMyContent(page.url, '"qualities":\\{(.*?)\\]\\},', false);
+  if (!dmVideosContent) dmVideosContent = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"qualities":\\{(.*?)\\]\\},', false);
+
+  /* Get Videos */
+  var dmVideoList = {};
+  if (dmVideosContent) {
+    var dmVideoFormats = {'auto': 'Low Definition MP4', '240': 'Very Low Definition MP4', '380': 'Low Definition MP4', '480': 'Standard Definition MP4',
 			    '720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
-      var dmVideoList = {};
-      var dmVideoFound = false;
-      var dmVideoParser, dmVideoParse, myVideoCode, dmVideo;
-      for (var dmVideoCode in dmVideoFormats) {
-	dmVideoParser = '"' + dmVideoCode + '".*?"type":"video.*?mp4","url":"(.*?)"';
+    var dmVideoFound = false;
+    var dmVideoParser, dmVideoParse, myVideoCode, dmVideo;
+    for (var dmVideoCode in dmVideoFormats) {
+      dmVideoParser = '"' + dmVideoCode + '".*?"type":"video.*?mp4","url":"(.*?)"';
+      dmVideoParse = dmVideosContent.match(dmVideoParser);
+      if (!dmVideoParse) {
+	dmVideoParser = '"' + dmVideoCode + '".*?"type":"application.*?mpegURL","url":"(.*?)"';
 	dmVideoParse = dmVideosContent.match(dmVideoParser);
-	if (!dmVideoParse) {
-	  dmVideoParser = '"' + dmVideoCode + '".*?"type":"application.*?mpegURL","url":"(.*?)"';
-	  dmVideoParse = dmVideosContent.match(dmVideoParser);
-	}
-	dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
-	if (dmVideo) {
-	  if (!dmVideoFound) dmVideoFound = true;
-	  dmVideo = cleanMyContent(dmVideo, true);
-	  myVideoCode = dmVideoFormats[dmVideoCode];
-	  if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
-	}
       }
-
-      if (dmVideoFound) {
-	/* DVL */
-	dmVideoList['Direct Video Link'] = page.url;
-	feature['direct'] = true;
-
-	/* Create Player */
-	var dmDefaultVideo = 'Low Definition MP4';
-	player = {
-	  'playerSocket': dmPlayerWindow,
-	  'playerWindow': myPlayerWindow,
-	  'videoList': dmVideoList,
-	  'videoPlay': dmDefaultVideo,
-	  'videoThumb': dmVideoThumb,
-	  'playerWidth': dmPlayerWidth,
-	  'playerHeight': dmPlayerHeight,
-	  'playerWideWidth': dmPlayerWideWidth,
-	  'playerWideHeight': dmPlayerWideHeight,
-	  'sidebarWindow': dmSidebarWindow,
-	  'sidebarMarginNormal': 0,
-	  'sidebarMarginWide': dmSidebarMarginWide
-	};
-	feature['container'] = false;
-	option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
-	option['containers'] = ['MP4'];
-	createMyPlayer();
-
-	/* Fix HTML5 video duplicate on click - by seezuoto */
-	page.body.addEventListener('click', function(e) {
-	  if (e.target.id === 'vtVideo' || (e.target.tagName === 'DIV' && !e.target.innerHTML.match(/^\s*more\s*$/))) {
-	    e.stopPropagation();
-	  }
-	});
-
-	/* Fix Panel */
-	styleMyElement(player['playerContent'], {marginTop: '7px'});
-
-	/* Fix Info Position On Widesize */
-	player['buttonWidesize'].addEventListener('click', function() {
-	  styleMyElement(dmPlayerWindow.parentNode, {minHeight: player['contentHeight'] + 50 + 'px'});
-	}, false);
+      dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
+      if (dmVideo) {
+	if (!dmVideoFound) dmVideoFound = true;
+	dmVideo = cleanMyContent(dmVideo, true);
+	myVideoCode = dmVideoFormats[dmVideoCode];
+	if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
       }
-      else {
-	showMyMessage('!videos');
-      }
+    }
+
+    if (dmVideoFound) {
+      /* DVL */
+      dmVideoList['Direct Video Link'] = page.url;
+      feature['direct'] = true;
+
+      dmVideosReady = true;
+      if (dmPlayerWindow) dmPlayer();
     }
     else {
-      showMyMessage('!content');
+      showMyMessage('!videos');
     }
+  }
+  else {
+    showMyMessage('!content');
   }
 
 }
