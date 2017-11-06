@@ -55,6 +55,8 @@ Maxthon:
 Internet Explorer:  
 == with IE7Pro extension:  
 -> http://ie7pro.com  
+== IE11:  
+-> https://sourceforge.net/projects/trixiewpf45  
 
 # Players
 
@@ -83,7 +85,7 @@ Mac:
 
 ## External  
 
-If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://isebaro.com/viewtube/protocol  
+If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://isebaro.com/viewtube  
 
 ## Internal  
 
