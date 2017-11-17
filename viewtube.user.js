@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2017.10.26
+// @version		2017.11.17
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -49,8 +49,7 @@
 // @include		https://imdb.com*
 // @include		https://www.imdb.com*
 // @grant		GM_xmlhttpRequest
-// @grant		GM_setValue
-// @grant		GM_getValue
+// @grant		GM.xmlHttpRequest
 // ==/UserScript==
 
 
@@ -82,7 +81,6 @@
 
 // Don't run on frames or iframes
 if (window.top != window.self) return;
-
 
 // ==========Variables========== //
 
@@ -120,8 +118,8 @@ var mimetypes = {
 var sources = {};
 
 // Links
-var website = 'http://isebaro.com/viewtube/?ln=en';
-var contact = 'http://isebaro.com/contact/?ln=en&sb=viewtube';
+var website = 'http://isebaro.com/viewtube';
+var contact = 'http://isebaro.com/contact';
 
 
 // ==========Functions========== //
@@ -867,10 +865,6 @@ function getMyContent(url, pattern, clean) {
 
 function setMyOptions(key, value) {
   key = page.site + '_' + userscript.toLowerCase() + '_' + key;
-  if (typeof GM_setValue === 'function') {
-    GM_setValue(key, value);
-    if (typeof GM_getValue === 'function' && GM_getValue(key) == value) return;
-  }
   try {
     localStorage.setItem(key, value);
     if (localStorage.getItem(key) == value) return;
@@ -888,12 +882,6 @@ function getMyOptions() {
   for (var opt in option) {
     if (option.hasOwnProperty(opt)) {
       var key = page.site + '_' + userscript.toLowerCase() + '_' + opt;
-      if (typeof GM_getValue === 'function') {
-	if (GM_getValue(key)) {
-	  option[opt] = GM_getValue(key);
-	  continue;
-	}
-      }
       try {
 	if (localStorage.getItem(key)) {
 	  option[opt] = localStorage.getItem(key);
@@ -1113,13 +1101,13 @@ if (page.url.indexOf('youtube.com/watch') != -1 && getMyContent(page.url, '"text
 
   /* Get Objects */
   var ytVideosReady = false;
-  var ytPlayerWindow, ytSidebarWindow, ytSidebarAds, ytSidebarHead;
-  var ytWaitForObjects = 4;
+  var ytPlayerWindowTop, ytPlayerWindow, ytSidebarWindow, ytSidebarAds, ytSidebarHead;
+  var ytWaitForObjects = 5;
   var ytWaitForLoops = 50;
   var ytWaitForObject = page.win.setInterval(function() {
     /* Player Window */
     if (!ytPlayerWindow) {
-      var ytPlayerWindowTop = getMyElement('', 'div', 'id', 'top', -1, false);
+      ytPlayerWindowTop = getMyElement('', 'div', 'id', 'top', -1, false);
       if (ytPlayerWindowTop) {
 	for (var i = 0; i < ytPlayerWindowTop.children.length; i++) {
 	  ytPlayerWindow = ytPlayerWindowTop.children[i];
@@ -1458,7 +1446,28 @@ if (page.url.indexOf('youtube.com/watch') != -1 && getMyContent(page.url, '"text
 	    });
 	  }
 	  catch(e) {
-	    showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+	    try {
+	      GM.xmlHttpRequest({
+		method: 'GET',
+		url: ytScriptURL,
+		onload: function(response) {
+		  if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		    ytScriptSrc = response.responseText;
+		    ytDecryptFunction();
+		    ytVideos();
+		  }
+		  else {
+		    showMyMessage('other', 'Couldn\'t get the signature content. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+		  }
+		},
+		onerror: function() {
+		    showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+		}
+	      });
+	    }
+	    catch(e) {
+	      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+	    }
 	  }
 	}
       }
@@ -1493,7 +1502,24 @@ if (page.url.indexOf('youtube.com/watch') != -1 && getMyContent(page.url, '"text
 	  });
 	}
 	catch(e) {
-	  ytHLS();
+	  try {
+	    GM.xmlHttpRequest({
+	      method: 'GET',
+	      url: ytHLSVideos,
+	      onload: function(response) {
+		if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		  ytHLSContent = response.responseText;
+		}
+		ytHLS();
+	      },
+	      onerror: function() {
+		ytHLS();
+	      }
+	    });
+	  }
+	  catch(e) {
+	    ytHLS();
+	  }
 	}
       }
     }
@@ -1919,7 +1945,28 @@ else if (page.url.indexOf('youtube.com/watch') != -1) {
 	      });
 	    }
 	    catch(e) {
-	      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+	      try {
+		GM.xmlHttpRequest({
+		  method: 'GET',
+		  url: ytScriptURL,
+		  onload: function(response) {
+		    if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		      ytScriptSrc = response.responseText;
+		      ytDecryptFunction();
+		      ytVideos();
+		    }
+		    else {
+		      showMyMessage('other', 'Couldn\'t get the signature content. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+		    }
+		  },
+		  onerror: function() {
+		      showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+		  }
+		});
+	      }
+	      catch(e) {
+		showMyMessage('other', 'Couldn\'t make the request. Make sure your browser user scripts extension supports cross-domain requests.');
+	      }
 	    }
 	  }
 	}
@@ -1954,7 +2001,24 @@ else if (page.url.indexOf('youtube.com/watch') != -1) {
 	    });
 	  }
 	  catch(e) {
-	    ytHLS();
+	    try {
+	      GM_xmlhttpRequest({
+		method: 'GET',
+		url: ytHLSVideos,
+		onload: function(response) {
+		  if (response.readyState === 4 && response.status === 200 && response.responseText) {
+		    ytHLSContent = response.responseText;
+		  }
+		  ytHLS();
+		},
+		onerror: function() {
+		  ytHLS();
+		}
+	      });
+	    }
+	    catch(e) {
+	      ytHLS();
+	    }
 	  }
 	}
       }
