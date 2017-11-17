@@ -82,6 +82,7 @@
 // Don't run on frames or iframes
 if (window.top != window.self) return;
 
+
 // ==========Variables========== //
 
 // Userscript
@@ -2002,7 +2003,7 @@ else if (page.url.indexOf('youtube.com/watch') != -1) {
 	  }
 	  catch(e) {
 	    try {
-	      GM_xmlhttpRequest({
+	      GM.xmlHttpRequest({
 		method: 'GET',
 		url: ytHLSVideos,
 		onload: function(response) {
