@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2017.08.05
+// @version		2017.11.26
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://isebaro.com/viewtube
@@ -189,8 +189,7 @@
 // @include		http://tv.ilfattoquotidiano.it/*
 // @include		https://tv.ilfattoquotidiano.it/*
 // @grant		GM_xmlhttpRequest
-// @grant		GM_setValue
-// @grant		GM_getValue
+// @grant		GM.xmlHttpRequest
 // ==/UserScript==
 
 
@@ -851,10 +850,6 @@ function getMyContentGM (url, pattern, clean) {
 
 function setMyOptions (key, value) {
   key = page.site + '_' + userscript.toLowerCase() + '_' + key;
-  if (typeof GM_setValue === 'function') {
-    GM_setValue(key, value);
-    if (typeof GM_getValue === 'function' && GM_getValue(key) == value) return;
-  }
   try {
     localStorage.setItem(key, value);
     if (localStorage.getItem(key) == value) return;
@@ -872,12 +867,6 @@ function getMyOptions () {
   for (var opt in option) {
     if (option.hasOwnProperty(opt)) {
       var key = page.site + '_' + userscript.toLowerCase() + '_' + opt;
-      if (typeof GM_getValue === 'function') {
-	if (GM_getValue(key)) {
-	  option[opt] = GM_getValue(key);
-	  continue;
-	}
-      }
       try {
 	if (localStorage.getItem(key)) {
 	  option[opt] = localStorage.getItem(key);
@@ -3288,32 +3277,89 @@ else if (page.url.indexOf('rutube.ru') != -1) {
     /* Get Video Thumb */
     var rutVideoThumb = getMyContent (page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
-    /* Get Video */
-    var rutVideo = getMyContent (page.url.replace(/.*?\/video\//, 'https://rutube.ru/api/play/options/'), '<m3u8>(.*?)</m3u8>', false);
-
     /* My Player Window */
     var myPlayerWindow = createMyElement ('div', '', '', '', '');
     styleMyElement (myPlayerWindow, {position: 'relative', width: '728px', height: '432px', backgroundColor: '#F4F4F4', margin: '0px auto'});
     modifyMyElement (rutPlayerWindow, 'div', '', true);
-    //styleMyElement (rutPlayerWindow, {backgroundColor: '#FFFFFF'});
+    //styleMyElement (rutPlayerWindow, {height: '550px'});
     appendMyElement (rutPlayerWindow, myPlayerWindow);
 
     /* Create Player */
-    if (rutVideo) {
-      rutVideo = rutVideo.replace(/&amp;/g, '&');
-      var rutVideoList = {};
-      var rutDefaultVideo = 'HTTP Live Streaming M3U8';
-      rutVideoList[rutDefaultVideo] = rutVideo;
-      player = {'playerSocket': rutPlayerWindow, 'playerWindow': myPlayerWindow, 'videoList': rutVideoList, 'videoPlay': rutDefaultVideo, 'videoThumb': rutVideoThumb, 'playerWidth': 728, 'playerHeight': 432};
-      feature['definition'] = false;
-      feature['container'] = false;
-      feature['widesize'] = false;
-      createMyPlayer ();
-      styleMyElement(player['playerContent'], {marginTop: '5px'});
+    function rutPlayer() {
+      if (rutVideo) {
+	rutVideo = rutVideo.replace(/&amp;/g, '&');
+	var rutVideoList = {};
+	var rutDefaultVideo = 'Low Definition MP4';
+	rutVideoList[rutDefaultVideo] = rutVideo;
+	player = {
+	  'playerSocket': rutPlayerWindow,
+	  'playerWindow': myPlayerWindow,
+	  'videoList': rutVideoList,
+	  'videoPlay': rutDefaultVideo,
+	  'videoThumb': rutVideoThumb,
+	  'playerWidth': 728,
+	  'playerHeight': 432
+	};
+	feature['definition'] = false;
+	feature['container'] = false;
+	feature['widesize'] = false;
+	option['definition'] = 'LD';
+	option['definitions'] = ['Low Definition'];
+	option['containers'] = ['MP4'];
+	createMyPlayer ();
+	styleMyElement(player['playerContent'], {marginTop: '5px'});
+      }
+      else {
+	showMyMessage ('!videos');
+      }
     }
-    else {
-      showMyMessage ('!videos');
+
+    /* Get Video */
+    var rutVideo = getMyContent (page.url.replace(/.*?\/video\//, 'https://rutube.ru/api/play/options/'), '"json"\\s*:\\s*"(.*?)"', false);
+    try {
+      rutVideo = getMyContent (rutVideo, '\\["(.*?)"\\]', false);
+      rutPlayer();
     }
+    catch(e) {
+      try {
+	GM.xmlHttpRequest({
+	  method: 'GET',
+	  url: rutVideo,
+	  onload: function(response) {
+	    if (response.readyState === 4 && response.status === 200) {
+	      rutVideo = response.responseText.match(/\["(.*?)"\]/);
+	      rutVideo = (rutVideo) ? rutVideo[1] : null;
+	      rutPlayer();
+	    }
+	    else {
+	      rutPlayer();
+	    }
+	  }
+	});
+      }
+      catch(e) {
+	try {
+	  GM_xmlhttpRequest({
+	    method: 'GET',
+	    url: rutVideo,
+	    onload: function(response) {
+	      if (response.readyState === 4 && response.status === 200) {
+		rutVideo = response.responseText.match(/\["(.*?)"\]/);
+		rutVideo = (rutVideo) ? rutVideo[1] : null;
+		rutPlayer();
+	      }
+	      else {
+		rutPlayer();
+	      }
+	    }
+	  });
+	}
+	catch(e) {
+	  rutPlayer();
+	}
+      }
+    }
+
   }
 
 }
