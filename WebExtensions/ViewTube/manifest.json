@@ -1,0 +1,65 @@
+{
+
+  "manifest_version": 2,
+  "name": "ViewTube",
+  "version": "2018.1.10",
+
+  "description": "Watch videos from video sharing websites without Flash Player.",
+
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "64": "icons/64.png",
+    "96": "icons/96.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+	"http://youtube.com/*",
+	"http://www.youtube.com/*",
+	"https://youtube.com/*",
+	"https://www.youtube.com/*",
+	"http://gaming.youtube.com/*",
+	"https://gaming.youtube.com/*",
+	"http://m.youtube.com/*",
+	"https://m.youtube.com/*",
+	"http://dailymotion.com/*",
+	"http://www.dailymotion.com/*",
+	"https://dailymotion.com/*",
+	"https://www.dailymotion.com/*",
+	"http://vimeo.com/*",
+	"http://www.vimeo.com/*",
+	"https://vimeo.com/*",
+	"https://www.vimeo.com/*",
+	"http://metacafe.com/*",
+	"http://www.metacafe.com/*",
+	"https://metacafe.com/*",
+	"https://www.metacafe.com/*",
+	"http://break.com/*",
+	"http://www.break.com/*",
+	"https://break.com/*",
+	"https://www.break.com/*",
+	"http://funnyordie.com/*",
+	"http://www.funnyordie.com/*",
+	"https://funnyordie.com/*",
+	"https://www.funnyordie.com/*",
+	"http://veoh.com/*",
+	"http://www.veoh.com/*",
+	"https://veoh.com/*",
+	"https://www.veoh.com/*",
+	"http://viki.com/*",
+	"http://www.viki.com/*",
+	"https://viki.com/*",
+	"https://www.viki.com/*",
+	"http://imdb.com/*",
+	"http://www.imdb.com/*",
+	"https://imdb.com/*",
+	"https://www.imdb.com/*"
+      ],
+      "js": ["viewtube.user.js"]
+    }
+  ]
+
+}
