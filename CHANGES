@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2018.01.10
+- don't reload the page on video change
+
 #2017.11.17
 - fixed for Greasemonkey 4
 
