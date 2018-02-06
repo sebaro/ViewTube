@@ -1,0 +1,104 @@
+﻿[{
+	"author": "Sebaro (script) & A.S. (MX add-on)"
+	"website": "http://isebaro.com/viewtube/" 
+	"date": "02.09.2017"
+	"type":"extension",
+	"frameworkVersion":"1.0.0",
+	"version":"2017.09.02.1",
+        "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
+	"name": "ViewTube"
+	"icon": "icon",
+	"title": {"_t": "app.ViewTube"},
+	"description": {"_t": "app.Description"},
+
+	"actions": [{
+		"type": "script", 
+		"entryPoints": ["doc_end"],
+		"include": [
+			"*.youtube.com",
+			"youtube.com",
+			"*gaming.youtube.com",
+			"gaming.youtube.com",
+			"*.dailymotion.com",
+			"dailymotion.com",
+			"*.vimeo.com",
+			"vimeo.com",
+			"*.metacafe.com",
+			"metacafe.com",
+			"*.break.com",
+			"break.com",
+			"*.funnyordie.com",
+			"funnyordie.com",
+			"*.veoh.com",
+			"veoh.com",
+			"*.viki.com",
+			"viki.com",
+			"*.imdb.com",
+			"imdb.com",
+			],
+		"exclude": [
+			"*.gooogle.com",
+			"google.com",
+			"*mail.google.com",
+			"mail.google.com",],
+		"js": ["script.js"],
+		}]
+
+	"actions": [{
+		"type": "mxcmd",
+		"title": {"_t": "app.ViewTube"},
+		"entryPoints": ["toolbar"],
+		"icon": "toolbar.png",
+		{"type": "script",
+			"js": ["page.js"]
+			"menu": [
+				{
+				"type": "page",
+				"title": {"_t": "app.About"},
+				"icon": "point.png",
+				"main": "http://isebaro.com/viewtube/"
+				},
+				{
+				"type": "page",
+				"title": {"_t": "app.GitHub"},
+				"icon": "point.png",
+				"main": "https://github.com/sebaro/ViewTube"
+				},
+			{"type": "separator"},
+				{
+				"type": "page",
+				"title": {"_t": "app.Script"},
+				"icon": "point.png",
+				"main": "https://github.com/sebaro/ViewTube/raw/master/viewtube.user.js"
+				},
+				{
+				"type": "page",
+				"title": {"_t": "app.Plus"},
+				"icon": "point.png",
+				"main": "https://github.com/sebaro/ViewTube/raw/master/viewtubeplus.user.js"
+				},
+				{
+				"type": "page",
+				"title": {"_t": "app.ViolentMonkey"},
+				"icon": "point.png",
+				"main": "http://extension.maxthon.com/detail/index.php?view_id=1680"
+				},
+			{"type": "separator"},
+				{
+				"type": "page",
+				"title": {"_t": "app.Developer"},
+				"icon": "point.png",
+				"main": "http://isebaro.com/"
+				},
+				{
+				"type": "page",
+				"title": {"_t": "app.Rate"},
+				"icon": "point.png",
+				"main": "http://extension.maxthon.com/server/go.php?guid={DB0480A8-C9C9-44A7-B410-6DD1074E88E1}"
+				}
+				]
+		}
+		}]
+
+	"config": "http://isebaro.com/viewtube/",
+}]
