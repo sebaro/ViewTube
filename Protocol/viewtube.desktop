@@ -1,0 +1,8 @@
+
+[Desktop Entry]
+Name=ViewTube Client
+Exec=/home/Devel/JavaScript/ViewTube/Protocol/viewtube %u
+Icon=mpv
+Type=Application
+Terminal=false
+MimeType=x-scheme-handler/viewtube

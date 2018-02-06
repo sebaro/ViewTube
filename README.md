@@ -1,7 +1,7 @@
 
 ViewTube is a browser user script for watching videos from video websites with a video plugin, an external video player or the HTML5 video player.  
 
-![](https://raw.github.com/sebaro/ViewTube/master/screenshot.png)  
+![](https://raw.github.com/sebaro/ViewTube/master/Images/screenshot.png)  
 
 # Installation  
 
@@ -85,7 +85,7 @@ Mac:
 
 ## External  
 
-If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://isebaro.com/viewtube  
+If no video plugin is installed it's possible to use an external player for video playback. This requires the use of a browser protocol and a script that has to be associated with it. Read here for more info: http://sebaro.pro/viewtube  
 
 ## Internal  
 
