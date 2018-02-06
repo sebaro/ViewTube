@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2018.02.06
+- fixes FunnyOrDie, IMDb
+
 #2018.01.10
 - don't reload the page on video change
 
