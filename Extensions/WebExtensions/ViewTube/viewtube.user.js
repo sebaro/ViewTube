@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.02.06
+// @version		2018.02.08
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -1097,7 +1097,7 @@ function ViewTube() {
 	if (ytSidebarWindow) {
 	  if (!player['sidebarWindow']) {
 	    player['sidebarWindow'] = ytSidebarWindow;
-	    resizeMyPlayer('widesize');
+	    if (!option['fullsize']) resizeMyPlayer('widesize');
 	  }
 	  ytWaitForObjects--;
 	}
