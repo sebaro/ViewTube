@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "ViewTube",
-  "version": "2018.2.8",
+  "version": "2018.2.11",
 
   "description": "Watch videos from video sharing websites without Flash Player.",
 
@@ -61,6 +61,15 @@
       ],
       "js": ["viewtube.user.js"]
     }
+  ],
+
+  "permissions": [
+    "http://manifest.googlevideo.com/*",
+    "https://manifest.googlevideo.com/*",
+    "http://player.vimeo.com/*",
+    "https://player.vimeo.com/*",
+    "http://api.viki.io/*",
+    "https://api.viki.io/*"
   ]
 
 }

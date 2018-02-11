@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.02.08
+// @version		2018.02.11
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -1986,10 +1986,10 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div', '', '', '', '');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '960px', height: '562px', margin: '0px auto', backgroundColor: '#F4F5F7'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '920px', height: '540px', margin: '0px auto', backgroundColor: '#F4F5F7'});
       if (viVideoPage) {
-	styleMyElement(viPlayerWindow, {minHeight: '562px', position: 'relative', zIndex: 'auto', transformStyle: 'flat'});
-	if (viPlayerWindow.parentNode) styleMyElement(viPlayerWindow.parentNode, {minHeight: '562px', position: 'relative', zIndex: 'auto'});
+	styleMyElement(viPlayerWindow, {minHeight: '540px', position: 'relative', zIndex: 'auto', transformStyle: 'flat'});
+	if (viPlayerWindow.parentNode) styleMyElement(viPlayerWindow.parentNode, {minHeight: '540px', position: 'relative', zIndex: 'auto'});
       }
       else {
 	styleMyElement(viPlayerWindow, {height: '100%'});
@@ -2041,8 +2041,8 @@ function ViewTube() {
 	    'videoList': viVideoList,
 	    'videoPlay': viDefaultVideo,
 	    'videoThumb': viVideoThumb,
-	    'playerWidth': 960,
-	    'playerHeight': 562
+	    'playerWidth': 920,
+	    'playerHeight': 540
 	  };
 	  feature['container'] = false;
 	  feature['widesize'] = false;
@@ -2051,8 +2051,7 @@ function ViewTube() {
 	  createMyPlayer();
 
 	  /* Fix panel */
-	  if (viVideoPage) styleMyElement(player['playerContent'], {marginTop: '7px'});
-	  else styleMyElement(player['playerContent'], {marginTop: '3px'});
+	  styleMyElement(player['playerContent'], {marginTop: '7px'});
 	}
 	else {
 	  showMyMessage('!videos');
@@ -2524,6 +2523,7 @@ function ViewTube() {
     else {
       /* Get Video Thumbnail */
       var vkVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+      if (vkVideoThumb) vkVideoThumb = vkVideoThumb.replace(/&amp;/g, '&');
 
       /* Get Video ID */
       var vkVideoID = page.url.match(/videos\/(\d+v)/);
