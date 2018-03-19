@@ -1,0 +1,34 @@
+{
+
+  "manifest_version": 2,
+  "name": "ViewTube+",
+  "version": "2018.3.14",
+
+  "description": "Watch videos from video sharing websites without Flash Player.",
+
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "64": "icons/64.png",
+    "96": "icons/96.png",
+    "128": "icons/128.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+	"http://video.repubblica.it/*",
+	"https://video.repubblica.it/*",
+	"http://video.gelocal.it/*",
+	"https://video.gelocal.it/*",
+	"http://video.corriere.it/*",
+	"https://video.corriere.it/*",
+	"http://www.altoadige.it/*",
+	"https://www.altoadige.it/*"
+      ],
+      "js": ["viewtubeplus.user.js"]
+    }
+  ]
+
+}
