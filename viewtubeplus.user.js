@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2018.03.11
+// @version		2018.05.26
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -16,6 +16,8 @@
 // @include		https://video.corriere.it/*
 // @include		http://www.altoadige.it/*
 // @include		https://www.altoadige.it/*
+// @include		http://www.ilfattoquotidiano.it/*
+// @include		https://www.ilfattoquotidiano.it/*
 // ==/UserScript==
 
 
@@ -1013,6 +1015,74 @@ function ViewTube() {
       }
       else {
 	showMyMessage('!videos');
+      }
+    }
+
+  }
+
+  // =====IlFattoQuotidiano===== //
+
+  else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
+
+    /* Get Player Window */
+    var ifqPlayerWindow = getMyElement('', 'div', 'class', 'videoplayer', 0, false);
+    if (!ifqPlayerWindow) {
+      //showMyMessage ('!player');
+    }
+    else {
+      /* My Player Window */
+      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '990px', height: '579px', backgroundColor: '#F4F4F4'});
+      modifyMyElement(ifqPlayerWindow, 'div', '', false, true);
+      appendMyElement(ifqPlayerWindow, myPlayerWindow);
+
+      /* Get Video Thumb */
+      var ifqVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+      /* Get Videos Content */
+      var ifqVideosContent = getMyContent(page.url, '"sources":\\[(.*?)\\]', false);
+
+      if (ifqVideosContent) {
+	var ifqVideoList = {};
+	var ifqVideoFound = false;
+	var ifqVideoFormats = {'270p': 'Low Definition MP4', '406p': 'Standard Definition MP4'};
+	var ifqVideo, ifqPattern
+	for (var vCode in ifqVideoFormats) {
+	  ifqPattern = 'mp4","file":"(.*?)","label":"' + vCode + '"';
+	  ifqVideo = ifqVideosContent.match(ifqPattern);
+	  ifqVideo = (ifqVideo) ? ifqVideo[1] : null;
+	  if (ifqVideo) {
+	    if (!ifqVideoFound) ifqVideoFound = true;
+	    ifqVideoList[ifqVideoFormats[vCode]] = ifqVideo;
+	  }
+	}
+
+	if (ifqVideoFound) {
+	  /* Create Player */
+	  var ifqDefaultVideo = 'Low Definition MP4';
+	  player = {
+	    'playerSocket': ifqPlayerWindow,
+	    'playerWindow': myPlayerWindow,
+	    'videoList': ifqVideoList,
+	    'videoPlay': ifqDefaultVideo,
+	    'videoThumb': ifqVideoThumb,
+	    'playerWidth': 990,
+	    'playerHeight': 579
+	  };
+	  feature['container'] = false;
+	  feature['widesize'] = false;
+	  option['definitions'] = ['Low Definition', 'Standard Definition'];
+	  option['containers'] = ['MP4'];
+	  createMyPlayer();
+	  /* Fix panel */
+	  styleMyElement(player['playerContent'], {marginTop: '5px'});
+	}
+	else {
+	  showMyMessage('!videos');
+	}
+      }
+      else {
+	showMyMessage('!content');
       }
     }
 
