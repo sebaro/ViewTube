@@ -3,6 +3,11 @@
 /* ViewTube Changelog */
 
 
+#2018.06.07
+- move source from GitHub o GitLab
+- fixes Break
+- download file name for Chromium browsers
+
 #2018.02.11
 - fixes YouTube Live, Vimeo, VIKI
 

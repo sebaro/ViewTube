@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.02.11
+// @version		2018.06.07
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
 // @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
-// @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
-// @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.user.js
-// @icon		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.png
+// @downloadURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.user.js
+// @updateURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.user.js
+// @icon		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.png
 // @include		http://youtube.com*
 // @include		http://www.youtube.com*
 // @include		https://youtube.com*
@@ -87,13 +87,13 @@ if (window.top != window.self) return;
 var userscript = 'ViewTube';
 
 // Page
-var page = {win: window, doc: window.document, body: window.document.body, url: window.location.href, title: window.document.title, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
+var page = {win: window, doc: window.document, body: window.document.body, url: window.location.href, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
 
 // Player
 var player = {};
 var feature = {'autoplay': true, 'definition': true, 'container': true, 'dash': false, 'direct': false, 'widesize': true, 'fullsize': true};
 var option = {'plugin': 'Auto', 'autoplay': false, 'autoget': false, 'definition': 'HD', 'container': 'MP4', 'dash': false, 'direct': false, 'widesize': false, 'fullsize': false};
-var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'FLV', 'VTP'];
+var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'VTP'];
 if (navigator.platform.indexOf('Win') != -1) plugins = plugins.concat(['WMP', 'WMP2', 'QT']);
 else if (navigator.platform.indexOf('Mac') != -1) plugins = plugins.concat(['QT']);
 else plugins = plugins.concat(['MPV', 'Totem', 'Xine']);
@@ -101,10 +101,6 @@ var mimetypes = {
   'MPEG': 'video/mpeg',
   'MP4': 'video/mp4',
   'WebM': 'video/webm',
-  'FLV': 'video/x-flv',
-  'MOV': 'video/quicktime',
-  'M4V': 'video/x-m4v',
-  'AVI': 'video/x-msvideo',
   '3GP': 'video/3gpp',
   'WMP': 'application/x-ms-wmp',
   'WMP2': 'application/x-mplayer2',
@@ -718,21 +714,22 @@ function getMyVideo() {
   var vdoURL = player['videoList'][player['videoPlay']];
   if (vdoURL == 'DASH') return;
   if (vdoURL == page.url) return;
-  if (player['videoTitle']) {
-    var vdoD = ' (' + player['videoPlay'] + ')';
-    vdoD = vdoD.replace(/Ultra High Definition/, 'UHD');
-    vdoD = vdoD.replace(/Full High Definition/, 'FHD');
-    vdoD = vdoD.replace(/High Definition/, 'HD');
-    vdoD = vdoD.replace(/Standard Definition/, 'SD');
-    vdoD = vdoD.replace(/Very Low Definition/, 'VLD');
-    vdoD = vdoD.replace(/Low Definition/, 'LD');
-    vdoD = vdoD.replace(/\sFLV|\sMP4|\sWebM|\s3GP/g, '');
-    vdoURL = vdoURL + '&title=' + player['videoTitle'] + vdoD;
+  var vdoDef = ' (' + player['videoPlay'].split(' ').slice(0, -1).join('').match(/[A-Z]/g).join('') + ')';
+  var vdoExt = '.' + player['videoPlay'].split(' ').slice(-1).join('').toLowerCase();
+  var vdoTle = (player['videoTitle']) ? player['videoTitle'] : '';
+  if (option['autoget'] && vdoTle && player['videoPlay'] == 'High Definition MP4') {
+    page.win.location.href = vdoURL + '&title=' + vdoTle + vdoDef;
   }
-  if (option['autoget'] && player['videoPlay'] == 'High Definition MP4') page.win.location.href = vdoURL;
   else {
-    var vdoLink = 'Get <a href="' + vdoURL + '" style="color:#00892C">Link</a>';
-    modifyMyElement(player['buttonGet'] , 'div', vdoLink, false);
+    var vdoLnk = '';
+    if (vdoTle) {
+      var vdoNme = vdoTle + vdoDef + vdoExt;
+      vdoLnk = 'Get <a href="' + vdoURL + '" style="color:#00892C" download="' + vdoNme + '" target="_blank">Link</a>';
+    }
+    else {
+      vdoLnk = 'Get <a href="' + vdoURL + '" style="color:#00892C" target="_blank">Link</a>';
+    }
+    modifyMyElement(player['buttonGet'] , 'div', vdoLnk, false);
     player['isGetting'] = true;
   }
 }
@@ -991,7 +988,7 @@ function ViewTube() {
     }
 
     /* Video Availability */
-    if (getMyContent(page.url, '"simpleText":"(This video is private.)"', false)) return;
+    if (getMyContent(page.url, '"simpleText":"(This video is (private|unavailable|not available).)"', false)) return;
 
     /* Decrypt Signature */
     var ytScriptSrc;
@@ -1147,55 +1144,40 @@ function ViewTube() {
 	'sidebarMarginWide': ytSidebarMarginWide
       };
       option['definitions'] = ['Ultra High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
-      option['containers'] = ['MP4', 'WebM', 'FLV', '3GP', 'Any'];
+      option['containers'] = ['MP4', 'WebM', '3GP', 'Any'];
       createMyPlayer();
     }
 
     /* Parse Videos */
     function ytVideos() {
       var ytVideoFormats = {
-	'5': 'Very Low Definition FLV',
 	'17': 'Very Low Definition 3GP',
 	'18': 'Low Definition MP4',
 	'22': 'High Definition MP4',
-	'34': 'Low Definition FLV',
-	'35': 'Standard Definition FLV',
 	'36': 'Low Definition 3GP',
-	'37': 'Full High Definition MP4',
-	'38': 'Ultra High Definition MP4',
 	'43': 'Low Definition WebM',
-	'44': 'Standard Definition WebM',
-	'45': 'High Definition WebM',
-	'46': 'Full High Definition WebM',
-	'82': 'Low Definition 3D MP4',
-	'83': 'Standard Definition 3D MP4',
-	'84': 'High Definition 3D MP4',
-	'85': 'Full High Definition 3D MP4',
-	'100': 'Low Definition 3D WebM',
-	'101': 'Standard Definition 3D WebM',
-	'102': 'High Definition 3D WebM',
 	'135': 'Standard Definition Video MP4',
 	'136': 'High Definition Video MP4',
 	'137': 'Full High Definition Video MP4',
-	'138': 'Ultra High Definition Video MP4',
-	'139': 'Low Bitrate Audio MP4',
 	'140': 'Medium Bitrate Audio MP4',
-	'141': 'High Bitrate Audio MP4',
 	'171': 'Medium Bitrate Audio WebM',
-	'172': 'High Bitrate Audio WebM',
 	'244': 'Standard Definition Video WebM',
 	'247': 'High Definition Video WebM',
 	'248': 'Full High Definition Video WebM',
 	'249': 'Low Bitrate Audio Opus',
 	'250': 'Medium Bitrate Audio Opus',
 	'251': 'High Bitrate Audio Opus',
-	'266': 'Ultra High Definition Video MP4',
 	'272': 'Ultra High Definition Video WebM',
 	'298': 'High Definition Video MP4',
 	'299': 'Full High Definition Video MP4',
 	'302': 'High Definition Video WebM',
 	'303': 'Full High Definition Video WebM',
-	'313': 'Ultra High Definition Video WebM'
+	'313': 'Ultra High Definition Video WebM',
+	'315': 'Ultra High Definition Video WebM',
+	'333': 'Standard Definition Video WebM',
+	'334': 'High Definition Video WebM',
+	'335': 'Full High Definition Video WebM',
+	'337': 'Ultra High Definition Video WebM'
       };
       var ytVideoFound = false;
       var ytVideos = ytVideosContent.split(',');
@@ -1315,24 +1297,19 @@ function ViewTube() {
     }
 
     /* Get Video Thumbnail */
-    var ytVideoThumb = getMyContent(page.url, 'link\\s+itemprop="thumbnailUrl"\\s+href="(.*?)"', false);
-    if (!ytVideoThumb) ytVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-    if (!ytVideoThumb) {
-      var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
-    }
+    var ytVideoThumb;
+    var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
+    if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
 
     /* Get Video Title */
-    var ytVideoTitle = getMyContent(page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
-    if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
-    if (!ytVideoTitle) ytVideoTitle = page.doc.title;
+    var ytVideoTitle = getMyContent(page.url, '"title":"(.*?)"', false);
+    if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, '"videoPrimaryInfoRenderer":\\{"title":\\{"simpleText":"(.*?)"', false);
     if (ytVideoTitle) {
       ytVideoTitle = ytVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
       ytVideoTitle = ytVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
       ytVideoTitle = ytVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
       ytVideoTitle = ytVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
       ytVideoTitle = ytVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-      ytVideoTitle = ytVideoTitle.replace(/^YouTube\s-\s/, '');
     }
 
     /* Get Videos Content */
@@ -1502,24 +1479,19 @@ function ViewTube() {
     }
     else {
       /* Get Video Thumbnail */
-      var ytVideoThumb = getMyContent(page.url, 'link\\s+itemprop="thumbnailUrl"\\s+href="(.*?)"', false);
-      if (!ytVideoThumb) ytVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      if (!ytVideoThumb) {
-	var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-	if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
-      }
+      var ytVideoThumb;
+      var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
+      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
 
       /* Get Video Title */
-      var ytVideoTitle = getMyContent(page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
-      if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
-      if (!ytVideoTitle) ytVideoTitle = page.doc.title;
+      var ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
       if (ytVideoTitle) {
 	ytVideoTitle = ytVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
 	ytVideoTitle = ytVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
 	ytVideoTitle = ytVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
 	ytVideoTitle = ytVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
 	ytVideoTitle = ytVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-	ytVideoTitle = ytVideoTitle.replace(/^YouTube\s-\s/, '');
       }
 
       /* Get Videos Content */
@@ -1627,55 +1599,40 @@ function ViewTube() {
 	  'sidebarMarginWide': ytSidebarMarginWide
 	};
 	option['definitions'] = ['Ultra High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
-	option['containers'] = ['MP4', 'WebM', 'FLV', '3GP', 'Any'];
+	option['containers'] = ['MP4', 'WebM', '3GP', 'Any'];
 	createMyPlayer();
       }
 
       /* Parse Videos */
       function ytVideos() {
 	var ytVideoFormats = {
-	  '5': 'Very Low Definition FLV',
 	  '17': 'Very Low Definition 3GP',
 	  '18': 'Low Definition MP4',
 	  '22': 'High Definition MP4',
-	  '34': 'Low Definition FLV',
-	  '35': 'Standard Definition FLV',
 	  '36': 'Low Definition 3GP',
-	  '37': 'Full High Definition MP4',
-	  '38': 'Ultra High Definition MP4',
 	  '43': 'Low Definition WebM',
-	  '44': 'Standard Definition WebM',
-	  '45': 'High Definition WebM',
-	  '46': 'Full High Definition WebM',
-	  '82': 'Low Definition 3D MP4',
-	  '83': 'Standard Definition 3D MP4',
-	  '84': 'High Definition 3D MP4',
-	  '85': 'Full High Definition 3D MP4',
-	  '100': 'Low Definition 3D WebM',
-	  '101': 'Standard Definition 3D WebM',
-	  '102': 'High Definition 3D WebM',
 	  '135': 'Standard Definition Video MP4',
 	  '136': 'High Definition Video MP4',
 	  '137': 'Full High Definition Video MP4',
-	  '138': 'Ultra High Definition Video MP4',
-	  '139': 'Low Bitrate Audio MP4',
 	  '140': 'Medium Bitrate Audio MP4',
-	  '141': 'High Bitrate Audio MP4',
 	  '171': 'Medium Bitrate Audio WebM',
-	  '172': 'High Bitrate Audio WebM',
 	  '244': 'Standard Definition Video WebM',
 	  '247': 'High Definition Video WebM',
 	  '248': 'Full High Definition Video WebM',
 	  '249': 'Low Bitrate Audio Opus',
 	  '250': 'Medium Bitrate Audio Opus',
 	  '251': 'High Bitrate Audio Opus',
-	  '266': 'Ultra High Definition Video MP4',
 	  '272': 'Ultra High Definition Video WebM',
 	  '298': 'High Definition Video MP4',
 	  '299': 'Full High Definition Video MP4',
 	  '302': 'High Definition Video WebM',
 	  '303': 'Full High Definition Video WebM',
-	  '313': 'Ultra High Definition Video WebM'
+	  '313': 'Ultra High Definition Video WebM',
+	  '315': 'Ultra High Definition Video WebM',
+	  '333': 'Standard Definition Video WebM',
+	  '334': 'High Definition Video WebM',
+	  '335': 'Full High Definition Video WebM',
+	  '337': 'Ultra High Definition Video WebM'
 	};
 	var ytVideoFound = false;
 	var ytVideos = ytVideosContent.split(',');
@@ -1885,6 +1842,7 @@ function ViewTube() {
 	'videoList': dmVideoList,
 	'videoPlay': dmDefaultVideo,
 	'videoThumb': dmVideoThumb,
+	'videoTitle': dmVideoTitle,
 	'playerWidth': dmPlayerWidth,
 	'playerHeight': dmPlayerHeight
       };
@@ -1900,6 +1858,16 @@ function ViewTube() {
 
     /* Get Video Thumbnail */
     var dmVideoThumb = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"poster_url":"(.*?)"', false);
+
+    /* Get Video Title */
+    var dmVideoTitle = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"title":"(.*?)"', false);
+    if (dmVideoTitle) {
+      dmVideoTitle = dmVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+      dmVideoTitle = dmVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+      dmVideoTitle = dmVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+      dmVideoTitle = dmVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+      dmVideoTitle = dmVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+    }
 
     /* Get Videos Content */
     var dmVideosContent = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"qualities":\\{(.*?)\\]\\},', false);
@@ -1965,12 +1933,21 @@ function ViewTube() {
     else {
       /* Get Video Thumbnail */
       var viVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-      if (!viVideoThumb) viVideoThumb = getMyContent(page.url, 'meta\\s+itemprop="image"\\s+content="(.*?)"', false);
-      if (!viVideoThumb) viVideoThumb = getMyContent(page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
       if (!viVideoThumb) viVideoThumb = getMyContent(page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
       if (!viVideoThumb) {
 	viVideoThumb = getMyContent(page.url, 'src="(https://i.vimeocdn.com/video/.*?.jpg)"', false);
 	if (viVideoThumb) viVideoThumb = viVideoThumb.replace(/_.*/, '_960x540.jpg');
+      }
+
+      /* Get Video Title */
+      var viVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (viVideoTitle) {
+	viVideoTitle = viVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+	viVideoTitle = viVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+	viVideoTitle = viVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+	viVideoTitle = viVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+	viVideoTitle = viVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+	viVideoTitle = viVideoTitle.replace(/on\sVimeo$/, '');
       }
 
       /* Get Content Source */
@@ -2041,6 +2018,7 @@ function ViewTube() {
 	    'videoList': viVideoList,
 	    'videoPlay': viDefaultVideo,
 	    'videoThumb': viVideoThumb,
+	    'videoTitle' : viVideoTitle,
 	    'playerWidth': 920,
 	    'playerHeight': 540
 	  };
@@ -2106,10 +2084,10 @@ function ViewTube() {
       page.win.addEventListener('resize', mcUpdateSizes, false);
 
       /* Hide Ads */
-      var mcTopAd = getMyElement('', 'div', 'id', 'spot_header', -1, false);
-      if (mcTopAd && mcTopAd.parentNode && mcTopAd.parentNode.parentNode) removeMyElement(mcTopAd.parentNode.parentNode, mcTopAd.parentNode);
-      var mcRightAd = getMyElement('', 'div', 'id', 'spot_right_top', -1, false);
-      if (mcRightAd && mcRightAd.parentNode && mcRightAd.parentNode.parentNode) removeMyElement(mcRightAd.parentNode.parentNode, mcRightAd.parentNode);
+      var mcTopAd = getMyElement('', 'div', 'class', 'mc-action', 0, false);
+      if (mcTopAd && mcTopAd.parentNode) removeMyElement(mcTopAd.parentNode, mcTopAd);
+      var mcRightAd = getMyElement('', 'div', 'class', 'mc-action', 1, false);
+      if (mcRightAd && mcRightAd.parentNode) removeMyElement(mcRightAd.parentNode, mcRightAd);
 
       /* Get Videos */
       if (mcVideosContent) {
@@ -2174,7 +2152,7 @@ function ViewTube() {
 
   // =====Break===== //
 
-  else if (page.url.indexOf('break.com/video') != -1 || page.url.indexOf('break.com/movies') != -1) {
+  else if (page.url.indexOf('break.com/video') != -1) {
 
     /* Get Player Window */
     var brPlayerWindow = getMyElement('', 'div', 'id', 'video-player', -1, false);
@@ -2182,36 +2160,36 @@ function ViewTube() {
       showMyMessage('!player');
     }
     else {
-      /* Get Video ID */
-      var brVideoID = page.url.match(/-(\d+)($|\?)/);
-      brVideoID = (brVideoID) ? brVideoID[1] : null;
+      /* Get Video Thumbnail */
+      var brVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+      if (!brVideoThumb) brVideoThumb = getMyContent(page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
 
-      /* Get Videos Content */
-      var brSource = page.win.location.protocol + '//' + page.win.location.hostname + '/embed/' + brVideoID;
-      var brVideosContent = getMyContent(brSource, 'TEXT', false);
+      /* Get Video Title */
+      var brVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (brVideoTitle) {
+	brVideoTitle = brVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+	brVideoTitle = brVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+	brVideoTitle = brVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+	brVideoTitle = brVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+	brVideoTitle = brVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+	brVideoTitle = brVideoTitle.replace(/\s\|\sVideo\s\|\sBreak$/, '');
+      }
+
+      /* Get Video */
+      var brVideo = getMyContent(page.url, '\\[\\{"url":"(.*?)"\\}\\]', false);
+      if (!brVideo) brVideo = getMyContent(page.url, 'youtube.com\/embed\/(.*?)(\\?|&|")', false);
 
       /* Player Size */
-      var brSidebarWidth = 300;
-      var brSidebarWindow = getMyElement('', 'div', 'class', 'Sidebar', 0, false);
-      var brSidebarWindowStyle = (brSidebarWindow) ? brSidebarWindow.currentStyle || window.getComputedStyle(brSidebarWindow) : null;
       var brPlayerWidth, brPlayerHeight;
       var brPlayerWideWidth, brPlayerWideHeight;
-      var brSidebarMarginWide;
       function brGetSizes() {
 	brPlayerWidth = brPlayerWindow.clientWidth;
 	brPlayerHeight = Math.ceil(brPlayerWidth / (16 / 9)) + 22;
-	if (brSidebarWindow && brSidebarWindowStyle) brSidebarWidth = parseInt(brSidebarWindowStyle.width);
-	brPlayerWideWidth = brPlayerWidth + brSidebarWidth + 45;
-	brPlayerWideHeight = Math.ceil(brPlayerWideWidth / (16 / 9)) + 22;
-	brSidebarMarginWide = 30;
       }
       function brUpdateSizes() {
 	brGetSizes();
 	player['playerWidth'] = brPlayerWidth;
 	player['playerHeight'] = brPlayerHeight;
-	player['playerWideWidth'] = brPlayerWideWidth;
-	player['playerWideHeight'] = brPlayerWideHeight;
-	player['sidebarMarginWide'] = brSidebarMarginWide;
 	resizeMyPlayer('widesize');
       }
       brGetSizes();
@@ -2230,56 +2208,29 @@ function ViewTube() {
       page.win.addEventListener('resize', brUpdateSizes, false);
 
       /* Get Videos */
-      if (brVideosContent) {
-	var brVideoList = {};
-	var brVideoFormats = {};
-	var brVideoFound = false;
-	var brVideoFormats = {'320_kbps.mp4': 'Very Low Definition MP4', '496_kbps.mp4': 'Low Definition MP4', '864_kbps.mp4': 'Standard Definition MP4', '2240_kbps.mp4': 'High Definition MP4', '3264_kbps.mp4': 'Full High Definition MP4'};
-	var brVideoPath, brVideoToken, brVideoThumb, brVideo, myVideoCode;
-	if (page.url.indexOf('break.com/video') != -1) {
-	  brVideoPath = brVideosContent.match(/"videoUri":\s"(.*?)496_kbps/);
-	  brVideoPath = (brVideoPath) ? brVideoPath[1] : null;
+      if (brVideo) {
+	if (brVideo.length == 11) {
+	  var ytVideoLink = 'http://youtube.com/watch?v=' + brVideo;
+	  showMyMessage('embed', ytVideoLink);
 	}
 	else {
-	  brVideoPath = brVideosContent.match(/"hlsUri":\s"(.*?)"/);
-	  brVideoPath = (brVideoPath) ? brVideoPath[1] : null;
-	}
-	brVideoToken = brVideosContent.match(/"AuthToken":\s"(.*?)"/);
-	brVideoToken = (brVideoToken) ? brVideoToken[1] : null;
-	brVideoThumb = brVideosContent.match(/"thumbUri":\s"(.*?)"/);
-	brVideoThumb = (brVideoThumb) ? brVideoThumb[1] : null;
-	if (brVideoPath && brVideoToken) {
-	  for (var brVideoCode in brVideoFormats) {
-	    if (brVideosContent.match(brVideoCode)) {
-	      if (!brVideoFound) brVideoFound = true;
-	      myVideoCode = brVideoFormats[brVideoCode];
-	      if (page.url.indexOf('break.com/video') != -1) brVideo = brVideoPath + brVideoCode + '?' + brVideoToken;
-	      else brVideo = brVideoPath + brVideoCode + '.m3u8?' + brVideoToken;
-	      brVideoList[myVideoCode] = brVideo;
-	    }
-	  }
-	}
-
-	if (brVideoFound) {
 	  /* Create Player */
 	  var brDefaultVideo = 'Low Definition MP4';
+	  var brVideoList = {};
+	  brVideoList[brDefaultVideo] = brVideo;
 	  player = {
 	    'playerSocket': brPlayerWindow,
 	    'playerWindow': myPlayerWindow,
 	    'videoList': brVideoList,
 	    'videoPlay': brDefaultVideo,
 	    'videoThumb': brVideoThumb,
+	    'videoTitle' : brVideoTitle,
 	    'playerWidth': brPlayerWidth,
-	    'playerHeight': brPlayerHeight,
-	    'playerWideWidth': brPlayerWideWidth,
-	    'playerWideHeight': brPlayerWideHeight,
-	    'sidebarWindow': brSidebarWindow,
-	    'sidebarMarginNormal': 10,
-	    'sidebarMarginWide': brSidebarMarginWide
+	    'playerHeight': brPlayerHeight
 	  };
-	  if (page.url.indexOf('break.com/movies') != -1) feature['widesize'] = false;
-	  option['definitions'] = ['Very Low Definition', 'Low Definition', 'Standard Definition', 'High Definition', 'Full High Definition'];
-	  option['containers'] = ['MP4', 'FLV', 'Any'];
+	  feature['widesize'] = false;
+	  option['definitions'] = ['Low Definition'];
+	  option['containers'] = ['MP4'];
 	  createMyPlayer();
 
 	  /* Fix Panel */
@@ -2287,19 +2238,9 @@ function ViewTube() {
 	  player['videoMenu'].style.setProperty('font-size', '12px', 'important');
 	  player['pluginMenu'].style.setProperty('font-size', '12px', 'important');
 	}
-	else {
-	  var ytVideoId =  brVideosContent.match(/"youtubeId":\s"(.*?)"/);
-	  if (ytVideoId && ytVideoId[1]) {
-	    var ytVideoLink = 'http://youtube.com/watch?v=' + ytVideoId[1];
-	    showMyMessage('embed', ytVideoLink);
-	  }
-	  else {
-	  showMyMessage('!videos');
-	  }
-	}
       }
       else {
-	showMyMessage('!content');
+	showMyMessage('!videos');
       }
     }
 
@@ -2318,6 +2259,16 @@ function ViewTube() {
       /* Get Video Thumbnail */
       var fodVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
       if (fodVideoThumb) fodVideoThumb = fodVideoThumb.replace(/large/, 'fullsize');
+
+      /* Get Video Title */
+      var fodVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (fodVideoTitle) {
+	fodVideoTitle = fodVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+	fodVideoTitle = fodVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+	fodVideoTitle = fodVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+	fodVideoTitle = fodVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+	fodVideoTitle = fodVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+      }
 
       /* Get Videos Content */
       var fodVideosContent = getMyContent(page.url, '<video([\\s\\S]*?)video>', false);
@@ -2397,6 +2348,7 @@ function ViewTube() {
 	    'videoList': fodVideoList,
 	    'videoPlay': fodDefaultVideo,
 	    'videoThumb': fodVideoThumb,
+	    'videoTitle' : fodVideoTitle,
 	    'playerWidth': fodPlayerWidth,
 	    'playerHeight': fodPlayerHeight
 	  };
@@ -2441,6 +2393,16 @@ function ViewTube() {
       var veVideoThumbGet = veVideosContent.match(/"highResImage":"(.*?)"/);
       var veVideoThumb = (veVideoThumbGet) ? veVideoThumbGet[1] : null;
 
+      /* Get Video Title */
+      var veVideoTitle = getMyContent(page.url, 'meta\\s+name="og:title"\\s+content="(.*?)"', false);
+      if (veVideoTitle) {
+	veVideoTitle = veVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+	veVideoTitle = veVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+	veVideoTitle = veVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+	veVideoTitle = veVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+	veVideoTitle = veVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+      }
+
       /* My Player Window */
       myPlayerWindow = createMyElement('div', '', '', '', '');
       styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4'});
@@ -2478,6 +2440,7 @@ function ViewTube() {
 	    'videoList': veVideoList,
 	    'videoPlay': veDefaultVideo,
 	    'videoThumb': veVideoThumb,
+	    'videoTitle' : veVideoTitle,
 	    'playerWidth': 640,
 	    'playerHeight': 382,
 	    'playerWideWidth': 970,
@@ -2524,6 +2487,16 @@ function ViewTube() {
       /* Get Video Thumbnail */
       var vkVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
       if (vkVideoThumb) vkVideoThumb = vkVideoThumb.replace(/&amp;/g, '&');
+
+      /* Get Video Title */
+      var vkVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (vkVideoTitle) {
+	vkVideoTitle = vkVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+	vkVideoTitle = vkVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+	vkVideoTitle = vkVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+	vkVideoTitle = vkVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+	vkVideoTitle = vkVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+      }
 
       /* Get Video ID */
       var vkVideoID = page.url.match(/videos\/(\d+v)/);
@@ -2620,6 +2593,7 @@ function ViewTube() {
 	    'videoList': vkVideoList,
 	    'videoPlay': vkDefaultVideo,
 	    'videoThumb': vkVideoThumb,
+	    'videoTitle' : vkVideoTitle,
 	    'playerWidth': vkPlayerWidth,
 	    'playerHeight': vkPlayerHeight,
 	  };
@@ -2717,6 +2691,7 @@ function ViewTube() {
 	'videoList': imdbVideoList,
 	'videoPlay': imdbDefaultVideo,
 	'videoThumb': imdbVideoThumb,
+	'videoTitle' : imdbVideoTitle,
 	'playerWidth': imdbPlayerWidth,
 	'playerHeight': imdbPlayerHeight
       };
@@ -2727,7 +2702,17 @@ function ViewTube() {
       createMyPlayer();
     }
 
-    /* Get Video Id*/
+    /* Get Video Title */
+    var imdbVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+    if (imdbVideoTitle) {
+      imdbVideoTitle = imdbVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
+      imdbVideoTitle = imdbVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
+      imdbVideoTitle = imdbVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+      imdbVideoTitle = imdbVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
+      imdbVideoTitle = imdbVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+    }
+
+    /* Get Video Id */
     var imdbVideoId = page.url.replace(/.*videoplayer\//, '').replace(/(\/|\?).*/, '');
 
     /* Get Videos Content */
@@ -2788,7 +2773,6 @@ page.win.setInterval(function() {
     page.doc = page.win.document;
     page.body = page.doc.body;
     page.url = page.win.location.href;
-    page.title = page.doc.title;
     blockInterval = 50;
     if (player['playerSocket']) blockObject = player['playerSocket'];
     blockVideos();

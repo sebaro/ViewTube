@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2018.03.11
+// @version		2018.06.07
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
 // @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
-// @downloadURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
-// @updateURL		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtubeplus.user.js
-// @icon		https://raw.githubusercontent.com/sebaro/viewtube/master/viewtube.png
+// @downloadURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtubeplus.user.js
+// @updateURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtubeplus.user.js
+// @icon		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.png
 // @include		http://video.repubblica.it/*
 // @include		https://video.repubblica.it/*
 // @include		http://video.gelocal.it/*
@@ -16,6 +16,8 @@
 // @include		https://video.corriere.it/*
 // @include		http://www.altoadige.it/*
 // @include		https://www.altoadige.it/*
+// @include		http://www.ilfattoquotidiano.it/*
+// @include		https://www.ilfattoquotidiano.it/*
 // ==/UserScript==
 
 
@@ -55,13 +57,13 @@ if (window.top != window.self) return;
 var userscript = 'ViewTube';
 
 // Page
-var page = {win: window, doc: window.document, body: window.document.body, url: window.location.href, title: window.document.title, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
+var page = {win: window, doc: window.document, body: window.document.body, url: window.location.href, site: window.location.hostname.match(/([^.]+)\.[^.]+$/)[1]};
 
 // Player
 var player = {};
 var feature = {'autoplay': true, 'definition': true, 'container': true, 'direct': false, 'widesize': true, 'fullsize': true};
 var option = {'plugin': 'Auto', 'autoplay': false, 'autoget': false, 'definition': 'HD', 'container': 'MP4', 'widesize': false, 'fullsize': false};
-var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'FLV', 'VTP'];
+var plugins = ['Auto', 'Alt', 'HTML5', 'VLC', 'MP4', 'MPEG', 'VTP'];
 if (navigator.platform.indexOf('Win') != -1) plugins = plugins.concat(['WMP', 'WMP2', 'QT']);
 else if (navigator.platform.indexOf('Mac') != -1) plugins = plugins.concat(['QT']);
 else plugins = plugins.concat(['MPV', 'Totem', 'Xine']);
@@ -69,11 +71,6 @@ var mimetypes = {
   'MPEG': 'video/mpeg',
   'MP4': 'video/mp4',
   'WebM': 'video/webm',
-  'FLV': 'video/x-flv',
-  'MOV': 'video/quicktime',
-  'M4V': 'video/x-m4v',
-  'AVI': 'video/x-msvideo',
-  '3GP': 'video/3gpp',
   'WMP': 'application/x-ms-wmp',
   'WMP2': 'application/x-mplayer2',
   'QT': 'video/quicktime',
@@ -537,23 +534,10 @@ function playMyVideo(play) {
 
 function getMyVideo() {
   var vdoURL = player['videoList'][player['videoPlay']];
-  if (player['videoTitle']) {
-    var vdoD = ' (' + player['videoPlay'] + ')';
-    vdoD = vdoD.replace(/Ultra High Definition/, 'UHD');
-    vdoD = vdoD.replace(/Full High Definition/, 'FHD');
-    vdoD = vdoD.replace(/High Definition/, 'HD');
-    vdoD = vdoD.replace(/Standard Definition/, 'SD');
-    vdoD = vdoD.replace(/Very Low Definition/, 'VLD');
-    vdoD = vdoD.replace(/Low Definition/, 'LD');
-    vdoD = vdoD.replace(/\sFLV|\sMP4|\sWebM|\s3GP/g, '');
-    vdoURL = vdoURL + '&title=' + player['videoTitle'] + vdoD;
-  }
-  if (option['autoget']) page.win.location.href = vdoURL;
-  else {
-    var vdoLink = 'Get <a href="' + vdoURL + '" style="color:#00892C">Link</a>';
-    modifyMyElement(player['buttonGet'] , 'div', vdoLink, false);
-    player['isGetting'] = true;
-  }
+  if (vdoURL == page.url) return;
+  var vdoLnk = 'Get <a href="' + vdoURL + '" style="color:#00892C">Link</a>';
+  modifyMyElement(player['buttonGet'] , 'div', vdoLnk, false);
+  player['isGetting'] = true;
 }
 
 function resizeMyPlayer(size) {
@@ -1018,6 +1002,74 @@ function ViewTube() {
 
   }
 
+  // =====IlFattoQuotidiano===== //
+
+  else if (page.url.indexOf('ilfattoquotidiano.it/') != -1) {
+
+    /* Get Player Window */
+    var ifqPlayerWindow = getMyElement('', 'div', 'class', 'videoplayer', 0, false);
+    if (!ifqPlayerWindow) {
+      //showMyMessage ('!player');
+    }
+    else {
+      /* My Player Window */
+      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '990px', height: '579px', backgroundColor: '#F4F4F4'});
+      modifyMyElement(ifqPlayerWindow, 'div', '', false, true);
+      appendMyElement(ifqPlayerWindow, myPlayerWindow);
+
+      /* Get Video Thumb */
+      var ifqVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+      /* Get Videos Content */
+      var ifqVideosContent = getMyContent(page.url, '"sources":\\[(.*?)\\]', false);
+
+      if (ifqVideosContent) {
+	var ifqVideoList = {};
+	var ifqVideoFound = false;
+	var ifqVideoFormats = {'270p': 'Low Definition MP4', '406p': 'Standard Definition MP4'};
+	var ifqVideo, ifqPattern
+	for (var vCode in ifqVideoFormats) {
+	  ifqPattern = 'mp4","file":"(.*?)","label":"' + vCode + '"';
+	  ifqVideo = ifqVideosContent.match(ifqPattern);
+	  ifqVideo = (ifqVideo) ? ifqVideo[1] : null;
+	  if (ifqVideo) {
+	    if (!ifqVideoFound) ifqVideoFound = true;
+	    ifqVideoList[ifqVideoFormats[vCode]] = ifqVideo;
+	  }
+	}
+
+	if (ifqVideoFound) {
+	  /* Create Player */
+	  var ifqDefaultVideo = 'Low Definition MP4';
+	  player = {
+	    'playerSocket': ifqPlayerWindow,
+	    'playerWindow': myPlayerWindow,
+	    'videoList': ifqVideoList,
+	    'videoPlay': ifqDefaultVideo,
+	    'videoThumb': ifqVideoThumb,
+	    'playerWidth': 990,
+	    'playerHeight': 579
+	  };
+	  feature['container'] = false;
+	  feature['widesize'] = false;
+	  option['definitions'] = ['Low Definition', 'Standard Definition'];
+	  option['containers'] = ['MP4'];
+	  createMyPlayer();
+	  /* Fix panel */
+	  styleMyElement(player['playerContent'], {marginTop: '5px'});
+	}
+	else {
+	  showMyMessage('!videos');
+	}
+      }
+      else {
+	showMyMessage('!content');
+      }
+    }
+
+  }
+
 }
 
 
@@ -1031,7 +1083,6 @@ page.win.setInterval(function() {
     page.doc = page.win.document;
     page.body = page.doc.body;
     page.url = page.win.location.href;
-    page.title = page.doc.title;
     blockInterval = 50;
     if (player['playerSocket']) blockObject = player['playerSocket'];
     blockVideos();

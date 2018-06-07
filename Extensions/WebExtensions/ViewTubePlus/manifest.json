@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "ViewTube+",
-  "version": "2018.3.14",
+  "version": "2018.6.7",
 
   "description": "Watch videos from video sharing websites without Flash Player.",
 
@@ -25,7 +25,9 @@
 	"http://video.corriere.it/*",
 	"https://video.corriere.it/*",
 	"http://www.altoadige.it/*",
-	"https://www.altoadige.it/*"
+	"https://www.altoadige.it/*",
+	"http://www.ilfattoquotidiano.it/*",
+	"https://www.ilfattoquotidiano.it/*"
       ],
       "js": ["viewtubeplus.user.js"]
     }
