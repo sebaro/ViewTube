@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2018.06.07
+// @version		2018.07.01
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -18,6 +18,8 @@
 // @include		https://www.altoadige.it/*
 // @include		http://www.ilfattoquotidiano.it/*
 // @include		https://www.ilfattoquotidiano.it/*
+// @include		http://www.video.mediaset.it/*
+// @include		https://www.video.mediaset.it/*
 // ==/UserScript==
 
 
@@ -878,15 +880,19 @@ function ViewTube() {
     }
 
     /* Get Player Window */
-    var corPlayerWindow = getMyElement('', 'div', 'id', 'player_rcs', -1, false);
+    var corPlayerWindow = getMyElement('', 'div', 'class', 'player_big', 0, false);
+    if (!corPlayerWindow) corPlayerWindow = getMyElement('', 'div', 'class', 'player', 0, false);
     if (!corPlayerWindow) {
       showMyMessage('!player');
     }
     else {
+      /* Block Replace */
+      corPlayerWindow.className = 'corPlayerWindow';
+
       /* My Player Window */
       var myPlayerWindow = createMyElement('div', '', '', '', '');
       styleMyElement(myPlayerWindow, {position: 'relative', width: '656px', height: '391px', backgroundColor: '#F4F4F4', zIndex: '2'});
-      styleMyElement(corPlayerWindow, {marginBottom: '70px'});
+      styleMyElement(corPlayerWindow, {marginBottom: '50px'});
       modifyMyElement(corPlayerWindow, 'div', '', false, true);
       appendMyElement(corPlayerWindow, myPlayerWindow);
       blockObject = corPlayerWindow;
@@ -1065,6 +1071,62 @@ function ViewTube() {
       }
       else {
 	showMyMessage('!content');
+      }
+    }
+
+  }
+
+  // =====Mediaset===== //
+
+  else if (page.url.indexOf('mediaset.it/') != -1) {
+
+    /* Get Player Window */
+    var msPlayerWindow = getMyElement('', 'div', 'class', 'video-player', 0, false);
+    if (!msPlayerWindow) {
+      showMyMessage ('!player');
+    }
+    else {
+      /* My Player Window */
+      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '1000px', height: '584px', backgroundColor: '#F4F4F4'});
+      styleMyElement(msPlayerWindow, {height: '590px'});
+      modifyMyElement(msPlayerWindow, 'div', '', false, true);
+      appendMyElement(msPlayerWindow, myPlayerWindow);
+
+      /* Get Video Thumb */
+      var msVideoThumb = getMyContent(page.url, '"thumbnail":\\s*"(.*?)"', false);
+
+      /* Get Videos Content */
+      var msVideoID, msVideoPID, msVideo;
+      msVideoID = getMyContent(page.url, 'data-codf="(.*?)"', false);
+      if (msVideoID) msVideoPID = getMyContent('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-ext-programs/guid/-/' + msVideoID, '"pid":"(.*?)"', false);
+      if (msVideoPID) msVideo = 'https://link.theplatform.eu/s/PR1GhC/media/' + msVideoPID + '?formats=mpeg4';
+
+      if (msVideo) {
+	/* Create Player */
+	var msVideoList = {};
+	var msDefaultVideo = 'Standard Definition MP4';
+	msVideoList[msDefaultVideo] = msVideo;
+	player = {
+	  'playerSocket': msPlayerWindow,
+	  'playerWindow': myPlayerWindow,
+	  'videoList': msVideoList,
+	  'videoPlay': msDefaultVideo,
+	  'videoThumb': msVideoThumb,
+	  'playerWidth': 1000,
+	  'playerHeight': 584
+	};
+	feature['container'] = false;
+	feature['definition'] = false;
+	feature['widesize'] = false;
+	option['definitions'] = ['Standard Definition'];
+	option['containers'] = ['MP4'];
+	createMyPlayer();
+	/* Fix panel */
+	styleMyElement(player['playerContent'], {marginTop: '5px'});
+      }
+      else {
+	showMyMessage('!videos');
       }
     }
 

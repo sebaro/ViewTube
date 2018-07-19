@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2018.06.24
+- fixes YouTube DASH streams
+- adds support for YouTube new changes
+
 #2018.06.07
 - move source from GitHub to GitLab
 - fixes Break

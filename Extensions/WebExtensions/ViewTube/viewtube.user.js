@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.06.07
+// @version		2018.06.24
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -1072,6 +1072,7 @@ function ViewTube() {
       /* Player Window */
       if (!ytPlayerWindow) {
 	ytPlayerWindowTop = getMyElement('', 'div', 'id', 'top', -1, false);
+	if (!ytPlayerWindowTop) ytPlayerWindowTop = getMyElement('', 'div', 'id', 'primary-inner', -1, false);
 	if (ytPlayerWindowTop) {
 	  for (var i = 0; i < ytPlayerWindowTop.children.length; i++) {
 	    ytPlayerWindow = ytPlayerWindowTop.children[i];
@@ -1318,6 +1319,37 @@ function ViewTube() {
     if (!ytVideosEncodedFmts) ytVideosEncodedFmts = getMyContent(page.url, '\\\\"url_encoded_fmt_stream_map\\\\":\\s*\\\\"(.*?)\\\\"', false);
     ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts":\\s*"(.*?)"', false);
     if (!ytVideosAdaptiveFmts) ytVideosAdaptiveFmts = getMyContent(page.url, '\\\\"adaptive_fmts\\\\":\\s*\\\\"(.*?)\\\\"', false);
+    if (!ytVideosAdaptiveFmts) {
+      var ytDASHVideos, ytDASHContent;
+      ytDASHVideos = getMyContent(page.url, '"dashmpd":\\s*"(.*?)"', false);
+      if (!ytDASHVideos) ytDASHVideos = getMyContent(page.url, '\\\\"dashmpd\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      if (ytDASHVideos) {
+	ytDASHVideos = cleanMyContent(ytDASHVideos, false);
+	ytDASHContent = getMyContent(ytDASHVideos + '?pacing=0', 'TEXT', false);
+	if (ytDASHContent) {
+	  var ytDASHVideo, ytDASHVideoParts, ytDASHVideoServer, ytDASHVideoParams;
+	  ytDASHVideos = ytDASHContent.match(new RegExp('<BaseURL>.*?</BaseURL>', 'g'));
+	  if (ytDASHVideos) {
+	    ytVideosAdaptiveFmts = '';
+	    for (var i = 0; i < ytDASHVideos.length; i++) {
+	      ytDASHVideo = ytDASHVideos[i].replace('<BaseURL>', '').replace('</BaseURL>', '');
+	      if (ytDASHVideo.indexOf('source/youtube') == -1) continue;
+	      ytDASHVideoParts = ytDASHVideo.split('videoplayback/');
+	      ytDASHVideoServer = ytDASHVideoParts[0] + 'videoplayback?';
+	      ytDASHVideoParams = ytDASHVideoParts[1].split('/');
+	      ytDASHVideo = '';
+	      for (var p = 0; p < ytDASHVideoParams.length; p++) {
+		if (p % 2) ytDASHVideo += ytDASHVideoParams[p] + '&';
+		else ytDASHVideo += ytDASHVideoParams[p] + '=';
+	      }
+	      ytDASHVideo = encodeURIComponent(ytDASHVideoServer + ytDASHVideo);
+	      ytDASHVideo = ytDASHVideo.replace('itag%3D', 'itag=');
+	      ytVideosAdaptiveFmts += ytDASHVideo + ',';
+	    }
+	  }
+	}
+      }
+    }
     if (ytVideosEncodedFmts) {
       ytVideosContent = ytVideosEncodedFmts;
     }
@@ -1500,6 +1532,37 @@ function ViewTube() {
       if (!ytVideosEncodedFmts) ytVideosEncodedFmts = getMyContent(page.url, '\\\\"url_encoded_fmt_stream_map\\\\":\\s*\\\\"(.*?)\\\\"', false);
       ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts":\\s*"(.*?)"', false);
       if (!ytVideosAdaptiveFmts) ytVideosAdaptiveFmts = getMyContent(page.url, '\\\\"adaptive_fmts\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      if (!ytVideosAdaptiveFmts) {
+	var ytDASHVideos, ytDASHContent;
+	ytDASHVideos = getMyContent(page.url, '"dashmpd":\\s*"(.*?)"', false);
+	if (!ytDASHVideos) ytDASHVideos = getMyContent(page.url, '\\\\"dashmpd\\\\":\\s*\\\\"(.*?)\\\\"', false);
+	if (ytDASHVideos) {
+	  ytDASHVideos = cleanMyContent(ytDASHVideos, false);
+	  ytDASHContent = getMyContent(ytDASHVideos + '?pacing=0', 'TEXT', false);
+	  if (ytDASHContent) {
+	    var ytDASHVideo, ytDASHVideoParts, ytDASHVideoServer, ytDASHVideoParams;
+	    ytDASHVideos = ytDASHContent.match(new RegExp('<BaseURL>.*?</BaseURL>', 'g'));
+	    if (ytDASHVideos) {
+	      ytVideosAdaptiveFmts = '';
+	      for (var i = 0; i < ytDASHVideos.length; i++) {
+		ytDASHVideo = ytDASHVideos[i].replace('<BaseURL>', '').replace('</BaseURL>', '');
+		if (ytDASHVideo.indexOf('source/youtube') == -1) continue;
+		ytDASHVideoParts = ytDASHVideo.split('videoplayback/');
+		ytDASHVideoServer = ytDASHVideoParts[0] + 'videoplayback?';
+		ytDASHVideoParams = ytDASHVideoParts[1].split('/');
+		ytDASHVideo = '';
+		for (var p = 0; p < ytDASHVideoParams.length; p++) {
+		  if (p % 2) ytDASHVideo += ytDASHVideoParams[p] + '&';
+		  else ytDASHVideo += ytDASHVideoParams[p] + '=';
+		}
+		ytDASHVideo = encodeURIComponent(ytDASHVideoServer + ytDASHVideo);
+		ytDASHVideo = ytDASHVideo.replace('itag%3D', 'itag=');
+		ytVideosAdaptiveFmts += ytDASHVideo + ',';
+	      }
+	    }
+	  }
+	}
+      }
       if (ytVideosEncodedFmts) {
 	ytVideosContent = ytVideosEncodedFmts;
       }
