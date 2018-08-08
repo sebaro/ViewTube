@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.06.24
+// @version		2018.08.08
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -988,7 +988,7 @@ function ViewTube() {
     }
 
     /* Video Availability */
-    if (getMyContent(page.url, '"simpleText":"(This video is (private|unavailable|not available).)"', false)) return;
+    if (getMyContent(page.url, '"playabilityStatus":\\{"status":"(ERROR|UNPLAYABLE)"', false)) return;
 
     /* Decrypt Signature */
     var ytScriptSrc;
@@ -1017,35 +1017,25 @@ function ViewTube() {
       }
     }
 
+    /* Player/Sidebar */
+    var ytPlayerWindow, ytSidebarWindow;
+
     /* Player Sizes */
     var ytPlayerWidth, ytPlayerHeight;
     var ytPlayerWideWidth, ytPlayerWideHeight;
     var ytSidebarMarginWide;
     var ytScreenWidth, ytScreenHeight;
     function ytSizes() {
-      ytScreenWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
-      ytScreenHeight = page.win.innerHeight || page.doc.documentElement.clientHeight;
-      if (ytScreenWidth >= 1720 && ytScreenHeight >= 980) {
-	ytPlayerWidth = 1280;
-	ytPlayerHeight = 742;
-	ytPlayerWideWidth = 1706;
-	ytPlayerWideHeight = 982;
+      if (ytPlayerWindow) {
+	if (ytPlayerWindow.clientWidth) ytPlayerWidth = ytPlayerWindow.clientWidth;
+	else ytPlayerWidth = ytPlayerWindow.parentNode.clientWidth;
+	ytPlayerHeight = Math.ceil(ytPlayerWidth / (16 / 9)) + 22;
+	if (ytSidebarWindow && ytSidebarWindow.clientWidth) ytPlayerWideWidth = ytPlayerWidth + ytSidebarWindow.clientWidth;
+	else ytPlayerWideWidth = ytPlayerWidth + 425;
+	ytPlayerWideHeight = Math.ceil(ytPlayerWideWidth / (16 / 9)) + 22;
+	ytSidebarMarginWide = ytPlayerWideHeight + 20;
       }
-      else if (ytScreenWidth >= 1294 && ytScreenHeight >= 630) {
-	ytPlayerWidth = 854;
-	ytPlayerHeight = 502;
-	ytPlayerWideWidth = 1280;
-	ytPlayerWideHeight = 742;
-      }
-      else {
-	ytPlayerWidth = 640;
-	ytPlayerHeight = 382;
-	ytPlayerWideWidth = 1066;
-	ytPlayerWideHeight = 622;
-      }
-      ytSidebarMarginWide = ytPlayerHeight;
     }
-    ytSizes();
 
     /* Player Sizes Update */
     page.win.addEventListener('resize', function() {
@@ -1058,14 +1048,13 @@ function ViewTube() {
       resizeMyPlayer('widesize');
     }, false);
 
-
     /* My Player */
     myPlayerWindow = createMyElement('div', '', '', '', '');
     styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
 
-    /* Get Objects */
+    /* Get Player/Sidebar */
     var ytVideosReady = false;
-    var ytPlayerWindowTop, ytPlayerWindow, ytSidebarWindow, ytSidebarAds, ytSidebarHead;
+    var ytPlayerWindowTop, ytSidebarWindowTop, ytSidebarAds, ytSidebarHead;
     var ytWaitForObjects = 5;
     var ytWaitForLoops = 50;
     var ytWaitForObject = page.win.setInterval(function() {
@@ -1081,6 +1070,7 @@ function ViewTube() {
 	      styleMyElement(ytPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
 	      appendMyElement(ytPlayerWindow, myPlayerWindow);
 	      blockObject = ytPlayerWindow;
+	      ytSizes();
 	      ytWaitForObjects--;
 	      if (ytVideosReady) ytPlayer();
 	    }
@@ -1091,16 +1081,28 @@ function ViewTube() {
       if (!ytSidebarWindow) {
 	if (page.url.indexOf('list=') != -1) ytSidebarWindow = getMyElement('', 'div', 'id', 'playlist', -1, false);
 	else if (getMyContent(page.url, '"livestream":"(.*?)"', false)) ytSidebarWindow = getMyElement('', 'div', 'id', 'chat', -1, false);
-	else ytSidebarWindow = getMyElement('', 'div', 'id', 'related', -1, false);
+	else {
+	  ytSidebarWindowTop = getMyElement('', 'div', 'id', 'top', -1, false);
+	  if (!ytSidebarWindowTop) ytSidebarWindowTop = getMyElement('', 'div', 'id', 'secondary-inner', -1, false);
+	  if (ytSidebarWindowTop) {
+	    for (var i = 0; i < ytSidebarWindowTop.children.length; i++) {
+	      ytSidebarWindow = ytSidebarWindowTop.children[i];
+	      if (ytSidebarWindow.id == 'related') {
+		break;
+	      }
+	    }
+	  }
+	}
 	if (ytSidebarWindow) {
-	  if (!player['sidebarWindow']) {
+	  if (player['playerWindow'] && !player['sidebarWindow']) {
 	    player['sidebarWindow'] = ytSidebarWindow;
+	    ytSizes();
 	    if (!option['fullsize']) resizeMyPlayer('widesize');
 	  }
 	  ytWaitForObjects--;
 	}
       }
-      /* Sidebar Objetcs */
+      /* Sidebar Ads */
       if (ytSidebarWindow) {
 	/* Sidebar Ads */
 	if (!ytSidebarAds) {
@@ -1849,7 +1851,7 @@ function ViewTube() {
 
   else if (page.url.indexOf('dailymotion.com/video') != -1) {
 
-    /* Player Sizea */
+    /* Player Sizes */
     var dmPlayerWidth, dmPlayerHeight;
     function dmSizes() {
       if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth;
