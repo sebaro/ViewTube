@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.08.08
+// @version		2018.09.09
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -997,6 +997,8 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
+      //a.match(/https:\/\/yt.akamaized.net/)||d.set("alr","yes");c&&d.set(b,IK(c));return d};
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(.*?)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -1450,6 +1452,7 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(.*?)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -2762,7 +2765,7 @@ function ViewTube() {
       };
       feature['container'] = false;
       feature['widesize'] = false;
-      option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition'];
+      option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'];
       option['containers'] = ['MP4'];
       createMyPlayer();
     }
@@ -2786,7 +2789,7 @@ function ViewTube() {
     /* Get Videos */
     var imdbVideoList = {};
     if (imdbVideosContent) {
-      var imdbVideoFormats = {'SD': 'Low Definition MP4', '480p': 'Standard Definition MP4', '720p': 'High Definition MP4', '1080p': 'Full High Definition MP4'};
+      var imdbVideoFormats = {'1080p': 'Full High Definition MP4', '720p': 'High Definition MP4', '480p': 'Standard Definition MP4', '360p': 'Low Definition MP4', 'SD': 'Low Definition MP4', '240p': 'Very Low Definition MP4'};
       var imdbVideoFound = false;
       var imdbVideoParser, imdbVideoParse, myVideoCode, imdbVideo;
       for (var imdbVideoCode in imdbVideoFormats) {
