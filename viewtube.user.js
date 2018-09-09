@@ -1885,7 +1885,7 @@ function ViewTube() {
 	  blockObject = dmPlayerWindow;
 	  dmSizes();
 	  styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
-	  styleMyElement(dmPlayerWindow, {marginTop: '-20px'});
+	  styleMyElement(dmPlayerWindow, {marginTop: '-18px'});
 	  if (dmVideosReady) dmPlayer();
 	}
       }
@@ -1896,9 +1896,11 @@ function ViewTube() {
       }
       /* Hide Ads */
       var dmAdsTop = getMyElement('', 'div', 'class', 'AdTop__adTop___34Bs9', 0, false);
-      if (dmAdsTop) removeMyElement(dmAdsTop.parentNode, dmAdsTop);
-      var dmAdsBottom = getMyElement('', 'div', 'class', 'AdWatching__container___1jlOI', 0, false);
-      if (dmAdsBottom) removeMyElement(dmAdsBottom.parentNode, dmAdsBottom);
+      if (dmAdsTop && dmAdsTop.parentNode) removeMyElement(dmAdsTop.parentNode, dmAdsTop);
+      var dmAdsRightBottom = getMyElement('', 'div', 'class', 'AdWatching__container___1jlOI', 0, false);
+      if (dmAdsRightBottom && dmAdsRightBottom.parentNode) removeMyElement(dmAdsRightBottom.parentNode, dmAdsRightBottom);
+      var dmAdsRight = getMyElement('', 'div', 'class', 'AdWatchingRight__container___1jQ98', 0, false);
+      if (dmAdsRight && dmAdsRight.parentNode && dmAdsRight.parentNode.parentNode) removeMyElement(dmAdsRight.parentNode.parentNode, dmAdsRight.parentNode);
     }, 500);
 
     /* Create Player */
