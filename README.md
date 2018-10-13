@@ -52,6 +52,8 @@ ViewTube is a browser user script for watching videos from video websites with a
    > http://extension.maxthon.com/detail/index.php?view_id=1680
    - with Tampermonkey Chrome extension:
    > https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
+   - Maxthon extension:
+   > http://extension.maxthon.com/detail/index.php?view_id=2967
 
 #### Internet Explorer:
    - with IE7Pro extension:
