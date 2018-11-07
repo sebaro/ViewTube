@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "ViewTube",
-  "version": "2018.9.9",
+  "version": "2018.11.7",
 
   "description": "Watch videos from video sharing websites without Flash Player.",
 
@@ -59,7 +59,8 @@
 	"https://imdb.com/*",
 	"https://www.imdb.com/*"
       ],
-      "js": ["viewtube.user.js"]
+      "js": ["viewtube.user.js"],
+      "run_at": "document_end"
     }
   ],
 
