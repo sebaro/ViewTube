@@ -1,10 +1,9 @@
 ﻿// ==UserScript==
 // @name		ViewTube
-// @version		2018.09.09
-// @description		Watch videos from video sharing websites without Flash Player.
+// @version		2018.11.19
+// @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
-// @license		GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // @downloadURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.user.js
 // @updateURL		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.user.js
 // @icon		https://gitlab.com/sebaro/viewtube/raw/master/viewtube.png
@@ -48,6 +47,9 @@
 // @include		http://www.imdb.com*
 // @include		https://imdb.com*
 // @include		https://www.imdb.com*
+// @noframes
+// @grant		none
+// @run-at		document-end
 // ==/UserScript==
 
 
@@ -945,6 +947,10 @@ function blockVideos() {
 	if (!elVideo.paused) {
 	  elVideo.pause();
 	  if (page.url.indexOf('youtube.com/watch') == -1) elVideo.src = "#";
+	  elVideo.addEventListener('play', function() {
+	    this.pause();
+	    if (page.url.indexOf('youtube.com/watch') == -1) this.src = "#";
+	  });
 	}
       }
     }
@@ -997,8 +1003,7 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
-      //a.match(/https:\/\/yt.akamaized.net/)||d.set("alr","yes");c&&d.set(b,IK(c));return d};
-      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(.*?)\(/);
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,.*?([a-zA-Z0-9]+)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -1067,7 +1072,8 @@ function ViewTube() {
 	if (ytPlayerWindowTop) {
 	  for (var i = 0; i < ytPlayerWindowTop.children.length; i++) {
 	    ytPlayerWindow = ytPlayerWindowTop.children[i];
-	    if (ytPlayerWindow.id == 'player') {
+	    if (ytPlayerWindow.id == 'player' || ytPlayerWindow.id == 'plaery') {
+	      if (ytPlayerWindow.id == 'player') ytPlayerWindow.id = 'plaery'
 	      modifyMyElement(ytPlayerWindow, 'div', '', false, true);
 	      styleMyElement(ytPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
 	      appendMyElement(ytPlayerWindow, myPlayerWindow);
@@ -1452,7 +1458,7 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
-      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(.*?)\(/);
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,.*?([a-zA-Z0-9]+)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -2854,5 +2860,6 @@ page.win.setInterval(function() {
     if (blockInterval > 0) blockInterval--;
   }
 }, 500);
+
 
 })();
