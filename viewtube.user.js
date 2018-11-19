@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2018.11.07
+// @version		2018.11.19
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -947,6 +947,10 @@ function blockVideos() {
 	if (!elVideo.paused) {
 	  elVideo.pause();
 	  if (page.url.indexOf('youtube.com/watch') == -1) elVideo.src = "#";
+	  elVideo.addEventListener('play', function() {
+	    this.pause();
+	    if (page.url.indexOf('youtube.com/watch') == -1) this.src = "#";
+	  });
 	}
       }
     }
@@ -1068,7 +1072,8 @@ function ViewTube() {
 	if (ytPlayerWindowTop) {
 	  for (var i = 0; i < ytPlayerWindowTop.children.length; i++) {
 	    ytPlayerWindow = ytPlayerWindowTop.children[i];
-	    if (ytPlayerWindow.id == 'player') {
+	    if (ytPlayerWindow.id == 'player' || ytPlayerWindow.id == 'plaery') {
+	      if (ytPlayerWindow.id == 'player') ytPlayerWindow.id = 'plaery'
 	      modifyMyElement(ytPlayerWindow, 'div', '', false, true);
 	      styleMyElement(ytPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
 	      appendMyElement(ytPlayerWindow, myPlayerWindow);
@@ -2855,5 +2860,6 @@ page.win.setInterval(function() {
     if (blockInterval > 0) blockInterval--;
   }
 }, 500);
+
 
 })();
