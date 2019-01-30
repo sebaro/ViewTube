@@ -1,10 +1,10 @@
 ﻿[{
 	"author": "Sebaro (script) & A.S. (mxaddon)"
 	"website": "http://sebaro.pro/viewtube/" 
-	"date": "19.11.2018"
+	"date": "18.01.2019"
 	"type":"extension",
 	"frameworkVersion":"1.0.0",
-	"version":"2018.11.19.0",
+	"version":"2019.01.18.0",
         "guid": "{DB0480A8-C9C9-44A7-B410-6DD1074E88E1}",
 	"name": "ViewTube"
 	"icon": "icon",
@@ -25,10 +25,6 @@
 			"vimeo.com",
 			"*.metacafe.com",
 			"metacafe.com",
-			"*.break.com",
-			"break.com",
-			"*.funnyordie.com",
-			"funnyordie.com",
 			"*.veoh.com",
 			"veoh.com",
 			"*.viki.com",
