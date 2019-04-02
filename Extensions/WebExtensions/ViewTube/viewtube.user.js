@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.01.18
+// @version		2019.03.02
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -999,7 +999,7 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
-      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(?:encodeURIComponent\()?.*?([a-zA-Z0-9]+)\(/);
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(?:encodeURIComponent\()?.*?([a-zA-Z0-9$]+)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -1363,6 +1363,7 @@ function ViewTube() {
     else {
       ytHLSVideos = getMyContent(page.url, '"hlsvp":\\s*"(.*?)"', false);
       if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsvp\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsManifestUrl\\\\":\\s*\\\\"(.*?)\\\\"', false);
       if (ytHLSVideos) {
 	ytHLSVideos = cleanMyContent(ytHLSVideos, false);
 	if (ytHLSVideos.indexOf('keepalive/yes/') != -1) ytHLSVideos = ytHLSVideos.replace('keepalive/yes/', '');
@@ -1455,7 +1456,7 @@ function ViewTube() {
       var ytSignFuncName, ytSignFuncBody, ytSwapFuncName, ytSwapFuncBody, ytFuncMatch;
       ytScriptSrc = ytScriptSrc.replace(/(\r\n|\n|\r)/gm, '');
       ytSignFuncName = ytScriptSrc.match(/"signature"\s*,\s*([^\)]*?)\(/);
-      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(?:encodeURIComponent\()?.*?([a-zA-Z0-9]+)\(/);
+      if (!ytSignFuncName) ytSignFuncName = ytScriptSrc.match(/d.set\(b,(?:encodeURIComponent\()?.*?([a-zA-Z0-9$]+)\(/);
       ytSignFuncName = (ytSignFuncName) ? ytSignFuncName[1] : null;
       if (ytSignFuncName) {
 	ytFuncMatch = ytSignFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\}';
@@ -1888,7 +1889,7 @@ function ViewTube() {
 	blockObject = dmPlayerWindow;
 	dmSizes();
 	styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
-	styleMyElement(dmPlayerWindow, {marginTop: '-18px'});
+	styleMyElement(dmPlayerWindow, {marginTop: '-5px',});
 	if (dmVideosReady) dmPlayer();
       }
       dmWaitForLoops--;
@@ -1901,7 +1902,7 @@ function ViewTube() {
       if (dmAdsTop && dmAdsTop.parentNode) removeMyElement(dmAdsTop.parentNode, dmAdsTop);
       var dmAdsRightBottom = getMyElement('', 'div', 'class', 'AdWatchingRight__container___3lI6F', 0, false);
       if (dmAdsRightBottom && dmAdsRightBottom.parentNode) removeMyElement(dmAdsRightBottom.parentNode, dmAdsRightBottom);
-      var dmAdsRight = getMyElement('', 'div', 'class', 'AdWatchingRight__container___1jQ98', 0, false);
+      var dmAdsRight = getMyElement('', 'div', 'class', 'DiscoveryVideoSection__adCell___1A7ma', 0, false);
       if (dmAdsRight && dmAdsRight.parentNode && dmAdsRight.parentNode.parentNode) removeMyElement(dmAdsRight.parentNode.parentNode, dmAdsRight.parentNode);
     }, 500);
     intervals.push(dmWaitForObject);

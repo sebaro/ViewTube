@@ -1,0 +1,7 @@
+#! /bin/bash
+
+rm -f viewtubeplus.xpi
+rm -f viewtubeplus.crx
+
+cd ViewTubePlus
+zip -r -FS ../viewtubeplus.zip *
