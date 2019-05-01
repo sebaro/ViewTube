@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.04.02
+// @version		2019.05.01
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -982,7 +982,7 @@ function ViewTube() {
 
   // =====YouTube===== //
 
-  if (page.url.indexOf('youtube.com/watch') != -1 && getMyContent(page.url, '"text":"(youtube.com/new)"', false)) {
+  if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'kevlar_flexy_(watch_new_dom)', false) || getMyContent(page.url, '"text":"(youtube.com/new)"', false))) {
 
     /* Redirect Categories */
     if (page.url.indexOf('gaming.youtube.com') != -1) {
