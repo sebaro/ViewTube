@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.05.01
+// @version		2019.05.23
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -982,7 +982,7 @@ function ViewTube() {
 
   // =====YouTube===== //
 
-  if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'kevlar_flexy_(watch_new_dom)', false) || getMyContent(page.url, '"text":"(youtube.com/new)"', false))) {
+  if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'kevlar_(flexy)', false) || getMyContent(page.url, '"text":"(youtube.com/new)"', false))) {
 
     /* Redirect Categories */
     if (page.url.indexOf('gaming.youtube.com') != -1) {
@@ -1189,7 +1189,7 @@ function ViewTube() {
       };
       var ytVideoFound = false;
       var ytVideos = ytVideosContent.split(',');
-      var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo;
+      var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSign, ytSignP;
       for (var i = 0; i < ytVideos.length; i++) {
 	if (!ytVideos[i].match(/^url/)) {
 	  ytVideoParse = ytVideos[i].match(/(.*)(url=.*$)/);
@@ -1218,13 +1218,17 @@ function ViewTube() {
 	    else ytVideo = ytVideo.replace(/&type=(video|audio).*$/, '');
 	    if (ytVideo.match(/xtags=[^%=]*&/)) ytVideo = ytVideo.replace(/xtags=[^%=]*?&/, '');
 	    else if (ytVideo.match(/&xtags=[^%=]*$/)) ytVideo = ytVideo.replace(/&xtags=[^%=]*$/, '');
-	    if (ytVideo.match(/&sig=/)) ytVideo = ytVideo.replace(/&sig=/, '&signature=');
+	    if (ytVideo.match(/&sig=/) && !ytVideo.match(/&lsig=/)) ytVideo = ytVideo.replace(/&sig=/, '&signature=');
 	    else if (ytVideo.match(/&s=/)) {
-	      var ytSig = ytVideo.match(/&s=(.*?)(&|$)/);
-	      if (ytSig) {
-		var s = ytSig[1];
-		s = ytDecryptSignature(s);
-		if (s) ytVideo = ytVideo.replace(/&s=.*?(&|$)/, '&signature=' + s + '$1');
+	      ytSign = ytVideo.match(/&s=(.*?)(&|$)/);
+	      ytSign = (ytSign) ? ytSign[1] : null;
+	      if (ytSign) {
+		ytSign = ytDecryptSignature(ytSign);
+		if (ytSign) {
+		  ytSignP = ytVideo.match(/&sp=(.*?)(&|$)/);
+		  ytSignP = (ytSignP) ? ytSignP[1] : ((ytVideo.match(/&lsig=/)) ? 'sig' : 'signature');
+		  ytVideo = ytVideo.replace(/&s=.*?(&|$)/, '&' + ytSignP + '=' + ytSign + '$1');
+		}
 		else ytVideo = '';
 	      }
 	      else ytVideo = '';
@@ -1304,10 +1308,13 @@ function ViewTube() {
       if (ytPlayerWindow) ytPlayer();
     }
 
+    /* Get Video ID */
+    var ytVideoID = page.url.match(/(?:\?|&)v=(.*?)(&|$)/);
+    ytVideoID = (ytVideoID) ? ytVideoID[1] : null;
+
     /* Get Video Thumbnail */
     var ytVideoThumb;
-    var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-    if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
+    if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/0.jpg';
 
     /* Get Video Title */
     var ytVideoTitle = getMyContent(page.url, '"title":"(.*?)"', false);
@@ -1322,14 +1329,11 @@ function ViewTube() {
 
     /* Get Videos Content */
     var ytVideosEncodedFmts, ytVideosAdaptiveFmts, ytVideosContent, ytHLSVideos, ytHLSContent;
-    ytVideosEncodedFmts = getMyContent(page.url, '"url_encoded_fmt_stream_map":\\s*"(.*?)"', false);
-    if (!ytVideosEncodedFmts) ytVideosEncodedFmts = getMyContent(page.url, '\\\\"url_encoded_fmt_stream_map\\\\":\\s*\\\\"(.*?)\\\\"', false);
-    ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts":\\s*"(.*?)"', false);
-    if (!ytVideosAdaptiveFmts) ytVideosAdaptiveFmts = getMyContent(page.url, '\\\\"adaptive_fmts\\\\":\\s*\\\\"(.*?)\\\\"', false);
+    ytVideosEncodedFmts = getMyContent(page.url, '"url_encoded_fmt_stream_map\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
+    ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
     if (!ytVideosAdaptiveFmts) {
       var ytDASHVideos, ytDASHContent;
-      ytDASHVideos = getMyContent(page.url, '"dashmpd":\\s*"(.*?)"', false);
-      if (!ytDASHVideos) ytDASHVideos = getMyContent(page.url, '\\\\"dashmpd\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      ytDASHVideos = getMyContent(page.url, '"dash(?:mpd|ManifestUrl)\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
       if (ytDASHVideos) {
 	ytDASHVideos = cleanMyContent(ytDASHVideos, false);
 	ytDASHContent = getMyContent(ytDASHVideos + '?pacing=0', 'TEXT', false);
@@ -1361,20 +1365,14 @@ function ViewTube() {
       ytVideosContent = ytVideosEncodedFmts;
     }
     else {
-      ytHLSVideos = getMyContent(page.url, '"hlsvp":\\s*"(.*?)"', false);
-      if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsvp\\\\":\\s*\\\\"(.*?)\\\\"', false);
-      if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsManifestUrl\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      ytHLSVideos = getMyContent(page.url, '"hls(?:vp|ManifestUrl)\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
       if (ytHLSVideos) {
 	ytHLSVideos = cleanMyContent(ytHLSVideos, false);
 	if (ytHLSVideos.indexOf('keepalive/yes/') != -1) ytHLSVideos = ytHLSVideos.replace('keepalive/yes/', '');
       }
       else {
-	var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-	ytVideoID = (ytVideoID) ? ytVideoID[2] : null;
 	if (ytVideoID) {
-	  var ytVideoSts = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"sts"\\s*:\\s*(\\d+)', false);
-	  var ytVideosInfoURL = page.win.location.protocol + '//' + page.win.location.hostname + '/get_video_info?video_id=' + ytVideoID + '&eurl=https://youtube.googleapis.com/v/' + ytVideoID + '&sts=' + ytVideoSts;
-	  var ytVideosInfo = getMyContent(ytVideosInfoURL, 'TEXT', false);
+	  var ytVideosInfo = getMyContent(page.win.location.protocol + '//' + page.win.location.hostname + '/get_video_info?video_id=' + ytVideoID + '&eurl=https://youtube.googleapis.com/v/', 'TEXT', false);
 	  if (ytVideosInfo) {
 	    ytVideosEncodedFmts = ytVideosInfo.match(/url_encoded_fmt_stream_map=(.*?)&/);
 	    ytVideosEncodedFmts = (ytVideosEncodedFmts) ? ytVideosEncodedFmts[1] : null;
@@ -1519,10 +1517,13 @@ function ViewTube() {
       showMyMessage('!player');
     }
     else {
+      /* Get Video ID */
+      var ytVideoID = page.url.match(/(?:\?|&)v=(.*?)(&|$)/);
+      ytVideoID = (ytVideoID) ? ytVideoID[1] : null;
+
       /* Get Video Thumbnail */
       var ytVideoThumb;
-      var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID[2] + '/0.jpg';
+      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/0.jpg';
 
       /* Get Video Title */
       var ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
@@ -1537,14 +1538,11 @@ function ViewTube() {
 
       /* Get Videos Content */
       var ytVideosEncodedFmts, ytVideosAdaptiveFmts, ytVideosContent, ytHLSVideos, ytHLSContent;
-      ytVideosEncodedFmts = getMyContent(page.url, '"url_encoded_fmt_stream_map":\\s*"(.*?)"', false);
-      if (!ytVideosEncodedFmts) ytVideosEncodedFmts = getMyContent(page.url, '\\\\"url_encoded_fmt_stream_map\\\\":\\s*\\\\"(.*?)\\\\"', false);
-      ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts":\\s*"(.*?)"', false);
-      if (!ytVideosAdaptiveFmts) ytVideosAdaptiveFmts = getMyContent(page.url, '\\\\"adaptive_fmts\\\\":\\s*\\\\"(.*?)\\\\"', false);
+      ytVideosEncodedFmts = getMyContent(page.url, '"url_encoded_fmt_stream_map\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
+      ytVideosAdaptiveFmts = getMyContent(page.url, '"adaptive_fmts\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
       if (!ytVideosAdaptiveFmts) {
 	var ytDASHVideos, ytDASHContent;
-	ytDASHVideos = getMyContent(page.url, '"dashmpd":\\s*"(.*?)"', false);
-	if (!ytDASHVideos) ytDASHVideos = getMyContent(page.url, '\\\\"dashmpd\\\\":\\s*\\\\"(.*?)\\\\"', false);
+	ytDASHVideos = getMyContent(page.url, '"dash(?:mpd|ManifestUrl)\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
 	if (ytDASHVideos) {
 	  ytDASHVideos = cleanMyContent(ytDASHVideos, false);
 	  ytDASHContent = getMyContent(ytDASHVideos + '?pacing=0', 'TEXT', false);
@@ -1576,19 +1574,14 @@ function ViewTube() {
 	ytVideosContent = ytVideosEncodedFmts;
       }
       else {
-	ytHLSVideos = getMyContent(page.url, '"hlsvp":\\s*"(.*?)"', false);
-	if (!ytHLSVideos) ytHLSVideos = getMyContent(page.url, '\\\\"hlsvp\\\\":\\s*\\\\"(.*?)\\\\"', false);
+	ytHLSVideos = getMyContent(page.url, '"hls(?:vp|ManifestUrl)\\\\?":\\s*\\\\?"(.*?)\\\\?"', false);
 	if (ytHLSVideos) {
 	  ytHLSVideos = cleanMyContent(ytHLSVideos, false);
 	  if (ytHLSVideos.indexOf('keepalive/yes/') != -1) ytHLSVideos = ytHLSVideos.replace('keepalive/yes/', '');
 	}
 	else {
-	  var ytVideoID = page.url.match(/(\?|&)v=(.*?)(&|$)/);
-	  ytVideoID = (ytVideoID) ? ytVideoID[2] : null;
 	  if (ytVideoID) {
-	    var ytVideoSts = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"sts"\\s*:\\s*(\\d+)', false);
-	    var ytVideosInfoURL = page.win.location.protocol + '//' + page.win.location.hostname + '/get_video_info?video_id=' + ytVideoID + '&eurl=https://youtube.googleapis.com/v/' + ytVideoID + '&sts=' + ytVideoSts;
-	    var ytVideosInfo = getMyContent(ytVideosInfoURL, 'TEXT', false);
+	    var ytVideosInfo = getMyContent(page.win.location.protocol + '//' + page.win.location.hostname + '/get_video_info?video_id=' + ytVideoID + '&eurl=https://youtube.googleapis.com/v/', 'TEXT', false);
 	    if (ytVideosInfo) {
 	      ytVideosEncodedFmts = ytVideosInfo.match(/url_encoded_fmt_stream_map=(.*?)&/);
 	      ytVideosEncodedFmts = (ytVideosEncodedFmts) ? ytVideosEncodedFmts[1] : null;
@@ -1708,7 +1701,7 @@ function ViewTube() {
 	};
 	var ytVideoFound = false;
 	var ytVideos = ytVideosContent.split(',');
-	var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo;
+	var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSign, ytSignP;
 	for (var i = 0; i < ytVideos.length; i++) {
 	  if (!ytVideos[i].match(/^url/)) {
 	    ytVideoParse = ytVideos[i].match(/(.*)(url=.*$)/);
@@ -1737,13 +1730,17 @@ function ViewTube() {
 	      else ytVideo = ytVideo.replace(/&type=(video|audio).*$/, '');
 	      if (ytVideo.match(/xtags=[^%=]*&/)) ytVideo = ytVideo.replace(/xtags=[^%=]*?&/, '');
 	      else if (ytVideo.match(/&xtags=[^%=]*$/)) ytVideo = ytVideo.replace(/&xtags=[^%=]*$/, '');
-	      if (ytVideo.match(/&sig=/)) ytVideo = ytVideo.replace(/&sig=/, '&signature=');
+	      if (ytVideo.match(/&sig=/) && !ytVideo.match(/&lsig=/)) ytVideo = ytVideo.replace(/&sig=/, '&signature=');
 	      else if (ytVideo.match(/&s=/)) {
-		var ytSig = ytVideo.match(/&s=(.*?)(&|$)/);
-		if (ytSig) {
-		  var s = ytSig[1];
-		  s = ytDecryptSignature(s);
-		  if (s) ytVideo = ytVideo.replace(/&s=.*?(&|$)/, '&signature=' + s + '$1');
+		ytSign = ytVideo.match(/&s=(.*?)(&|$)/);
+		ytSign = (ytSign) ? ytSign[1] : null;
+		if (ytSign) {
+		  ytSign = ytDecryptSignature(ytSign);
+		  if (ytSign) {
+		    ytSignP = ytVideo.match(/&sp=(.*?)(&|$)/);
+		    ytSignP = (ytSignP) ? ytSignP[1] : ((ytVideo.match(/&lsig=/)) ? 'sig' : 'signature');
+		    ytVideo = ytVideo.replace(/&s=.*?(&|$)/, '&' + ytSignP + '=' + ytSign + '$1');
+		  }
 		  else ytVideo = '';
 		}
 		else ytVideo = '';
