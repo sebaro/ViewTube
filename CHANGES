@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2019.06.05
+- fixes missing audio for YouTube DASH playback
+- fixes Veoh
+
 #2019.05.23
 - fixes YouTube
 

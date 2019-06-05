@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.05.23
+// @version		2019.06.05
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -631,8 +631,11 @@ function playDASHwithHTML5() {
     else if (player['videoList']['Medium Bitrate Audio Opus']) {
       player['contentAudio'] = createMyElement('video', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
     }
-    else {
+    else if (player['videoList']['Medium Bitrate Audio WebM']) {
       player['contentAudio'] = createMyElement('video', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
+    }
+    else {
+      player['contentAudio'] = createMyElement('video', player['videoList']['Medium Bitrate Audio MP4'], '', '', '');
     }
   }
   player['contentAudio'].pause();
@@ -2225,25 +2228,30 @@ function ViewTube() {
 
   else if (page.url.indexOf('veoh.com/watch') != -1) {
 
+    page.win.setTimeout(function() {
+
     /* Get Video Availability */
     if (getMyElement('', 'div', 'class', 'veoh-video-player-error', 0, false)) return;
 
     /* Get Player Window */
-    var vePlayerWindow = getMyElement('', 'div', 'id', 'videoPlayerContainer', -1, false);
+    var vePlayerWindow = getMyElement('', 'div', 'class', 'veoh-player', 0, false);
     if (!vePlayerWindow) {
       showMyMessage('!player');
     }
     else {
       /* Get Videos Content */
-      var veVideosContent = getMyContent(page.url, '__watch.videoDetailsJSON = \'\\{(.*?)\\}', false);
-      veVideosContent = cleanMyContent(veVideosContent, true);
+      var veVideosContent = getMyContent(page.url.replace(/\/watch\//, '/watch/getVideo/'), '"src"\\s*:\\s*\\{(.*?)\\}', false);
 
       /* Get Video Thumbnail */
-      var veVideoThumbGet = veVideosContent.match(/"highResImage":"(.*?)"/);
-      var veVideoThumb = (veVideoThumbGet) ? veVideoThumbGet[1] : null;
+      var veVideoThumb = veVideosContent.match(/"poster":"(.*?)"/);
+      veVideoThumb = (veVideoThumb) ? veVideoThumb[1] : null;
 
       /* Get Video Title */
       var veVideoTitle = getMyContent(page.url, 'meta\\s+name="og:title"\\s+content="(.*?)"', false);
+      if (!veVideoTitle) {
+	veVideoTitle = veVideosContent.match(/"title":"(.*?)"/);
+	veVideoTitle = (veVideoTitle) ? veVideoTitle[1] : null;
+      }
       if (veVideoTitle) {
 	veVideoTitle = veVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
 	veVideoTitle = veVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
@@ -2254,14 +2262,19 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div', '', '', '', '');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '386px', backgroundColor: '#F4F4F4'});
       modifyMyElement(vePlayerWindow, 'div', '', true);
       styleMyElement(vePlayerWindow, {height: '100%'});
       appendMyElement(vePlayerWindow, myPlayerWindow);
 
+      /* Hide Ads */
+      //banners-right-container
+      var veBannersRight = getMyElement('', 'div', 'class', 'banners-right-container', 0, false);
+      if (veBannersRight) styleMyElement(veBannersRight, {display: 'none'});
+
       /* Get Videos */
       if (veVideosContent) {
-	var veVideoFormats = {'fullPreviewHashLowPath': 'Very Low Definition MP4', 'fullPreviewHashHighPath': 'Low Definition MP4'};
+	var veVideoFormats = {'Regular': 'Low Definition MP4', 'HQ': 'Standard Definition MP4'};
 	var veVideoList = {};
 	var veVideoFound = false;
 	var veVideoParser, veVideoParse, veVideo, myVideoCode;
@@ -2272,15 +2285,11 @@ function ViewTube() {
 	  if (veVideo) {
 	    if (!veVideoFound) veVideoFound = true;
 	    myVideoCode = veVideoFormats[veVideoCode];
-	    veVideoList[myVideoCode] = veVideo;
+	    veVideoList[myVideoCode] = cleanMyContent(veVideo, false);
 	  }
 	}
 
 	if (veVideoFound) {
-	  /* Get Watch Sidebar */
-	  var veSidebarWindow = getMyElement('', 'div', 'id', 'videoToolsContainer', -1, false);
-	  if (veSidebarWindow) styleMyElement(veSidebarWindow, {marginTop: '-380px'});
-
 	  /* Create Player */
 	  var veDefaultVideo = 'Low Definition MP4';
 	  player = {
@@ -2291,18 +2300,16 @@ function ViewTube() {
 	    'videoThumb': veVideoThumb,
 	    'videoTitle' : veVideoTitle,
 	    'playerWidth': 640,
-	    'playerHeight': 382,
-	    'playerWideWidth': 970,
-	    'playerWideHeight': 568,
-	    'sidebarWindow': veSidebarWindow,
-	    'sidebarMarginNormal': -380,
-	    'sidebarMarginWide': 20
+	    'playerHeight': 386
 	  };
 	  feature['container'] = false;
+	  feature['widesize'] = false;
 	  option['definition'] = 'LD';
 	  option['definitions'] = ['Low Definition', 'Very Low Definition'];
 	  option['containers'] = ['MP4'];
 	  createMyPlayer();
+	  /* Fix panel */
+	  styleMyElement(player['playerContent'], {marginTop: '5px'});
 	}
 	else {
 	  var ytVideoId = getMyContent(page.url, 'youtube.com/embed/(.*?)("|\\?)', false);
@@ -2320,6 +2327,8 @@ function ViewTube() {
 	showMyMessage('!content');
       }
     }
+
+    }, 1000);
 
   }
 
@@ -2444,7 +2453,7 @@ function ViewTube() {
 	    'videoThumb': vkVideoThumb,
 	    'videoTitle' : vkVideoTitle,
 	    'playerWidth': vkPlayerWidth,
-	    'playerHeight': vkPlayerHeight,
+	    'playerHeight': vkPlayerHeight
 	  };
 	  feature['container'] = false;
 	  feature['widesize'] = false;
