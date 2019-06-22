@@ -1,10 +1,10 @@
 #! /bin/bash
 
 s="$(echo "$1" | sed -e "s/viewtube://")"
-v="$(echo "$s" | awk -F '|' '{print $1}')"
-a="$(echo "$s" | awk -F '|' '{print $2}')"
+v="$(echo "$s" | awk -F 'SEPARATOR' '{print $1}')"
+a="$(echo "$s" | awk -F 'SEPARATOR' '{print $2}')"
 if [ "$a" = "" ]; then
-  mpv --osc --fs "$v"
+  mpv --osc --fs "$v" || cvlc -f "$v"
   #cvlc -f "$v"
 else
   mpv --osc --fs --audio-file "$a" "$v"

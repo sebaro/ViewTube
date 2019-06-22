@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2019.06.21
+- fixes YouTube
+- adds VIKI HD videos (DASH and HLS)
+
 #2019.06.05
 - fixes missing audio for YouTube DASH playback
 - fixes Veoh
