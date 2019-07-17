@@ -3,6 +3,13 @@
 /* ViewTube Changelog */
 
 
+#2019.07.17
+- Script: fixes text in menus, changes style
+- YouTube: adds QHD/1440 DASH videos
+- Vimeo: adds support for profile videos
+- Vimeo: adds VLD/240 and QHD/1440 videos
+- VIKI: fixes DASH streams
+
 #2019.06.21
 - fixes YouTube
 - adds VIKI HD videos (DASH and HLS)
