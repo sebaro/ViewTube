@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube+
-// @version		2018.07.01
+// @version		2019.08.15
 // @description		Watch videos from video sharing websites without Flash Player.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -18,14 +18,18 @@
 // @include		https://www.altoadige.it/*
 // @include		http://www.ilfattoquotidiano.it/*
 // @include		https://www.ilfattoquotidiano.it/*
-// @include		http://www.video.mediaset.it/*
-// @include		https://www.video.mediaset.it/*
+// @include		http://www.mediasetplay.mediaset.it/*
+// @include		https://www.mediasetplay.mediaset.it/*
+// @include		http://www.youreporter.it/*
+// @include		https://www.youreporter.it/*
+// @include		https://drive.google.com/file/d/*
+// @include		https://docs.google.com/file/d/*
 // ==/UserScript==
 
 
 /*
 
-  Copyright (C) 2010 - 2018 Sebastian Luncan
+  Copyright (C) 2010 - 2019 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -314,35 +318,37 @@ function createMyPlayer() {
   appendMyElement(player['playerWindow'], player['playerPanel']);
 
   /* Panel Items */
-  var panelItemBorder = 1;
-  var panelItemHeight = player['panelHeight'] - panelItemBorder * 2;
+  var panelItemHeight = player['panelHeight'];
 
   /* Panel Logo */
-  player['panelLogo'] = createMyElement('div', userscript + ': ', 'click', 'logo', '');
+  player['panelLogo'] = createMyElement('div', userscript, 'click', 'logo', '');
   player['panelLogo'].title = '{ViewTube: click to visit the script web page}';
-  styleMyElement(player['panelLogo'], {height: panelItemHeight + 'px', padding: '0px', display: 'inline', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+  styleMyElement(player['panelLogo'], {height: panelItemHeight + 'px', border: '1px solid #E24994', borderRadius: '3px', padding: '0px 2px', marginRight: '3px', display: 'inline', color: '#E24994', fontSize: '12px', textShadow: '1px 1px 1px #AAAAAA', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['panelLogo']);
 
   /* Panel Video Menu */
   player['videoMenu'] = createMyElement('select', '', 'change', '', 'video');
   player['videoMenu'].title = '{Videos: select the video format for playback}';
-  styleMyElement(player['videoMenu'], {width: '200px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
+  styleMyElement(player['videoMenu'], {width: '200px', height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['videoMenu'] );
   for (var videoCode in player['videoList']) {
     player['videoItem'] = createMyElement('option', videoCode, '', '', '');
     styleMyElement(player['videoItem'], {padding: '0px', display: 'block', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
-    appendMyElement(player['videoMenu'], player['videoItem']);
+    if (videoCode.indexOf('Video') != -1 || videoCode.indexOf('Audio') != -1) styleMyElement(player['videoItem'], {color: '#8F6B32'});
+    if (player['videoList'][videoCode] == 'DASH') styleMyElement(player['videoItem'], {color: '#CF4913'});
+    if (player['videoList'][videoCode] != 'DASH' || option['dash']) appendMyElement(player['videoMenu'], player['videoItem']);
+    else delete player['videoList'][videoCode];
     if (videoCode == 'Direct Video Link') styleMyElement(player['videoItem'], {color: '#00C0C0'});
   }
 
   /* Panel Plugin Menu */
   player['pluginMenu'] = createMyElement('select', '', 'change', '', 'plugin');
   player['pluginMenu'].title = '{Plugins: select the video plugin for playback}';
-  styleMyElement(player['pluginMenu'], {width: '70px', height: panelItemHeight + 'px', border: '1px solid transparent', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'baseline', cursor: 'pointer'});
+  styleMyElement(player['pluginMenu'], {width: '70px', height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px', display: 'inline', backgroundColor: 'inherit', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['pluginMenu'] );
   for (var p = 0; p < plugins.length; p++) {
     player['pluginItem'] = createMyElement('option', plugins[p], '', '', '');
-    styleMyElement(player['pluginItem'], {padding: '0px', display: 'block', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+    styleMyElement(player['pluginItem'], {padding: '0px', display: 'block', color: '#336699', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
     appendMyElement(player['pluginMenu'], player['pluginItem']);
   }
   player['pluginMenu'].value = option['plugin'];
@@ -350,14 +356,14 @@ function createMyPlayer() {
   /* Panel Play Button */
   player['buttonPlay'] = createMyElement('div', 'Play', 'click', 'play', '');
   player['buttonPlay'].title = '{Play/Stop: click to start/stop video playback}';
-  styleMyElement(player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+  styleMyElement(player['buttonPlay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#37B704', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['buttonPlay']);
 
   /* Panel Autoplay Button */
   if (feature['autoplay']) {
     player['buttonAutoplay'] = createMyElement('div', 'AP', 'click', 'autoplay', '');
     player['buttonAutoplay'].title = '{Autoplay: click to enable/disable auto playback on page load}';
-    styleMyElement(player['buttonAutoplay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', cursor: 'pointer'});
+    styleMyElement(player['buttonAutoplay'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', verticalAlign: 'middle', cursor: 'pointer'});
     if (option['autoplay']) styleMyElement(player['buttonAutoplay'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement(player['playerPanel'], player['buttonAutoplay']);
   }
@@ -365,14 +371,14 @@ function createMyPlayer() {
   /* Panel Get Button */
   player['buttonGet'] = createMyElement('div', 'Get', 'click', 'get', '');
   player['buttonGet'].title = '{Get: click to download the selected video format}';
-  styleMyElement(player['buttonGet'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C000C0', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+  styleMyElement(player['buttonGet'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C000C0', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['buttonGet']);
 
   /* Panel Definition Button */
   if (feature['definition']) {
     player['buttonDefinition'] = createMyElement('div', option['definition'], 'click', 'definition', '');
     player['buttonDefinition'].title = '{Definition: click to change the preferred video definition}';
-    styleMyElement(player['buttonDefinition'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+    styleMyElement(player['buttonDefinition'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
     appendMyElement(player['playerPanel'], player['buttonDefinition']);
   }
 
@@ -380,15 +386,24 @@ function createMyPlayer() {
   if (feature['container']) {
     player['buttonContainer'] = createMyElement('div', option['container'], 'click', 'container', '');
     player['buttonContainer'].title = '{Container: click to change the preferred video container}';
-    styleMyElement(player['buttonContainer'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', cursor: 'pointer'});
+    styleMyElement(player['buttonContainer'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#008000', fontSize: '12px', textShadow: '0px 1px 1px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
     appendMyElement(player['playerPanel'], player['buttonContainer']);
+  }
+
+  /* Panel DASH Button */
+  if (feature['dash']) {
+    player['buttonDASH'] = createMyElement('div', 'MD', 'click', 'dash', '');
+    player['buttonDASH'].title = '{MPEG-DASH: click to enable/disable DASH playback using the HTML5 video player (experimental)}';
+    styleMyElement(player['buttonDASH'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', verticalAlign: 'middle', cursor: 'pointer'});
+    if (option['dash']) styleMyElement(player['buttonDASH'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
+    appendMyElement(player['playerPanel'], player['buttonDASH']);
   }
 
   /* Panel Direct Button */
   if (feature['direct']) {
     player['buttonDirect'] = createMyElement('div', 'DVL', 'click', 'direct', '');
     player['buttonDirect'].title = '{DVL: click to enable/disable auto selection of Direct Video Link}';
-    styleMyElement(player['buttonDirect'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', cursor: 'pointer'});
+    styleMyElement(player['buttonDirect'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#CCCCCC', fontSize: '12px', verticalAlign: 'middle', cursor: 'pointer'});
     if (option['direct']) styleMyElement(player['buttonDirect'], {color: '#008080', textShadow: '0px 1px 1px #CCCCCC'});
     appendMyElement(player['playerPanel'], player['buttonDirect']);
   }
@@ -398,7 +413,7 @@ function createMyPlayer() {
     if (option['widesize']) player['buttonWidesize'] = createMyElement('div', '&lt;', 'click', 'widesize', '');
     else player['buttonWidesize'] = createMyElement('div', '&gt;', 'click', 'widesize', '');
     player['buttonWidesize'].title = '{Widesize: click to enter player widesize or return to normal size}';
-    styleMyElement(player['buttonWidesize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', cursor: 'pointer'});
+    styleMyElement(player['buttonWidesize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
     appendMyElement(player['playerPanel'], player['buttonWidesize']);
   }
 
@@ -407,7 +422,7 @@ function createMyPlayer() {
     if (option['fullsize']) player['buttonFullsize'] = createMyElement('div', '-', 'click', 'fullsize', '');
     else player['buttonFullsize'] = createMyElement('div', '+', 'click', 'fullsize', '');
     player['buttonFullsize'].title = '{Fullsize: click to enter player fullsize or return to normal size}';
-    styleMyElement(player['buttonFullsize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', cursor: 'pointer'});
+    styleMyElement(player['buttonFullsize'], {height: panelItemHeight + 'px', border: '1px solid #CCCCCC', borderRadius: '3px', padding: '0px 5px', display: 'inline', color: '#C05800', fontSize: '12px', textShadow: '1px 1px 2px #CCCCCC', verticalAlign: 'middle', cursor: 'pointer'});
     appendMyElement(player['playerPanel'], player['buttonFullsize']);
   }
 
@@ -468,39 +483,18 @@ function selectMyVideo() {
       }
     }
   }
-  if (option['definition'] == 'UHD') {
-    if (vdoList['Ultra High Definition']) player['videoPlay'] = vdoList['Ultra High Definition'];
-    else if (vdoList['Full High Definition']) player['videoPlay'] = vdoList['Full High Definition'];
-    else if (vdoList['High Definition']) player['videoPlay'] = vdoList['High Definition'];
-    else if (vdoList['Standard Definition']) player['videoPlay'] = vdoList['Standard Definition'];
-    else if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
-    else if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
+  var vdoDef2 = [];
+  var keepDef = false;
+  for (var vD = 0; vD < vdoDef.length; vD++) {
+    var sD = vdoDef[vD].match(/[A-Z]/g).join('');
+    if (sD == option['definition'] && keepDef == false) keepDef = true;
+    if (keepDef == true) vdoDef2.push(vdoDef[vD])
   }
-  else if (option['definition'] == 'FHD') {
-    if (vdoList['Full High Definition']) player['videoPlay'] = vdoList['Full High Definition'];
-    else if (vdoList['High Definition']) player['videoPlay'] = vdoList['High Definition'];
-    else if (vdoList['Standard Definition']) player['videoPlay'] = vdoList['Standard Definition'];
-    else if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
-    else if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
-  }
-  else if (option['definition'] == 'HD') {
-    if (vdoList['High Definition']) player['videoPlay'] = vdoList['High Definition'];
-    else if (vdoList['Standard Definition']) player['videoPlay'] = vdoList['Standard Definition'];
-    else if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
-    else if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
-  }
-  else if (option['definition'] == 'SD') {
-    if (vdoList['Standard Definition']) player['videoPlay'] = vdoList['Standard Definition'];
-    else if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
-    else if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
-  }
-  else if (option['definition'] == 'LD') {
-    if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
-    else if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
-  }
-  else if (option['definition'] == 'VLD') {
-    if (vdoList['Very Low Definition']) player['videoPlay'] = vdoList['Very Low Definition'];
-    else if (vdoList['Low Definition']) player['videoPlay'] = vdoList['Low Definition'];
+  for (var vD = 0; vD < vdoDef2.length; vD++) {
+    if (vdoList[vdoDef2[vD]]) {
+      player['videoPlay'] = vdoList[vdoDef2[vD]];
+      break;
+    }
   }
   if (option['direct']) player['videoPlay'] = 'Direct Video Link';
   player['videoMenu'].value = player['videoPlay'];
@@ -623,6 +617,7 @@ function cleanMyContent(content, unesc) {
   if (unesc) myNewContent = unescape(myNewContent);
   myNewContent = myNewContent.replace(/\\u0025/g,'%');
   myNewContent = myNewContent.replace(/\\u0026/g,'&');
+  myNewContent = myNewContent.replace(/\\u003d/g,'=');
   myNewContent = myNewContent.replace(/\\/g,'');
   myNewContent = myNewContent.replace(/\n/g,'');
   return myNewContent;
@@ -797,7 +792,7 @@ function ViewTube() {
     }
     else {
       /* My Player Window */
-      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      myPlayerWindow = createMyElement('div', '', '', '', '');
       styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '382px', backgroundColor: '#F4F4F4'});
       styleMyElement(repPlayerWindow, {background: 'rgba(0, 0, 0, 0)'});
       modifyMyElement(repPlayerWindow, 'div', '', false, true);
@@ -890,7 +885,7 @@ function ViewTube() {
       corPlayerWindow.className = 'corPlayerWindow';
 
       /* My Player Window */
-      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      myPlayerWindow = createMyElement('div', '', '', '', '');
       styleMyElement(myPlayerWindow, {position: 'relative', width: '656px', height: '391px', backgroundColor: '#F4F4F4', zIndex: '2'});
       styleMyElement(corPlayerWindow, {marginBottom: '50px'});
       modifyMyElement(corPlayerWindow, 'div', '', false, true);
@@ -962,7 +957,7 @@ function ViewTube() {
     }
     else {
       /* My Player Window */
-      var myPlayerWindow = createMyElement('div', '', '', '', '');
+      myPlayerWindow = createMyElement('div', '', '', '', '');
       styleMyElement(myPlayerWindow, {position: 'relative', width: '954px', height: '560px', backgroundColor: '#F4F4F4', zIndex: '2'});
       modifyMyElement(aaPlayerWindow, 'div', '', true);
       appendMyElement(aaPlayerWindow, myPlayerWindow);
@@ -1019,8 +1014,8 @@ function ViewTube() {
     }
     else {
       /* My Player Window */
-      var myPlayerWindow = createMyElement('div', '', '', '', '');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '990px', height: '579px', backgroundColor: '#F4F4F4'});
+      myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '680px', height: '420px', backgroundColor: '#F4F4F4'});
       modifyMyElement(ifqPlayerWindow, 'div', '', false, true);
       appendMyElement(ifqPlayerWindow, myPlayerWindow);
 
@@ -1054,12 +1049,12 @@ function ViewTube() {
 	    'videoList': ifqVideoList,
 	    'videoPlay': ifqDefaultVideo,
 	    'videoThumb': ifqVideoThumb,
-	    'playerWidth': 990,
-	    'playerHeight': 579
+	    'playerWidth': 680,
+	    'playerHeight': 420
 	  };
 	  feature['container'] = false;
 	  feature['widesize'] = false;
-	  option['definitions'] = ['Low Definition', 'Standard Definition'];
+	  option['definitions'] = ['Standard Definition', 'Low Definition'];
 	  option['containers'] = ['MP4'];
 	  createMyPlayer();
 	  /* Fix panel */
@@ -1081,24 +1076,24 @@ function ViewTube() {
   else if (page.url.indexOf('mediaset.it/') != -1) {
 
     /* Get Player Window */
-    var msPlayerWindow = getMyElement('', 'div', 'class', 'video-player', 0, false);
+    var msPlayerWindow = getMyElement('', 'div', 'class', '_3Xr09', 0, false);
     if (!msPlayerWindow) {
       showMyMessage ('!player');
     }
     else {
       /* My Player Window */
-      var myPlayerWindow = createMyElement('div', '', '', '', '');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '1000px', height: '584px', backgroundColor: '#F4F4F4'});
+      myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '760px', height: '480px', backgroundColor: '#F4F4F4'});
       styleMyElement(msPlayerWindow, {height: '590px'});
       modifyMyElement(msPlayerWindow, 'div', '', false, true);
       appendMyElement(msPlayerWindow, myPlayerWindow);
 
       /* Get Video Thumb */
-      var msVideoThumb = getMyContent(page.url, '"thumbnail":\\s*"(.*?)"', false);
+      var msVideoThumb = getMyContent(page.url, '"thumbnailUrl"\\s*:\\s*"(.*?)"', false);
 
       /* Get Videos Content */
       var msVideoID, msVideoPID, msVideo;
-      msVideoID = getMyContent(page.url, 'data-codf="(.*?)"', false);
+      msVideoID = getMyContent(page.url, '"@id"\\s*:\\s*".*?_(.*?)"', false);
       if (msVideoID) msVideoPID = getMyContent('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-ext-programs/guid/-/' + msVideoID, '"pid":"(.*?)"', false);
       if (msVideoPID) msVideo = 'https://link.theplatform.eu/s/PR1GhC/media/' + msVideoPID + '?formats=mpeg4';
 
@@ -1113,8 +1108,8 @@ function ViewTube() {
 	  'videoList': msVideoList,
 	  'videoPlay': msDefaultVideo,
 	  'videoThumb': msVideoThumb,
-	  'playerWidth': 1000,
-	  'playerHeight': 584
+	  'playerWidth': 760,
+	  'playerHeight': 480
 	};
 	feature['container'] = false;
 	feature['definition'] = false;
@@ -1129,6 +1124,192 @@ function ViewTube() {
 	showMyMessage('!videos');
       }
     }
+
+  }
+
+  // =====YouReporter===== //
+
+  else if (page.url.indexOf('youreporter.it/') != -1) {
+
+    /* Get Player Window */
+    var yrPlayerWindow = getMyElement('', 'div', 'class', 'entry-video', 0, false);
+    if (!yrPlayerWindow) {
+      //showMyMessage ('!player');
+    }
+    else {
+      /* Player Sizes */
+      var yrPlayerWidth, yrPlayerHeight;
+      function yrSizes() {
+	if (yrPlayerWindow) yrPlayerWidth = yrPlayerWindow.clientWidth;
+	if (yrPlayerWidth) yrPlayerHeight = Math.ceil(yrPlayerWidth / (16 / 9)) + 22;
+      }
+
+      /* Resize Event */
+      page.win.addEventListener('resize', function() {
+	yrSizes();
+	player['playerWidth'] = yrPlayerWidth;
+	player['playerHeight'] = yrPlayerHeight;
+	resizeMyPlayer('widesize');
+      }, false);
+      yrSizes();
+
+      /* My Player Window */
+      myPlayerWindow = createMyElement('div', '', '', '', '');
+      styleMyElement(myPlayerWindow, {position: 'relative', width: yrPlayerWidth + 'px', height: yrPlayerHeight + 'px', backgroundColor: '#F7F8FC'});
+      modifyMyElement(yrPlayerWindow, 'div', '', false, true);
+      appendMyElement(yrPlayerWindow, myPlayerWindow);
+
+      /* Get Video Thumb */
+      var yrVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+      /* Get Videos Content */
+      var yrVideosContent = getMyContent(page.url, 'window.testVideo\\s*=\\s*\\[(.*?)\\]', false);
+
+      if (yrVideosContent) {
+	var yrVideoList = {};
+	var yrVideoFound = false;
+	var yrVideoFormats = {'360': 'Low Definition MP4', '540': 'Standard Definition MP4', '720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
+	var yrVideo, yrPattern
+	for (var vCode in yrVideoFormats) {
+	  yrPattern = '"value":"([^"]*?)","height":' + vCode;
+	  yrVideo = yrVideosContent.match(yrPattern);
+	  yrVideo = (yrVideo) ? yrVideo[1] : null;
+	  if (yrVideo) {
+	    if (!yrVideoFound) yrVideoFound = true;
+	    yrVideoList[yrVideoFormats[vCode]] = cleanMyContent(yrVideo, false);
+	  }
+	}
+
+	if (yrVideoFound) {
+	  /* Create Player */
+	  var yrDefaultVideo = 'Low Definition MP4';
+	  player = {
+	    'playerSocket': yrPlayerWindow,
+	    'playerWindow': myPlayerWindow,
+	    'videoList': yrVideoList,
+	    'videoPlay': yrDefaultVideo,
+	    'videoThumb': yrVideoThumb,
+	    'playerWidth': yrPlayerWidth,
+	    'playerHeight': yrPlayerHeight
+	  };
+	  feature['container'] = false;
+	  feature['widesize'] = false;
+	  option['definitions'] = ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition'];
+	  option['containers'] = ['MP4'];
+	  createMyPlayer();
+	  /* Fix panel */
+	  styleMyElement(player['playerContent'], {marginTop: '5px'});
+	}
+	else {
+	  showMyMessage('!videos');
+	}
+      }
+      else {
+	showMyMessage('!content');
+      }
+    }
+
+  }
+
+  // =====Google Drive/Docs===== //
+
+  else if (page.url.indexOf('google.com/file/d') != -1) {
+
+    myPlayerWindow = createMyElement('div', '', '', '', '');
+
+    page.win.setTimeout(function() {
+
+    /* Get Player Window */
+    var ggPlayerWindow = getMyElement('', 'div', 'class', 'ndfHFb-c4YZDc-aTv5jf', 0, false);
+    if (!ggPlayerWindow) {
+      showMyMessage ('!player');
+    }
+    else {
+      /* My Player Window */
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '710px', height: '420px', backgroundColor: '#F4F4F4', margin: '50px auto'});
+      modifyMyElement(ggPlayerWindow, 'div', '', false, true);
+      appendMyElement(ggPlayerWindow, myPlayerWindow);
+
+      /* Get Video Thumb */
+      var ggVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+      /* Get Videos Content */
+      var ggVideosContent = getMyContent(page.url, '"url_encoded_fmt_stream_map",\\s*"(.*?)"', false);
+
+      if (ggVideosContent) {
+	var ggVideoList = {};
+	var ggVideoFound = false;
+	var ggVideoFormats = {'18': 'Low Definition MP4', '59': 'Standard Definition MP4', '22': 'High Definition MP4'};
+	var ggVideos = ggVideosContent.split(',');
+	var ggVideoParse, ggVideoCodeParse, ggVideoCode, myVideoCode, ggVideo;
+	for (var i = 0; i < ggVideos.length; i++) {
+	  if (!ggVideos[i].match(/^url/)) {
+	    ggVideoParse = ggVideos[i].match(/(.*)(url=.*$)/);
+	    if (ggVideoParse) ggVideos[i] = ggVideoParse[2] + '&' + ggVideoParse[1];
+	  }
+	  ggVideos[i] = cleanMyContent(ggVideos[i], false);
+	  ggVideoCodeParse = ggVideos[i].match(/itag=(\d{1,3})/);
+	  ggVideoCode = (ggVideoCodeParse) ? ggVideoCodeParse[1] : null;
+	  if (ggVideoCode) {
+	    myVideoCode = ggVideoFormats[ggVideoCode];
+	    if (myVideoCode) {
+	      ggVideo = cleanMyContent(ggVideos[i], true);
+	      ggVideo = ggVideo.replace(/url=/, '').replace(/&$/, '');
+	      if (ggVideo.match(/itag=/) && ggVideo.match(/itag=/g).length > 1) {
+		if (ggVideo.match(/itag=\d{1,3}&/)) ggVideo = ggVideo.replace(/itag=\d{1,3}&/, '');
+		else if (ggVideo.match(/&itag=\d{1,3}/)) ggVideo = ggVideo.replace(/&itag=\d{1,3}/, '');
+	      }
+	      if (ggVideo.match(/clen=/) && ggVideo.match(/clen=/g).length > 1) {
+		if (ggVideo.match(/clen=\d+&/)) ggVideo = ggVideo.replace(/clen=\d+&/, '');
+		else if (ggVideo.match(/&clen=\d+/)) ggVideo = ggVideo.replace(/&clen=\d+/, '');
+	      }
+	      if (ggVideo.match(/lmt=/) && ggVideo.match(/lmt=/g).length > 1) {
+		if (ggVideo.match(/lmt=\d+&/)) ggVideo = ggVideo.replace(/lmt=\d+&/, '');
+		else if (ggVideo.match(/&lmt=\d+/)) ggVideo = ggVideo.replace(/&lmt=\d+/, '');
+	      }
+	      if (ggVideo.match(/type=(video|audio).*?&/)) ggVideo = ggVideo.replace(/type=(video|audio).*?&/, '');
+	      else ggVideo = ggVideo.replace(/&type=(video|audio).*$/, '');
+	      if (ggVideo.match(/xtags=[^%=]*&/)) ggVideo = ggVideo.replace(/xtags=[^%=]*?&/, '');
+	      else if (ggVideo.match(/&xtags=[^%=]*$/)) ggVideo = ggVideo.replace(/&xtags=[^%=]*$/, '');
+	      ggVideo = cleanMyContent(ggVideo, true);
+	      if (ggVideo && ggVideo.indexOf('http') == 0) {
+		if (!ggVideoFound) ggVideoFound = true;
+		ggVideoList[myVideoCode] = ggVideo;
+	      }
+	    }
+	  }
+	}
+
+	if (ggVideoFound) {
+	  /* Create Player */
+	  var ggDefaultVideo = 'High Definition MP4';
+	  player = {
+	    'playerSocket': ggPlayerWindow,
+	    'playerWindow': myPlayerWindow,
+	    'videoList': ggVideoList,
+	    'videoPlay': ggDefaultVideo,
+	    'videoThumb': ggVideoThumb,
+	    'playerWidth': 710,
+	    'playerHeight': 420
+	  };
+	  feature['container'] = false;
+	  feature['widesize'] = false;
+	  option['definitions'] = ['High Definition', 'Standard Definition', 'Low Definition'];
+	  option['containers'] = ['MP4'];
+	  createMyPlayer();
+	  /* Fix panel */
+	  styleMyElement(player['playerContent'], {marginTop: '5px'});
+	}
+	else {
+	  showMyMessage('!videos');
+	}
+      }
+      else {
+	showMyMessage('!content');
+      }
+    }
+
+    }, 1000);
 
   }
 
