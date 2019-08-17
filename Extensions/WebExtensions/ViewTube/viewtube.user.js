@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.07.17
+// @version		2019.08.17
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -533,24 +533,11 @@ function selectMyVideo() {
 }
 
 function playDASHwithVLC() {
-  if (player['videoPlay'].indexOf('MP4') != -1) {
-    player['contentVideo'] = createMyElement('embed', player['videoList'][player['videoPlay'].replace('MP4', 'Video MP4')], '', '', '');
-    if (player['videoList']['Medium Bitrate Audio Opus']) {
-      player['contentAudio'] = createMyElement('embed', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
-    }
-    else {
-      player['contentAudio'] = createMyElement('embed', player['videoList']['Medium Bitrate Audio MP4'], '', '', '');
-    }
-  }
-  else {
-    player['contentVideo'] = createMyElement('embed', player['videoList'][player['videoPlay'].replace('WebM', 'Video WebM')], '', '', '');
-    if (player['videoList']['Medium Bitrate Audio Opus']) {
-      player['contentAudio'] = createMyElement('embed', player['videoList']['Medium Bitrate Audio Opus'], '', '', '');
-    }
-    else {
-      player['contentAudio'] = createMyElement('embed', player['videoList']['Medium Bitrate Audio WebM'], '', '', '');
-    }
-  }
+  var contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
+  var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
+		    || player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
+  player['contentVideo'] = createMyElement('embed', contentVideo, '', '', '');
+  player['contentAudio'] = createMyElement('embed', contentAudio, '', '', '');
   styleMyElement(player['contentAudio'], {position: 'absolute', zIndex: '-1', width: '1px', height: '1px'});
   appendMyElement(player['playerContent'], player['contentAudio']);
   player['contentVLCInit'] = page.win.setInterval(function() {
@@ -588,18 +575,11 @@ function playDASHwithVLC() {
 function playDASHwithHTML5() {
   var prevPlugin = option['plugin'];
   option['plugin'] = 'HTML5';
-  if (player['videoPlay'].indexOf('MP4') != -1) {
-    player['contentVideo'] = createMyElement('video', player['videoList'][player['videoPlay'].replace('MP4', 'Video MP4')], '', '', '');
-    var contentAudio = player['videoList']['High Bitrate Audio Opus'] || player['videoList']['Medium Bitrate Audio Opus']
-		       || player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('MP4', 'Audio MP4')];
-    player['contentAudio'] = createMyElement('video', contentAudio, '', '', '');
-  }
-  else {
-    player['contentVideo'] = createMyElement('video', player['videoList'][player['videoPlay'].replace('WebM', 'Video WebM')], '', '', '');
-    var contentAudio = player['videoList']['High Bitrate Audio Opus'] || player['videoList']['Medium Bitrate Audio Opus']
-		       || player['videoList']['Medium Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio MP4'];
-    player['contentAudio'] = createMyElement('video', contentAudio, '', '', '');
-  }
+  var contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
+  var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
+		    || player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
+  player['contentVideo'] = createMyElement('video', contentVideo, '', '', '');
+  player['contentAudio'] = createMyElement('video', contentAudio, '', '', '');
   player['contentAudio'].pause();
   player['contentVideo'].addEventListener('play', function() {
     player['contentAudio'].play();
@@ -631,18 +611,10 @@ function playMyVideo(play) {
 	page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
       }
       else {
-	var vdoV, vdoA;
-	if (player['videoPlay'].indexOf('MP4') != -1) {
-	  vdoV = player['videoList'][player['videoPlay'].replace('MP4', 'Video MP4')];
-	  vdoA = player['videoList']['High Bitrate Audio Opus'] || player['videoList']['Medium Bitrate Audio Opus']
-		 || player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('MP4', 'Audio MP4')];
-	}
-	else {
-	  vdoV = player['videoList'][player['videoPlay'].replace('WebM', 'Video WebM')];
-	  vdoA = player['videoList']['High Bitrate Audio Opus'] || player['videoList']['Medium Bitrate Audio Opus']
-		 || player['videoList']['Medium Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio MP4'];
-	}
-	page.win.location.href = 'viewtube:' + vdoV + 'SEPARATOR' + vdoA;
+	var contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
+	var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
+			  || player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
+	page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio;
       }
       return;
     }
@@ -659,7 +631,12 @@ function playMyVideo(play) {
       }
     }
     else {
-      if (option['plugin'] == 'HTML5') player['contentVideo'] = createMyElement('video', player['videoList'][player['videoPlay']], '', '', '');
+      if (option['plugin'] == 'HTML5') {
+	player['contentVideo'] = createMyElement('video', player['videoList'][player['videoPlay']], '', '', '');
+	if (player['videoPlay'].indexOf('Audio') != -1 && player['videoThumb']) {
+	  player['contentVideo'].poster = player['videoThumb'];
+	}
+      }
       else if (option['plugin'] == 'Alt' || option['plugin'] == 'VLC') player['contentVideo'] = createMyElement('embed', player['videoList'][player['videoPlay']], '', '', '');
       else player['contentVideo'] = createMyElement('object', player['videoList'][player['videoPlay']], '', '', '');
     }
@@ -1128,17 +1105,20 @@ function ViewTube() {
 	'18': 'Low Definition MP4',
 	'22': 'High Definition MP4',
 	'43': 'Low Definition WebM',
+	'133': 'Very Low Definition Video MP4',
+	'134': 'Low Definition Video MP4',
 	'135': 'Standard Definition Video MP4',
 	'136': 'High Definition Video MP4',
 	'137': 'Full High Definition Video MP4',
 	'140': 'Medium Bitrate Audio MP4',
-	'171': 'Medium Bitrate Audio WebM',
+	'242': 'Very Low Definition Video WebM',
+	'243': 'Low Definition Video WebM',
 	'244': 'Standard Definition Video WebM',
 	'247': 'High Definition Video WebM',
 	'248': 'Full High Definition Video WebM',
-	'249': 'Low Bitrate Audio Opus',
-	'250': 'Medium Bitrate Audio Opus',
-	'251': 'High Bitrate Audio Opus',
+	'249': 'Low Bitrate Audio WebM',
+	'250': 'Medium Bitrate Audio WebM',
+	'251': 'High Bitrate Audio WebM',
 	'264': 'Quad High Definition Video MP4',
 	'271': 'Quad High Definition Video WebM',
 	'272': 'Ultra High Definition Video WebM',
@@ -1212,7 +1192,7 @@ function ViewTube() {
 
       if (ytVideoFound) {
 	/* DASH */
-	if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM'] || ytVideoList['Medium Bitrate Audio Opus']) {
+	if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
 	  for (var myVideoCode in ytVideoList) {
 	    if (myVideoCode.indexOf('Video') != -1) {
 	      if (!ytVideoList[myVideoCode.replace(' Video', '')]) {
@@ -1637,17 +1617,20 @@ function ViewTube() {
 	  '18': 'Low Definition MP4',
 	  '22': 'High Definition MP4',
 	  '43': 'Low Definition WebM',
+	  '133': 'Very Low Definition Video MP4',
+	  '134': 'Low Definition Video MP4',
 	  '135': 'Standard Definition Video MP4',
 	  '136': 'High Definition Video MP4',
 	  '137': 'Full High Definition Video MP4',
 	  '140': 'Medium Bitrate Audio MP4',
-	  '171': 'Medium Bitrate Audio WebM',
+	  '242': 'Very Low Definition Video WebM',
+	  '243': 'Low Definition Video WebM',
 	  '244': 'Standard Definition Video WebM',
 	  '247': 'High Definition Video WebM',
 	  '248': 'Full High Definition Video WebM',
-	  '249': 'Low Bitrate Audio Opus',
-	  '250': 'Medium Bitrate Audio Opus',
-	  '251': 'High Bitrate Audio Opus',
+	  '249': 'Low Bitrate Audio WebM',
+	  '250': 'Medium Bitrate Audio WebM',
+	  '251': 'High Bitrate Audio WebM',
 	  '264': 'Quad High Definition Video MP4',
 	  '271': 'Quad High Definition Video WebM',
 	  '272': 'Ultra High Definition Video WebM',
@@ -1721,7 +1704,7 @@ function ViewTube() {
 
 	if (ytVideoFound) {
 	  /* DASH */
-	  if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM'] || ytVideoList['Medium Bitrate Audio Opus']) {
+	  if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
 	    for (var myVideoCode in ytVideoList) {
 	      if (myVideoCode.indexOf('Video') != -1) {
 		if (!ytVideoList[myVideoCode.replace(' Video', '')]) {

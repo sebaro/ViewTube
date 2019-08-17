@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2019.08.17
+- YouTube: adds VLD/240, LD/360 DASH videos
+
 #2019.07.17
 - Script: fixes text in menus, changes style
 - YouTube: adds QHD/1440 DASH videos
