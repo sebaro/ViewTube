@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2019.09.01
+- YouTube: exclude multi segment DASH videos
+
 #2019.08.17
 - YouTube: adds VLD/240, LD/360 DASH videos
 
