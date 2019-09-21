@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.09.13
+// @version		2019.09.21
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -277,9 +277,19 @@ function getMyElement(obj, type, from, value, child, content) {
     if (from == 'id') getObj = pObj.getElementById(value);
     else if (from == 'class') getObj = pObj.getElementsByClassName(value);
     else if (from == 'tag') getObj = pObj.getElementsByTagName(type);
-    else if (from == 'ns') getObj = pObj.getElementsByTagNameNS(value, type);
+    else if (from == 'ns') {
+      if (pObj.getElementsByTagNameNS) getObj = pObj.getElementsByTagNameNS(value, type);
+    }
+    else if (from == 'query') {
+      if (child > 0) {
+	if (pObj.querySelectorAll) getObj = pObj.querySelectorAll(value);
+      }
+      else {
+	if (pObj.querySelector)	getObj = pObj.querySelector(value);
+      }
+    }
   }
-  chObj = (child >= 0) ? getObj[child] : getObj;
+  chObj = (getObj && child >= 0) ? getObj[child] : getObj;
   if (content && chObj) {
     if (type == 'html' || type == 'body' || type == 'div' || type == 'option') coObj = chObj.innerHTML;
     else if (type == 'object') coObj = chObj.data;
@@ -755,7 +765,7 @@ function resizeMyPlayer(size) {
   }
 }
 
-function cleanMyContent(content, unesc) {
+function cleanMyContent(content, unesc, extra) {
   var myNewContent = content;
   if (unesc) myNewContent = unescape(myNewContent);
   myNewContent = myNewContent.replace(/\\u0025/g, '%');
@@ -763,6 +773,14 @@ function cleanMyContent(content, unesc) {
   myNewContent = myNewContent.replace(/\\u002F/g, '/');
   myNewContent = myNewContent.replace(/\\/g, '');
   myNewContent = myNewContent.replace(/\n/g, '');
+  if (extra) {
+    myNewContent = myNewContent.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/&#034;/g, '\'').replace(/"/g, '\'');
+    myNewContent = myNewContent.replace(/&#39;/g, '\'').replace(/&#039;/g, '\'').replace(/'/g, '\'');
+    myNewContent = myNewContent.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+    myNewContent = myNewContent.replace(/[\/\|]/g, '-');
+    myNewContent = myNewContent.replace(/[#:\*\?]/g, '');
+    myNewContent = myNewContent.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+  }
   return myNewContent;
 }
 
@@ -1267,14 +1285,12 @@ function ViewTube() {
     if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/0.jpg';
 
     /* Get Video Title */
-    var ytVideoTitle = getMyContent(page.url, '"title":"(.*?)"', false);
-    if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, '"title":\\{"runs":\\[\\{"text":"(.*?)"', false);
+    var ytVideoTitle = getMyContent(page.url, '"videoDetails".*?"title":"((\\\\"|[^"])*?)"', false);
+    if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, '"title":\\{"runs":\\[\\{"text":"((\\\\"|[^"])*?)"', false);
     if (ytVideoTitle) {
-      ytVideoTitle = ytVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-      ytVideoTitle = ytVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-      ytVideoTitle = ytVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-      ytVideoTitle = ytVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-      ytVideoTitle = ytVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+      var ytVideoAuthor = getMyContent(page.url, '"author":"((\\\\"|[^"])*?)"', false);
+      if (ytVideoAuthor) ytVideoTitle = ytVideoTitle + ' by ' + ytVideoAuthor;
+      ytVideoTitle = cleanMyContent(ytVideoTitle, false, true);
     }
 
     /* Get Videos Content */
@@ -1537,11 +1553,9 @@ function ViewTube() {
       var ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
       if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, 'meta\\s+itemprop="name"\\s+content="(.*?)"', false);
       if (ytVideoTitle) {
-	ytVideoTitle = ytVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-	ytVideoTitle = ytVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-	ytVideoTitle = ytVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-	ytVideoTitle = ytVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-	ytVideoTitle = ytVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+	var ytVideoAuthor = getMyContent(page.url, '"name":\\s*"((\\\\"|[^"])*?)"', false);
+	if (ytVideoAuthor) ytVideoTitle = ytVideoTitle + ' by ' + ytVideoAuthor;
+	ytVideoTitle = cleanMyContent(ytVideoTitle, false, true);
       }
 
       /* Get Videos Content */
@@ -1946,10 +1960,12 @@ function ViewTube() {
 
     /* Resize Event */
     page.win.addEventListener('resize', function() {
-      dmSizes();
-      player['playerWidth'] = dmPlayerWidth;
-      player['playerHeight'] = dmPlayerHeight;
-      resizeMyPlayer('widesize');
+      page.win.setTimeout(function() {
+	dmSizes();
+	player['playerWidth'] = dmPlayerWidth;
+	player['playerHeight'] = dmPlayerHeight;
+	resizeMyPlayer('widesize');
+      }, 300);
     }, false);
 
     /* My Player Window */
@@ -1968,7 +1984,7 @@ function ViewTube() {
 	blockObject = dmPlayerWindow;
 	dmSizes();
 	styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
-	styleMyElement(dmPlayerWindow, {marginTop: '-5px',});
+	styleMyElement(dmPlayerWindow, {marginTop: '-10px',});
 	if (dmVideosReady) dmPlayer();
       }
       dmWaitForLoops--;
@@ -1977,12 +1993,15 @@ function ViewTube() {
 	clearInterval(dmWaitForObject);
       }
       /* Hide Ads */
-      var dmAdsTop = getMyElement('', 'div', 'class', 'AdTop__adTop___34Bs9', 0, false);
+      var dmAdsTop = getMyElement('', 'div', 'query', '[class^="AdTop__adTop"]', -1, false);
       if (dmAdsTop && dmAdsTop.parentNode) removeMyElement(dmAdsTop.parentNode, dmAdsTop);
-      var dmAdsRightBottom = getMyElement('', 'div', 'class', 'AdWatchingRight__container___3lI6F', 0, false);
+      var dmAdsRightBottom = getMyElement('', 'div', 'query', '[class^="AdWatchingRight__container"]', -1, false);
       if (dmAdsRightBottom && dmAdsRightBottom.parentNode) removeMyElement(dmAdsRightBottom.parentNode, dmAdsRightBottom);
-      var dmAdsRight = getMyElement('', 'div', 'class', 'DiscoveryVideoSection__adCell___1A7ma', 0, false);
+      var dmAdsRight = getMyElement('', 'div', 'query', '[class^="DiscoveryVideoSection__adCell"]', -1, false);
       if (dmAdsRight && dmAdsRight.parentNode && dmAdsRight.parentNode.parentNode) removeMyElement(dmAdsRight.parentNode.parentNode, dmAdsRight.parentNode);
+      /* Hide Player Placeholder */
+      var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
+      if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none',});
     }, 500);
     intervals.push(dmWaitForObject);
 
@@ -2013,13 +2032,11 @@ function ViewTube() {
     if (dmVideoThumb) dmVideoThumb = cleanMyContent(dmVideoThumb, false);
 
     /* Get Video Title */
-    var dmVideoTitle = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"title":"(.*?)"', false);
+    var dmVideoTitle = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"title":"((\\\\"|[^"])*?)"', false);
     if (dmVideoTitle) {
-      dmVideoTitle = dmVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-      dmVideoTitle = dmVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-      dmVideoTitle = dmVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-      dmVideoTitle = dmVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-      dmVideoTitle = dmVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+      var dmVideoAuthor = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"screenname":"((\\\\"|[^"])*?)"', false);
+      if (dmVideoAuthor) dmVideoTitle = dmVideoTitle + ' by ' + dmVideoAuthor;
+      dmVideoTitle = cleanMyContent(dmVideoTitle, false, true);
     }
 
     /* Get Videos Content */
@@ -2102,15 +2119,13 @@ function ViewTube() {
 	viVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
       }
       else {
-	viVideoTitle = getMyContent(page.url, '"title":"(.*?)"', false);
+	viVideoTitle = getMyContent(page.url, '"title":"((\\\\"|[^"])*?)"', false);
       }
       if (viVideoTitle) {
-	viVideoTitle = viVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-	viVideoTitle = viVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-	viVideoTitle = viVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-	viVideoTitle = viVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-	viVideoTitle = viVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-	viVideoTitle = viVideoTitle.replace(/on\sVimeo$/, '');
+	viVideoTitle = viVideoTitle.replace(/\s*on\s*Vimeo$/, '');
+	var viVideoAuthor = getMyContent(page.url, '"display_name":"((\\\\"|[^"])*?)"', false);
+	if (viVideoAuthor) viVideoTitle = viVideoTitle + ' by ' + viVideoAuthor;
+	viVideoTitle = cleanMyContent(viVideoTitle, false, true);
       }
 
       /* Get Content Source */
@@ -2224,6 +2239,10 @@ function ViewTube() {
       var mcVideoThumb = getMyContent(page.url, '"preview":"(.*?)"', false);
       if (mcVideoThumb) mcVideoThumb = cleanMyContent(mcVideoThumb, false);
 
+      /* Get Video Title */
+      var mcVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+      if (mcVideoTitle) mcVideoTitle = cleanMyContent(mcVideoTitle, false, true);
+
       /* Get Videos Content */
       var mcVideosContent = getMyContent(page.url, 'flashvars\\s*=\\s*\\{(.*?)\\};', false);
 
@@ -2288,6 +2307,7 @@ function ViewTube() {
 	    'videoList': mcVideoList,
 	    'videoPlay': mcDefaultVideo,
 	    'videoThumb': mcVideoThumb,
+	    'videoTitle' : mcVideoTitle,
 	    'playerWidth': mcPlayerWidth,
 	    'playerHeight': mcPlayerHeight
 	  };
@@ -2333,26 +2353,18 @@ function ViewTube() {
       showMyMessage('!player');
     }
     else {
-      /* Get Videos Content */
-      var veVideosContent = getMyContent(page.url.replace(/\/watch\//, '/watch/getVideo/'), '"src"\\s*:\\s*\\{(.*?)\\}', false);
-
       /* Get Video Thumbnail */
-      var veVideoThumb = veVideosContent.match(/"poster":"(.*?)"/);
-      veVideoThumb = (veVideoThumb) ? veVideoThumb[1] : null;
+      var veVideoThumb = getMyContent(page.url.replace(/\/watch\//, '/watch/getVideo/'), '"poster":"(.*?)"', false);
 
       /* Get Video Title */
       var veVideoTitle = getMyContent(page.url, 'meta\\s+name="og:title"\\s+content="(.*?)"', false);
       if (!veVideoTitle) {
-	veVideoTitle = veVideosContent.match(/"title":"(.*?)"/);
-	veVideoTitle = (veVideoTitle) ? veVideoTitle[1] : null;
+	veVideoTitle = getMyContent(page.url.replace(/\/watch\//, '/watch/getVideo/'), '"title":"((\\\\"|[^"])*?)"', false);
       }
-      if (veVideoTitle) {
-	veVideoTitle = veVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-	veVideoTitle = veVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-	veVideoTitle = veVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-	veVideoTitle = veVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-	veVideoTitle = veVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-      }
+      if (veVideoTitle) veVideoTitle = cleanMyContent(veVideoTitle, false, true);
+
+      /* Get Videos Content */
+      var veVideosContent = getMyContent(page.url.replace(/\/watch\//, '/watch/getVideo/'), '"src"\\s*:\\s*\\{(.*?)\\}', false);
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div', '', '', '', '');
@@ -2362,7 +2374,6 @@ function ViewTube() {
       appendMyElement(vePlayerWindow, myPlayerWindow);
 
       /* Hide Ads */
-      //banners-right-container
       var veBannersRight = getMyElement('', 'div', 'class', 'banners-right-container', 0, false);
       if (veBannersRight) styleMyElement(veBannersRight, {display: 'none'});
 
@@ -2442,13 +2453,7 @@ function ViewTube() {
 
       /* Get Video Title */
       var vkVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
-      if (vkVideoTitle) {
-	vkVideoTitle = vkVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-	vkVideoTitle = vkVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-	vkVideoTitle = vkVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-	vkVideoTitle = vkVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-	vkVideoTitle = vkVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-      }
+      if (vkVideoTitle) vkVideoTitle = cleanMyContent(vkVideoTitle, false, true);
 
       /* Get Video ID */
       var vkVideoID = page.url.match(/videos\/(\d+v)/);
@@ -2751,13 +2756,7 @@ function ViewTube() {
 
     /* Get Video Title */
     var imdbVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
-    if (imdbVideoTitle) {
-      imdbVideoTitle = imdbVideoTitle.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/"/g, '\'');
-      imdbVideoTitle = imdbVideoTitle.replace(/&#39;/g, '\'').replace(/'/g, '\'');
-      imdbVideoTitle = imdbVideoTitle.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-      imdbVideoTitle = imdbVideoTitle.replace(/\?/g, '').replace(/[#:\*]/g, '-').replace(/\//g, '-');
-      imdbVideoTitle = imdbVideoTitle.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
-    }
+    if (imdbVideoTitle) imdbVideoTitle = cleanMyContent(imdbVideoTitle, false, true);
 
     /* Get Video Id */
     var imdbVideoId = page.url.replace(/.*videoplayer\//, '').replace(/(\/|\?).*/, '');
