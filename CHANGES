@@ -3,8 +3,11 @@
 /* ViewTube Changelog */
 
 
+#2019.11.08
+- Script: new design
+
 #2019.09.21
-- fixes video title
+- Script: fixes video title
 
 #2019.09.13
 - YouTube: adds a second source for videos in case the first fails or is not available
