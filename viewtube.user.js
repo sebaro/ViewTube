@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.11.08
+// @version		2019.11.13
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -228,7 +228,7 @@ function createMyElement(type, content, event, action, target, tooltip) {
 	page.win.location.href = website;
       }
       else if (action == 'play') {
-	if (player['showsOptions']) player['showsOptions'] = false;
+	if (player['showsOptions'] && option['embed'] != 'Protocol') player['showsOptions'] = false;
 	playMyVideo(!player['isPlaying']);
       }
       else if (action == 'get') {
@@ -352,6 +352,9 @@ function createMyPlayer() {
     player['contentImage'] = createMyElement('img', player['videoThumb'], 'click', 'play', '', '{Click to start video playback}');
     styleMyElement(player['contentImage'], {maxWidth: '100%', maxHeight: '100%', position: 'absolute', top: '0px', left: '0px', right: '0px', bottom: '0px', margin: 'auto', border: '0px', cursor: 'pointer'});
     player['contentImage'].addEventListener('load', function() {
+      if (page.site == 'youtube') {
+	if (this.width < 300) this.src = this.src.replace('maxresdefault', 'mqdefault');
+      }
       if (this.width/this.height >= player['contentWidth']/player['contentHeight']) {
 	this.style.width = '100%';
       }
@@ -575,22 +578,23 @@ function createMyOptions() {
   if (!player['optionsContent']) {
     /* Options Window */
     player['optionsContent'] = createMyElement('div');
-    styleMyElement(player['optionsContent'], {width: '100%', height: '100%', position: 'relative', color: '#AD0000', backgroundColor: '#EEEEEE', fontSize: '14px', fontWeight: '500', textAlign: 'center'});
+    styleMyElement(player['optionsContent'], {width: '100%', height: '100%', position: 'relative', fontSize: '14px', fontWeight: '500', textAlign: 'center'});
 
-    /* Separator */
-    var separatorOption = createMyElement('div', '&nbsp;');
-    styleMyElement(separatorOption, {display: 'block', height: '20px'});
-    appendMyElement(player['optionsContent'], separatorOption);
+    /* Embed/Media */
+    var entryOption = createMyElement('div');
+    styleMyElement(entryOption, {display: 'block', padding: '20px 0px 20px 0px'});
+    appendMyElement(player['optionsContent'], entryOption);
 
     /* Embed */
     var embedOption = createMyElement('div');
-    styleMyElement(embedOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(embedOption, {display: 'inline-block'});
     var embedOptionLabel = createMyElement('div', 'Embed video with');
-    styleMyElement(embedOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(embedOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var embedOptionMenu = createMyElement('select', '', 'change', '', 'embed');
+    styleMyElement(embedOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(embedOption, embedOptionLabel);
     appendMyElement(embedOption, embedOptionMenu);
-    appendMyElement(player['optionsContent'], embedOption);
+    appendMyElement(entryOption, embedOption);
     var embedOptionMenuItem;
     for (var i = 0; i < embedtypes.length; i++) {
       embedOptionMenuItem = createMyElement('option', embedtypes[i]);
@@ -600,13 +604,14 @@ function createMyOptions() {
 
     /* Media */
     var mediaOption = createMyElement('div');
-    styleMyElement(mediaOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(mediaOption, {display: 'inline-block'});
     var mediaOptionLabel = createMyElement('div', 'and play as/with');
-    styleMyElement(mediaOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(mediaOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var mediaOptionMenu = createMyElement('select', '', 'change', '', 'media');
+    styleMyElement(mediaOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(mediaOption, mediaOptionLabel);
     appendMyElement(mediaOption, mediaOptionMenu);
-    appendMyElement(player['optionsContent'], mediaOption);
+    appendMyElement(entryOption, mediaOption);
     var mediaOptionMenuItem;
     mediaOptionMenuItem = createMyElement('option', 'Auto');
     appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
@@ -616,20 +621,21 @@ function createMyOptions() {
     }
     mediaOptionMenu.value = option['media'];
 
-    /* Separator */
-    separatorOption = createMyElement('div', '&nbsp;');
-    styleMyElement(separatorOption, {display: 'block', height: '20px'});
-    appendMyElement(player['optionsContent'], separatorOption);
+    /* Definition/Container */
+    entryOption = createMyElement('div');
+    styleMyElement(entryOption, {display: 'block', padding: '20px 0px 20px 0px'});
+    appendMyElement(player['optionsContent'], entryOption);
 
     /* Definition */
     var definitionOption = createMyElement('div');
-    styleMyElement(definitionOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(definitionOption, {display: 'inline-block'});
     var definitionOptionLabel = createMyElement('div', 'Select the definition');
-    styleMyElement(definitionOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(definitionOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var definitionOptionMenu = createMyElement('select', '', 'change', '', 'definition');
+    styleMyElement(definitionOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(definitionOption, definitionOptionLabel);
     appendMyElement(definitionOption, definitionOptionMenu);
-    appendMyElement(player['optionsContent'], definitionOption);
+    appendMyElement(entryOption, definitionOption);
     var definitionOptionMenuItem;
     for (var i = 0; i < player['videoDefinitions'].length; i++) {
       definitionOptionMenuItem = createMyElement('option', player['videoDefinitions'][i]);
@@ -639,13 +645,14 @@ function createMyOptions() {
 
     /* Container */
     var containerOption = createMyElement('div');
-    styleMyElement(containerOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(containerOption, {display: 'inline-block'});
     var containerOptionLabel = createMyElement('div', 'and the container');
-    styleMyElement(containerOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(containerOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var containerOptionMenu = createMyElement('select', '', 'change', '', 'container');
+    styleMyElement(containerOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(containerOption, containerOptionLabel);
     appendMyElement(containerOption, containerOptionMenu);
-    appendMyElement(player['optionsContent'], containerOption);
+    appendMyElement(entryOption, containerOption);
     var containerOptionMenuItem;
     for (var i = 0; i < player['videoContainers'].length; i++) {
       containerOptionMenuItem = createMyElement('option', player['videoContainers'][i]);
@@ -653,17 +660,13 @@ function createMyOptions() {
     }
     containerOptionMenu.value = option['container'];
 
-    /* Separator */
-    separatorOption = createMyElement('div', '&nbsp;');
-    styleMyElement(separatorOption, {display: 'block', height: '20px'});
-    appendMyElement(player['optionsContent'], separatorOption);
-
     /* Autoplay */
     var autoplayOption = createMyElement('div');
-    styleMyElement(autoplayOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(autoplayOption, {display: 'block', padding: '20px 0px 20px 0px'});
     var autoplayOptionLabel = createMyElement('div', 'Autoplay');
-    styleMyElement(autoplayOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(autoplayOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var autoplayOptionMenu = createMyElement('select', '', 'change', '', 'autoplay');
+    styleMyElement(autoplayOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(autoplayOption, autoplayOptionLabel);
     appendMyElement(autoplayOption, autoplayOptionMenu);
     appendMyElement(player['optionsContent'], autoplayOption);
@@ -675,18 +678,14 @@ function createMyOptions() {
     if (option['autoplay']) autoplayOptionMenu.value = 'On';
     else autoplayOptionMenu.value = 'Off';
 
-    /* Separator */
-    separatorOption = createMyElement('div', '&nbsp;');
-    styleMyElement(separatorOption, {display: 'block', height: '10px'});
-    appendMyElement(player['optionsContent'], separatorOption);
-
     /* DASH */
     if (feature['dash']) {
       var dashOption = createMyElement('div');
-      styleMyElement(dashOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+      styleMyElement(dashOption, {display: 'block', padding: '20px 0px 20px 0px'});
       var dashOptionLabel = createMyElement('div', 'DASH (Video With Audio) playback support');
-      styleMyElement(dashOptionLabel, {display: 'inline-block', marginRight: '10px'});
+      styleMyElement(dashOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
       var dashOptionMenu = createMyElement('select', '', 'change', '', 'dash');
+      styleMyElement(dashOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
       appendMyElement(dashOption, dashOptionLabel);
       appendMyElement(dashOption, dashOptionMenu);
       appendMyElement(player['optionsContent'], dashOption);
@@ -697,19 +696,15 @@ function createMyOptions() {
       }
       if (option['dash']) dashOptionMenu.value = 'On';
       else dashOptionMenu.value = 'Off';
-
-      /* Separator */
-      separatorOption = createMyElement('div', '&nbsp;');
-      styleMyElement(separatorOption, {display: 'block', height: '10px'});
-      appendMyElement(player['optionsContent'], separatorOption);
     }
 
     /* DVL */
     var directOption = createMyElement('div');
-    styleMyElement(directOption, {display: 'inline-block', padding: '2px', margin: '10px auto'});
+    styleMyElement(directOption, {display: 'block', padding: '20px 0px 20px 0px'});
     var directOptionLabel = createMyElement('div', 'DVL (Pass the page video link to the player)');
-    styleMyElement(directOptionLabel, {display: 'inline-block', marginRight: '10px'});
+    styleMyElement(directOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
     var directOptionMenu = createMyElement('select', '', 'change', '', 'direct');
+    styleMyElement(directOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
     appendMyElement(directOption, directOptionLabel);
     appendMyElement(directOption, directOptionMenu);
     appendMyElement(player['optionsContent'], directOption);
@@ -896,7 +891,7 @@ function playMyVideo(play) {
     styleMyElement(player['buttonPlay'], {width: '15px', height: '15px', backgroundColor: '#FFFFFF', border: '0px'});
     modifyMyElement(player['playerContent'], 'div', '', true);
     if (player['videoList'][player['videoPlay']] == 'DASH') {
-      if (option['media'] == 'VLC' || option['media'] == 'VLC2') {
+      if (option['media'] == 'VLC' || option['media'] == 'VLC*') {
 	playDASHwithVLC();
       }
       else {
@@ -988,15 +983,16 @@ function getMyContent(url, pattern, clean) {
 
 function showMyMessage(cause, content) {
   var myScriptLogo = createMyElement('div', userscript);
-  styleMyElement(myScriptLogo, {margin: '0px auto', padding: '10px', color: '#666666', fontSize: '24px', textAlign: 'center', textShadow: '#FFFFFF -1px -1px 2px'});
+  styleMyElement(myScriptLogo, {display: 'inline-block', margin: '10px auto', color: '#E24994', fontSize: '24px', textAlign: 'center', border: '1px solid #E24994', borderRadius: '2px', padding: '0px 4px', textShadow: '1px 1px 1px #777777'});
   var myScriptMess = createMyElement('div');
-  styleMyElement(myScriptMess, {border: '1px solid #F4F4F4', margin: '5px auto 5px auto', padding: '10px', backgroundColor: '#FFFFFF', color: '#AD0000', textAlign: 'center'});
+  styleMyElement(myScriptMess, {fontSize: '20px', border: '1px solid #777777', margin: '5px auto 5px auto', padding: '10px', backgroundColor: '#000000', color: '#AD0000', textAlign: 'center'});
   if (cause == '!player') {
     var myScriptAlert = createMyElement('div');
     styleMyElement(myScriptAlert, {position: 'absolute', top: '30%', left: '35%', border: '1px solid #F4F4F4', borderRadius: '3px', padding: '10px', backgroundColor: '#FFFFFF', fontSize: '14px', textAlign: 'center', zIndex: '99999'});
     appendMyElement(myScriptAlert, myScriptLogo);
     var myNoPlayerMess = 'Couldn\'t get the player element. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.';
     modifyMyElement(myScriptMess, 'div', myNoPlayerMess, false);
+    styleMyElement(myScriptMess, {border: '1px solid #EEEEEE', backgroundColor: '#FFFFFF'});
     appendMyElement(myScriptAlert, myScriptMess);
     var myScriptAlertButton = createMyElement('div', 'OK', 'click', 'close', myScriptAlert);
     styleMyElement(myScriptAlertButton, {width: '100px', border: '3px solid #EEEEEE', borderRadius: '5px', margin: '0px auto', backgroundColor: '#EEEEEE', color: '#666666', fontSize: '18px', textAlign: 'center', textShadow: '#FFFFFF -1px -1px 2px', cursor: 'pointer'});
@@ -1152,7 +1148,7 @@ function ViewTube() {
 
     /* My Player */
     myPlayerWindow = createMyElement('div');
-    styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px'});
+    styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center'});
 
     /* Get Player/Sidebar */
     var ytVideosReady = false;
@@ -1422,7 +1418,7 @@ function ViewTube() {
 
     /* Get Video Thumbnail */
     var ytVideoThumb;
-    if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/0.jpg';
+    if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/maxresdefault.jpg';
 
     /* Get Video Title */
     var ytVideoTitle = getMyContent(page.url, '"videoDetails".*?"title":"((\\\\"|[^"])*?)"', false);
@@ -1640,11 +1636,11 @@ function ViewTube() {
     }
 
     /* Player Size */
-    var ytSidebarMarginNormal = 382;
+    var ytSidebarMarginNormal = 390;
     var ytSidebarWindow = getMyElement('', 'div', 'id', 'watch7-sidebar', -1, false);
     if (ytSidebarWindow) {
       var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow);
-      if (ytSidebarWindowStyle) ytSidebarMarginNormal = -12 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
+      if (ytSidebarWindowStyle) ytSidebarMarginNormal = -20 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
       styleMyElement(ytSidebarWindow, {marginTop: ytSidebarMarginNormal + 'px'});
     }
     var ytPlayerWidth, ytPlayerHeight;
@@ -1656,21 +1652,21 @@ function ViewTube() {
       ytScreenHeight = page.win.innerHeight || page.doc.documentElement.clientHeight;
       if (ytScreenWidth >= 1720 && ytScreenHeight >= 980) {
 	ytPlayerWidth = 1280;
-	ytPlayerHeight = 742;
+	ytPlayerHeight = 750;
 	ytPlayerWideWidth = 1706;
-	ytPlayerWideHeight = 982;
+	ytPlayerWideHeight = 990;
       }
       else if (ytScreenWidth >= 1294 && ytScreenHeight >= 630) {
 	ytPlayerWidth = 854;
-	ytPlayerHeight = 502;
+	ytPlayerHeight = 510;
 	ytPlayerWideWidth = 1280;
-	ytPlayerWideHeight = 742;
+	ytPlayerWideHeight = 750;
       }
       else {
 	ytPlayerWidth = 640;
-	ytPlayerHeight = 382;
+	ytPlayerHeight = 390;
 	ytPlayerWideWidth = 1066;
-	ytPlayerWideHeight = 622;
+	ytPlayerWideHeight = 630;
       }
       ytSidebarMarginWide = ytPlayerHeight + ytSidebarMarginNormal;
     }
@@ -1687,7 +1683,7 @@ function ViewTube() {
 
       /* Get Video Thumbnail */
       var ytVideoThumb;
-      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/0.jpg';
+      if (ytVideoID) ytVideoThumb = 'https://img.youtube.com/vi/' + ytVideoID + '/maxresdefault.jpg';
 
       /* Get Video Title */
       var ytVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
@@ -1853,7 +1849,7 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center'});
       modifyMyElement(ytPlayerWindow, 'div', '', false, true);
       appendMyElement(ytPlayerWindow, myPlayerWindow);
       blockObject = ytPlayerWindow;
@@ -2125,8 +2121,8 @@ function ViewTube() {
 	appendMyElement(dmPlayerWindow, myPlayerWindow);
 	blockObject = dmPlayerWindow;
 	dmSizes();
-	styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px'});
-	styleMyElement(dmPlayerWindow, {marginTop: '-22px'})
+	styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', textAlign: 'center'});
+	styleMyElement(dmPlayerWindow, {marginTop: '-15px'})
 	if (dmVideosReady) dmPlayer();
       }
       dmWaitForLoops--;
@@ -2165,8 +2161,6 @@ function ViewTube() {
       feature['container'] = false;
       feature['widesize'] = false;
       createMyPlayer();
-      /* Fix Panel */
-      styleMyElement(player['playerContent'], {marginTop: '7px'});
     }
 
     /* Get Video Thumbnail */
@@ -2286,10 +2280,10 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '920px', height: '540px', margin: '0px auto', backgroundColor: '#F4F5F7'});
-      styleMyElement(viPlayerWindow, {minHeight: '540px', position: 'static'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '920px', height: '548px', textAlign: 'center', margin: '0px auto'});
+      styleMyElement(viPlayerWindow, {minHeight: '548px', position: 'static'});
       if (viPlayerWindow.parentNode) {
-	styleMyElement(viPlayerWindow.parentNode, {minHeight: '540px', position: 'relative'});
+	styleMyElement(viPlayerWindow.parentNode, {minHeight: '548px', position: 'relative'});
 	if (viPageType == 'profile') {
 	  styleMyElement(viPlayerWindow.parentNode, {marginLeft: '-50px'});
 	}
@@ -2347,14 +2341,11 @@ function ViewTube() {
 	    'videoThumb': viVideoThumb,
 	    'videoTitle' : viVideoTitle,
 	    'playerWidth': 920,
-	    'playerHeight': 540
+	    'playerHeight': 548
 	  };
 	  feature['container'] = false;
 	  feature['widesize'] = false;
 	  createMyPlayer();
-
-	  /* Fix panel */
-	  //styleMyElement(player['playerContent'], {marginTop: '7px'});
 	}
 	else {
 	  showMyMessage('!videos');
@@ -2404,7 +2395,7 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: mcPlayerWidth + 'px', height: mcPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: mcPlayerWidth + 'px', height: mcPlayerHeight + 'px', textAlign: 'center'});
       modifyMyElement(mcPlayerWindow, 'div', '', false, true);
       appendMyElement(mcPlayerWindow, myPlayerWindow);
       blockObject = mcPlayerWindow;
@@ -2458,9 +2449,6 @@ function ViewTube() {
 	  feature['container'] = false;
 	  feature['widesize'] = false;
 	  createMyPlayer();
-
-	  /* Fix panel */
-	  styleMyElement(player['playerContent'], {marginTop: '3px'});
 	}
 	else {
 	  showMyMessage('!videos');
@@ -2510,7 +2498,7 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '386px', backgroundColor: '#F4F4F4'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '390px', textAlign: 'center'});
       modifyMyElement(vePlayerWindow, 'div', '', true);
       styleMyElement(vePlayerWindow, {height: '100%'});
       appendMyElement(vePlayerWindow, myPlayerWindow);
@@ -2549,14 +2537,12 @@ function ViewTube() {
 	    'videoThumb': veVideoThumb,
 	    'videoTitle' : veVideoTitle,
 	    'playerWidth': 640,
-	    'playerHeight': 386
+	    'playerHeight': 390
 	  };
 	  feature['container'] = false;
 	  feature['widesize'] = false;
 	  option['definition'] = 'LD';
 	  createMyPlayer();
-	  /* Fix panel */
-	  styleMyElement(player['playerContent'], {marginTop: '5px'});
 	}
 	else {
 	  var ytVideoId = getMyContent(page.url, 'youtube.com/embed/(.*?)("|\\?)', false);
@@ -2652,7 +2638,7 @@ function ViewTube() {
 
       /* My Player Window */
       myPlayerWindow = createMyElement('div');
-      styleMyElement(myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
+      styleMyElement(myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', textAlign: 'center'});
       modifyMyElement(vkPlayerWindow, 'div', '', false, true);
       styleMyElement(vkPlayerWindow, {marginBottom: '10px'});
       appendMyElement(vkPlayerWindow, myPlayerWindow);
@@ -2796,9 +2782,6 @@ function ViewTube() {
 	  option['definition'] = 'LD';
 	  createMyPlayer();
 	  vkUpdateSizes();
-
-	  /* Fix panel */
-	  styleMyElement(player['playerContent'], {marginTop: '5px'});
 	}
 	else {
 	  if (vkUnauthorized) showMyMessage('other', 'Authorization required!');
@@ -2861,7 +2844,7 @@ function ViewTube() {
 	  appendMyElement(imdbPlayerWindow, myPlayerWindow);
 	  blockObject = imdbPlayerWindow;
 	  imdbSizes();
-	  styleMyElement(myPlayerWindow, {width: imdbPlayerWidth + 'px', height: imdbPlayerHeight + 'px', backgroundColor: '#FFFFFF'});
+	  styleMyElement(myPlayerWindow, {width: imdbPlayerWidth + 'px', height: imdbPlayerHeight + 'px', textAlign: 'center'});
 	  if (imdbVideosReady) imdbPlayer();
 	}
       }

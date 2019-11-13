@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2019.11.13
+- Script: fixes player window style
+- YouTube: use high resolution video thumbnail when available
+
 #2019.11.08
 - Script: new design
 
