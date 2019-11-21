@@ -380,7 +380,7 @@ function createMyPlayer() {
 
   /* Panel Video Menu */
   player['videoMenu'] = createMyElement('select', '', 'change', '', 'video', '{Videos: select the video format for playback}');
-  styleMyElement(player['videoMenu'], {width: '250px', display: 'inline-block', fontSize: '14px', padding: '0px 5px', overflow: 'hidden', border: '1px solid #777777',  color: '#FFFFFF', backgroundColor: '#000000', lineHeight: 'normal', verticalAlign: 'middle', cursor: 'pointer'});
+  styleMyElement(player['videoMenu'], {width: '250px', display: 'inline-block', fontSize: '14px', padding: '0px 5px', overflow: 'hidden', border: '1px solid #777777', color: '#FFFFFF', backgroundColor: '#000000', lineHeight: 'normal', verticalAlign: 'middle', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['videoMenu']);
   var videosProgressive = [];
   var videosAdaptiveVideo = [];
@@ -451,12 +451,12 @@ function createMyPlayer() {
 
   /* Panel Play Button */
   player['buttonPlay'] = createMyElement('div', '', 'click', 'play', '', '{Play/Stop: click to start/stop video playback}');
-  styleMyElement(player['buttonPlay'], {width: '0px', height: '0px', display: 'inline-block', borderTop: '8px solid transparent', borderBottom: '8px solid transparent',  borderLeft: '15px solid #FFFFFF', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '20px', cursor: 'pointer'});
+  styleMyElement(player['buttonPlay'], {width: '0px', height: '0px', display: 'inline-block', borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '15px solid #FFFFFF', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '20px', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['buttonPlay']);
 
   /* Panel Get Button */
   player['buttonGet'] = createMyElement('div', '', 'click', 'get', '', '{Get: click to download the selected video format}');
-  styleMyElement(player['buttonGet'], {width: '0px', height: '0px', display: 'inline-block', borderLeft: '8px solid transparent', borderRight: '8px solid transparent',  borderTop: '15px solid #FFFFFF', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '20px', cursor: 'pointer'});
+  styleMyElement(player['buttonGet'], {width: '0px', height: '0px', display: 'inline-block', borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '15px solid #FFFFFF', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '20px', cursor: 'pointer'});
   appendMyElement(player['playerPanel'], player['buttonGet']);
 
   /* Panel Get Button Link */
@@ -913,7 +913,7 @@ function playMyVideo(play) {
   }
   else {
     player['isPlaying'] = false;
-    styleMyElement(player['buttonPlay'], {width: '0px', height: '0px', borderTop: '8px solid transparent', borderBottom: '8px solid transparent',  borderLeft: '15px solid #FFFFFF', backgroundColor: '#000000'});
+    styleMyElement(player['buttonPlay'], {width: '0px', height: '0px', borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '15px solid #FFFFFF', backgroundColor: '#000000'});
     modifyMyElement(player['playerContent'], 'div', '', true);
     if (player['contentImage']) appendMyElement(player['playerContent'], player['contentImage']);
     else showMyMessage('!thumb');
