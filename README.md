@@ -24,9 +24,9 @@ ViewTube is a browser user script for watching videos from video websites with a
    > https://chrome.google.com/webstore/detail/viewtube/hfkkgpcjliaiakfgljddganibplpohgn
 
 #### Opera:
-   - for versions <= 12 no add-on needed, just place the script in the JavaScript files directory
+   - for versions <= 12 no add-on needed, just place the script in the JavaScript files directory and allow "User JavaScript on HTTPS" in opera:config.
    - with Violentmonkey extension:
-   > https://addons.opera.com/en/extensions/details/violent-monkey
+   > https://violentmonkey.github.io/get-it/
    - with Tampermonkey extension:
    > https://addons.opera.com/en/extensions/details/tampermonkey-beta
 
@@ -108,42 +108,51 @@ If no video plugin is installed it's possible to use an external player for vide
 
 ### Internal
 
-If no video plugin is installed the browser will use the HTML5 video player for video playback. If it doesn't work, select it from the second menu to force its use.
+If no video plugin is installed the browser will use the HTML5 video player for video playback. If it doesn't work, select "Video" from the embedding type menu in options frame.
 
 
 ## Options
 
-#### Plugin (second menu):
-   - You can choose from: Auto, Alt, HTML5, MPEG, MP4, FLV, VLC, MPV, WMP, WMP2, QT, Totem, Xine
-   - Auto: videos are embedded with the OBJECT element and played by the plugin associated with the video's mimetype
-   - Alt: videos are embedded with the EMBED element and played by the plugin associated with the video's mimetype
-   - HTML5: videos are embedded with the VIDEO element and played by the HTML5 video plugin
-   - MPEG|MP4|FLV: videos are played by the video plugin associated with these file types
-   - MPV: videos are played by mpv if this is the default video plugin associated with video/mp4 (see DVL)
-   - VLC: videos are played by the VLC video plugin
-   - WMP|WMP2: videos are played by the Windows Media Player video plugin (Windows only)
-   - QT: videos are played by the QuickTime video plugin (Windows and Mac)
-   - Totem: videos are played by the Totem video plugin (Linux)
-   - Xine: videos are played by the Xine video plugin (Linux)
-   - VTP: videos are played by an external video player (see Players/External)
+#### Embed video with:
+Chooses how to play the video:
+   - Use HTML5 player in browser
+   - Use OBJECT tag to start external player plugin
+   - Use EMBED tag to start external player plugin
+   - Use external player started via associated viewtube: PROTOCOL. Read here for more info: http://sebaro.pro/viewtube
 
-#### Autoplay (AP):
-   - Click 'Autoplay' button to turn autoplay on/off. If it's on, the video starts to play when the video page is loaded or when a new video format is selected. If it's off, a video thumbnail and a 'Play' button are shown.
+#### Play as/with:
+You can choose player plugin used to play this video:
+   - Default MP4 player plugin
+   - Default WebM player plugin
+   - Default M3U8 player plugin
+   - VLC plugin
+   - Windows Media Player plugin (Windows only)
+   - QuickTime plugin (Windows and Mac)
+   - Totem plugin (Linux)
+   - Xine plugin (Linux)
 
-#### Definition (SD, HD etc):
-   - Click this button to change the default video definition.
+This setting does not matter if use external protocol-based player.
 
-#### Container (MP4, WebM etc):
-   - Click this button to change the default video container.
+#### Definition (SD, HD etc) and container (MP4, WebM etc):
+   - Use these menus to change the default video definition and format suitable for your browser/player and computer perfomance.
 
-#### MPEG-DASH (MD):
-   - Click this button to enable/disable MPEG-DASH streams (video with audio) playback. Available options are VLC and HTML5. The default option is HTML5. Select "VLC" in the plugins menu to use it instead. This is experimental and it may not work as expected
+#### Autoplay:
+   - If it's on, the video starts to play when the video page is loaded or when a new video format is selected. If it's off, a video thumbnail and a 'Play' button are shown.
+
+#### DASH support:
+   - Use the menu to enable/disable MPEG-DASH streams (video with audio) playback. Available options are VLC and HTML5. The default option is HTML5. Select "VLC" in the plugins menu to use it instead. This is experimental and it may not work as expected
 
 #### Direct Video Link (DVL):
-   - Click to enable/disable auto selection of DVL as the default option in the videos menu. With DVL only the video link is embedded so the video streams are fetched by the video plugin, directly or using an external application. The plugins that support this are MPV (mozplugger + mpv + youtube-dl) and VLC.
+   - Use this menu to enable/disable auto selection of DVL as the default option in the videos menu. With DVL been enabled only the video link is used so the video streams are fetched by the video plugin, directly or using an external application. The plugins that support this are MPV (mozplugger + mpv + youtube-dl) and VLC. Other players are need their plugins to use DVL.
 
-#### Widesize (>|<):
-   - Click the right arrow button to enter widesize. Click the left arrow button to go back to normal size.
+#### Play/Stop
+   - Click to switch play/stop mode.
 
-#### Fullsize (+|-):
-   - Click the plus button to enter fullsize. Click the minus button to go back to normal size.
+#### Get
+   - Click to download video file (when DVL is off) or copy the link to it.
+
+#### Widesize:
+   - Click the rectangle button to enter widesize. Click it again to go back to normal size.
+
+#### Fullsize:
+   - Click the dotted rectangle button to enter fullsize. Click it again to go back to normal size.

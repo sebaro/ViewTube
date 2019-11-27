@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.11.14
+// @version		2019.11.27
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -361,7 +361,7 @@ function createMyPlayer() {
       else {
 	this.style.height = '100%';
       }
-    });
+    }, false);
   }
 
   /* The Panel */
@@ -603,23 +603,27 @@ function createMyOptions() {
     embedOptionMenu.value = option['embed'];
 
     /* Media */
-    var mediaOption = createMyElement('div');
-    styleMyElement(mediaOption, {display: 'inline-block'});
-    var mediaOptionLabel = createMyElement('div', 'and play as/with');
-    styleMyElement(mediaOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
-    var mediaOptionMenu = createMyElement('select', '', 'change', '', 'media');
-    styleMyElement(mediaOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
-    appendMyElement(mediaOption, mediaOptionLabel);
-    appendMyElement(mediaOption, mediaOptionMenu);
-    appendMyElement(entryOption, mediaOption);
-    var mediaOptionMenuItem;
-    mediaOptionMenuItem = createMyElement('option', 'Auto');
-    appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
-    for (var i = 0; i < Object.keys(mediatypes).length; i++) {
-      mediaOptionMenuItem = createMyElement('option', Object.keys(mediatypes)[i]);
+    var fxMatch = window.navigator.userAgent.match(/Firefox\/([0-9]+)\./);
+    var fxVer = fxMatch ? parseInt(fxMatch[1]): 0;
+    if(fxVer == 0 || fxVer > 3){
+      var mediaOption = createMyElement('div');
+      styleMyElement(mediaOption, {display: 'inline-block'});
+      var mediaOptionLabel = createMyElement('div', 'and play as/with');
+      styleMyElement(mediaOptionLabel, {display: 'inline-block', color: '#FFFFFF', marginRight: '10px'});
+      var mediaOptionMenu = createMyElement('select', '', 'change', '', 'media');
+      styleMyElement(mediaOptionMenu, {display: 'inline-block', color: '#FFFFFF', backgroundColor: '#000000', border: '1px solid #777777', fontWeight: 'bold', marginRight: '10px'});
+      appendMyElement(mediaOption, mediaOptionLabel);
+      appendMyElement(mediaOption, mediaOptionMenu);
+      appendMyElement(entryOption, mediaOption);
+      var mediaOptionMenuItem;
+      mediaOptionMenuItem = createMyElement('option', 'Auto');
       appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
+        for (var i = 0; i < Object.keys(mediatypes).length; i++) {
+          mediaOptionMenuItem = createMyElement('option', Object.keys(mediatypes)[i]);
+          appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
+        }
+        mediaOptionMenu.value = option['media'];
     }
-    mediaOptionMenu.value = option['media'];
 
     /* Definition/Container */
     entryOption = createMyElement('div');
@@ -755,8 +759,12 @@ function getMyOptions() {
       }
     }
   }
-  if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = 'Video';
-  if (!option['embed'] || Object.keys(mediatypes).indexOf(option['media']) == -1) option['media'] = 'Auto';
+  var fxMatch = window.navigator.userAgent.match(/Firefox\/([0-9]+)\./);
+  var fxVer = fxMatch ? parseInt(fxMatch[1]): 0;
+  if(fxVer == 0 || fxVer > 3){
+    if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = 'Video';
+    if (!option['embed'] || Object.keys(mediatypes).indexOf(option['media']) == -1) option['media'] = 'Auto';
+  }
   if (!option['definition'] || player['videoDefinitions'].indexOf(option['definition']) == -1) option['definition'] = player['videoPlay'].replace(/Definition.*/, 'Definition');
   if (!option['container'] || player['videoContainers'].indexOf(option['container']) == -1) option['container'] = 'MP4';
   option['autoplay'] = (option['autoplay'] === true || option['autoplay'] == 'true') ? true : false;
@@ -1639,7 +1647,7 @@ function ViewTube() {
     var ytSidebarMarginNormal = 390;
     var ytSidebarWindow = getMyElement('', 'div', 'id', 'watch7-sidebar', -1, false);
     if (ytSidebarWindow) {
-      var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow);
+      var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow, null);
       if (ytSidebarWindowStyle) ytSidebarMarginNormal = -20 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
       styleMyElement(ytSidebarWindow, {marginTop: ytSidebarMarginNormal + 'px'});
     }

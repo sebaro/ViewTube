@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2019.11.17
+- Script: fix work in Firefox 3.6
+
 #2019.11.14
 - YouTube: fixes matching new design vs old design
 
