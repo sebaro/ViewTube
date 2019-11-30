@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2019.11.28
+- Script: fixed for Firefox 3.5
+- Dailymotion: fixed video thumbnail
+
 #2019.11.14
 - YouTube: fixes matching new design vs old design
 
@@ -909,7 +913,7 @@ YouTube:
 -> Added 360 WebM, removed 480 FLV, 360 FLV.
 
 #2011.08.03
-DailyMotion:
+Dailymotion:
 -> Alert and messages redesign.
 -> You can choose from the folowing definitions/encodings: 360 MP4, 480 MP4, 720 MP4, if available. Default is 360 MP4.
 
@@ -936,7 +940,7 @@ Adds support for Opera.
 Fixes Vimeo, website changes.
 
 #8.4
-Fixes DailyMotion, website changes.
+Fixes Dailymotion, website changes.
 
 #8.3
 Fixes YouTube, website changes.
@@ -966,7 +970,7 @@ Adds support for Break.
 Fixes issues for Metacafe.
 
 #4
-Adds support for DailyMotion.
+Adds support for Dailymotion.
 
 #3
 Adds support for Blip.

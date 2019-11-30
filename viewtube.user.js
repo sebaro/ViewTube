@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.11.14
+// @version		2019.11.28
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -100,6 +100,10 @@ else if (navigator.platform.indexOf('Mac') != -1) {
 else {
   mediatypes['Totem'] = 'application/x-totem-plugin';
   mediatypes['Xine'] = 'application/x-xine-plugin';
+}
+var mediakeys = [];
+for (var mediakey in mediatypes) {
+  mediakeys.push(mediakey);
 }
 
 // Store pages source code
@@ -320,7 +324,7 @@ function modifyMyElement(obj, type, content, clear, hide) {
 
 function styleMyElement(obj, styles) {
   for (var property in styles) {
-    if (styles.hasOwnProperty(property)) obj.style[property] = styles[property];
+    obj.style[property] = styles[property];
   }
 }
 
@@ -361,7 +365,7 @@ function createMyPlayer() {
       else {
 	this.style.height = '100%';
       }
-    });
+    }, false);
   }
 
   /* The Panel */
@@ -615,8 +619,8 @@ function createMyOptions() {
     var mediaOptionMenuItem;
     mediaOptionMenuItem = createMyElement('option', 'Auto');
     appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
-    for (var i = 0; i < Object.keys(mediatypes).length; i++) {
-      mediaOptionMenuItem = createMyElement('option', Object.keys(mediatypes)[i]);
+    for (var i = 0; i < mediakeys.length; i++) {
+      mediaOptionMenuItem = createMyElement('option', mediakeys[i]);
       appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
     }
     mediaOptionMenu.value = option['media'];
@@ -736,27 +740,25 @@ function setMyOptions(key, value) {
 
 function getMyOptions() {
   for (var opt in option) {
-    if (option.hasOwnProperty(opt)) {
-      var key = page.site + '_' + userscript.toLowerCase() + '_' + opt;
-      try {
-	if (localStorage.getItem(key)) {
-	  option[opt] = localStorage.getItem(key);
-	  continue;
-	}
-	else throw false;
+    var key = page.site + '_' + userscript.toLowerCase() + '_' + opt;
+    try {
+      if (localStorage.getItem(key)) {
+	option[opt] = localStorage.getItem(key);
+	continue;
       }
-      catch(e) {
-	var cookies = page.doc.cookie.split(';');
-	for (var i=0; i < cookies.length; i++) {
-	  var cookie = cookies[i];
-	  while (cookie.charAt(0) == ' ') cookie = cookie.substring(1, cookie.length);
-	  option[opt] = (cookie.indexOf(key) == 0) ? cookie.substring(key.length + 1, cookie.length) : option[opt];
-	}
+      else throw false;
+    }
+    catch(e) {
+      var cookies = page.doc.cookie.split(';');
+      for (var i=0; i < cookies.length; i++) {
+	var cookie = cookies[i];
+	while (cookie.charAt(0) == ' ') cookie = cookie.substring(1, cookie.length);
+	option[opt] = (cookie.indexOf(key) == 0) ? cookie.substring(key.length + 1, cookie.length) : option[opt];
       }
     }
   }
   if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = 'Video';
-  if (!option['embed'] || Object.keys(mediatypes).indexOf(option['media']) == -1) option['media'] = 'Auto';
+  if (!option['embed'] || mediakeys.indexOf(option['media']) == -1) option['media'] = 'Auto';
   if (!option['definition'] || player['videoDefinitions'].indexOf(option['definition']) == -1) option['definition'] = player['videoPlay'].replace(/Definition.*/, 'Definition');
   if (!option['container'] || player['videoContainers'].indexOf(option['container']) == -1) option['container'] = 'MP4';
   option['autoplay'] = (option['autoplay'] === true || option['autoplay'] == 'true') ? true : false;
@@ -942,22 +944,21 @@ function getMyVideo() {
 }
 
 function cleanMyContent(content, unesc, extra) {
-  var myNewContent = content;
-  if (unesc) myNewContent = unescape(myNewContent);
-  myNewContent = myNewContent.replace(/\\u0025/g, '%');
-  myNewContent = myNewContent.replace(/\\u0026/g, '&');
-  myNewContent = myNewContent.replace(/\\u002F/g, '/');
-  myNewContent = myNewContent.replace(/\\/g, '');
-  myNewContent = myNewContent.replace(/\n/g, '');
+  if (unesc) content = unescape(content);
+  content = content.replace(/\\u0025/g, '%');
+  content = content.replace(/\\u0026/g, '&');
+  content = content.replace(/\\u002F/g, '/');
+  content = content.replace(/\\/g, '');
+  content = content.replace(/\n/g, '');
   if (extra) {
-    myNewContent = myNewContent.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/&#034;/g, '\'').replace(/"/g, '\'');
-    myNewContent = myNewContent.replace(/&#39;/g, '\'').replace(/&#039;/g, '\'').replace(/'/g, '\'');
-    myNewContent = myNewContent.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-    myNewContent = myNewContent.replace(/[\/\|]/g, '-');
-    myNewContent = myNewContent.replace(/[#:\*\?]/g, '');
-    myNewContent = myNewContent.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
+    content = content.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/&#034;/g, '\'').replace(/"/g, '\'');
+    content = content.replace(/&#39;/g, '\'').replace(/&#039;/g, '\'').replace(/'/g, '\'');
+    content = content.replace(/&amp;/g, 'and').replace(/&/g, 'and');
+    content = content.replace(/[\/\|]/g, '-');
+    content = content.replace(/[#:\*\?]/g, '');
+    content = content.replace(/^\s+|\s+$/, '').replace(/\.+$/g, '');
   }
-  return myNewContent;
+  return content;
 }
 
 function getMyContent(url, pattern, clean) {
@@ -968,6 +969,7 @@ function getMyContent(url, pattern, clean) {
     xmlHTTP.send();
     sources[url] = (xmlHTTP.responseText) ? xmlHTTP.responseText : xmlHTTP.responseXML;
     //console.log('Request: ' + url + ' ' + pattern);
+    //console.log(sources[url]);
   }
   if (pattern == 'TEXT') {
     myVideosContent = sources[url];
@@ -1639,7 +1641,7 @@ function ViewTube() {
     var ytSidebarMarginNormal = 390;
     var ytSidebarWindow = getMyElement('', 'div', 'id', 'watch7-sidebar', -1, false);
     if (ytSidebarWindow) {
-      var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow);
+      var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow, null);
       if (ytSidebarWindowStyle) ytSidebarMarginNormal = -20 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
       styleMyElement(ytSidebarWindow, {marginTop: ytSidebarMarginNormal + 'px'});
     }
@@ -2146,12 +2148,13 @@ function ViewTube() {
     /* Create Player */
     var dmDefaultVideo = 'Low Definition MP4';
     function dmPlayer() {
+      if (!dmVideoList[dmDefaultVideo]) dmDefaultVideo = 'Low Definition M3U8';
       player = {
 	'playerSocket': dmPlayerWindow,
 	'playerWindow': myPlayerWindow,
 	'videoList': dmVideoList,
 	'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
-	'videoContainers': ['MP4'],
+	'videoContainers': ['MP4', 'M3U8'],
 	'videoPlay': dmDefaultVideo,
 	'videoThumb': dmVideoThumb,
 	'videoTitle': dmVideoTitle,
@@ -2164,7 +2167,7 @@ function ViewTube() {
     }
 
     /* Get Video Thumbnail */
-    var dmVideoThumb = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"poster_url":"(.*?)"', false);
+    var dmVideoThumb = getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"posters":.*?"720":"(.*?)"', false);
     if (dmVideoThumb) dmVideoThumb = cleanMyContent(dmVideoThumb, false);
 
     /* Get Video Title */
@@ -2197,6 +2200,7 @@ function ViewTube() {
 	  if (!dmVideoFound) dmVideoFound = true;
 	  dmVideo = cleanMyContent(dmVideo, true);
 	  myVideoCode = dmVideoFormats[dmVideoCode];
+	  if (dmVideo.indexOf('.m3u8') != -1) myVideoCode = myVideoCode.replace('MP4', 'M3U8');
 	  if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
 	}
       }
