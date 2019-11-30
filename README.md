@@ -66,7 +66,7 @@ ViewTube is a browser user script for watching videos from video websites with a
    > http://extension.maxthon.com/detail/index.php?view_id=2967
 
 
-### Usage
+## Usage
    - Select the video from the menu or use the options window to select the preferred video definition and container.
 
 #### Play/Stop
@@ -137,10 +137,10 @@ If no video plugin is installed the browser will use the HTML5 video player for 
 ## Options
 
 #### Embed (Video, Object, Embed, Protocol)
-    Select which type of embed option to use when playing the videos. Choose "Video" if you want to use the browser video player (HTML5), "Object" or "Embed" if you want to use a plugin (NPAPI, not supported anymore by most browsers) or "Protocol" if you want to use an external player. :
+   - Select which type of embed option to use when playing the videos. Choose "Video" if you want to use the browser video player (HTML5), "Object" or "Embed" if you want to use a plugin (NPAPI, not supported anymore by most browsers) or "Protocol" if you want to use an external player. :
 
 #### Media
-    Select which type of media or plugin to use when embeding the video. Choose "Auto" so the video is embedded using its own media/mime type, choose other option for embedding the video with a different media type or with a plugin.
+   - Select which type of media or plugin to use when embeding the video. Choose "Auto" so the video is embedded using its own media/mime type, choose other option for embedding the video with a different media type or with a plugin.
 
 #### Definition (SD, HD etc)
    - Select the default (highest) video definition.
