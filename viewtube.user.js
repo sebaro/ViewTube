@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		ViewTube
-// @version		2019.12.05
+// @version		2019.12.15
 // @description		Watch videos from video sharing websites with extra options.
 // @author		sebaro
 // @namespace		http://sebaro.pro/viewtube
@@ -91,7 +91,7 @@ var myPlayerWindow;
 var myPlayerPanelHeight = 30;
 
 // Features/Options
-var feature = {'autoplay': true, 'definition': true, 'container': true, 'dash': false, 'direct': false, 'widesize': true, 'fullsize': true};
+var feature = {'definition': true, 'container': true, 'autoplay': true, 'dash': false, 'direct': false, 'widesize': true, 'fullsize': true};
 var option = {'embed': 'Video', 'media': 'Auto', 'autoplay': false, 'autoget': false, 'definition': 'High Definition', 'container': 'MP4', 'dash': false, 'direct': false, 'widesize': false, 'fullsize': false};
 
 // Embed
@@ -116,7 +116,7 @@ else {
   mediatypes['Totem'] = 'application/x-totem-plugin';
   mediatypes['Xine'] = 'application/x-xine-plugin';
 }
-var mediakeys = [];
+var mediakeys = ['Auto'];
 for (var mediakey in mediatypes) {
   mediakeys.push(mediakey);
 }
@@ -445,14 +445,14 @@ function createMyPlayer() {
   if (option['widesize']) resizeMyPlayer('widesize');
   if (option['fullsize']) resizeMyPlayer('fullsize');
 
-  /* Select My Video */
-  if (feature['definition'] || feature['container']) {
+  /* Select The Video */
+  if (feature['definition'] || feature['container'] || feature['direct']) {
     if (!option['definition'] || player['videoDefinitions'].indexOf(option['definition']) == -1) option['definition'] = player['videoPlay'].replace(/Definition.*/, 'Definition');
     if (!option['container'] || player['videoContainers'].indexOf(option['container']) == -1) option['container'] = player['videoPlay'].replace(/.*\s/, '');
     selectMyVideo();
   }
 
-  /* Play My Video */
+  /* Play The Video */
   playMyVideo(option['autoplay']);
 }
 
@@ -537,184 +537,62 @@ function createMyOptions() {
     player['optionsContent'] = createMyElement('div');
     styleMyElement(player['optionsContent'], {width: '100%', height: '100%', position: 'relative', fontSize: '14px', fontWeight: 'bold', backgroundColor: 'rgba(0, 0, 0, 0.7)' , textAlign: 'center'});
 
-    /* Embed/Media */
-    var entryOption = createMyElement('div');
-    styleMyElement(entryOption, {display: 'block', padding: '20px 0px 20px 0px'});
-    appendMyElement(player['optionsContent'], entryOption);
+    /* Options Object => option: [label, options, new line, change video] */
+    var options = {
+      'embed': ['Embed video with', embedtypes, true, false],
+      'media': ['and play as/with', mediakeys, false, false],
+      'definition': ['Select the definition', player['videoDefinitions'], true, true],
+      'container': ['and the container', player['videoContainers'], false, true],
+      'autoplay': ['Autoplay', ['On', 'Off'], true, false, true],
+      'dash': ['DASH (Video With Audio) playback support', ['On', 'Off'], true, false],
+      'direct': ['DVL (Pass the page video link to the player)', ['On', 'Off'], true, true]
+    };
 
-    /* Embed */
-    var embedOption = createMyElement('div');
-    styleMyElement(embedOption, {display: 'inline-block'});
-    var embedOptionLabel = createMyElement('div', {textContent: 'Embed video with'});
-    styleMyElement(embedOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-    var embedOptionMenu = createMyElement('select', '', 'change', function() {
-      option['embed'] = this.value;
-      setMyOptions('embed', option['embed']);
-    });
-    styleMyElement(embedOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-    appendMyElement(embedOption, embedOptionLabel);
-    appendMyElement(embedOption, embedOptionMenu);
-    appendMyElement(entryOption, embedOption);
-    var embedOptionMenuItem;
-    for (var i = 0; i < embedtypes.length; i++) {
-      embedOptionMenuItem = createMyElement('option', {value: embedtypes[i], textContent: embedtypes[i]});
-      styleMyElement(embedOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-      appendMyElement(embedOptionMenu, embedOptionMenuItem);
-    }
-    embedOptionMenu.value = option['embed'];
-
-    /* Media */
-    var mediaOption = createMyElement('div');
-    styleMyElement(mediaOption, {display: 'inline-block'});
-    var mediaOptionLabel = createMyElement('div', {textContent: 'and play as/with'});
-    styleMyElement(mediaOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-    var mediaOptionMenu = createMyElement('select', '', 'change', function() {
-      option['media'] = this.value;
-      setMyOptions('media', option['media']);
-    });
-    styleMyElement(mediaOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-    appendMyElement(mediaOption, mediaOptionLabel);
-    appendMyElement(mediaOption, mediaOptionMenu);
-    appendMyElement(entryOption, mediaOption);
-    var mediaOptionMenuItem;
-    mediaOptionMenuItem = createMyElement('option', {value: 'Auto', textContent: 'Auto'});
-    styleMyElement(mediaOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-    appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
-    for (var i = 0; i < mediakeys.length; i++) {
-      mediaOptionMenuItem = createMyElement('option', {value: mediakeys[i], textContent: mediakeys[i]});
-      styleMyElement(mediaOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-      appendMyElement(mediaOptionMenu, mediaOptionMenuItem);
-    }
-    mediaOptionMenu.value = option['media'];
-
-    /* Definition/Container */
-    entryOption = createMyElement('div');
-    styleMyElement(entryOption, {display: 'block', padding: '20px 0px 20px 0px'});
-    appendMyElement(player['optionsContent'], entryOption);
-
-    /* Definition */
-    var definitionOption = createMyElement('div');
-    styleMyElement(definitionOption, {display: 'inline-block'});
-    var definitionOptionLabel = createMyElement('div', {textContent: 'Select the definition'});
-    styleMyElement(definitionOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-    var definitionOptionMenu = createMyElement('select', '', 'change', function() {
-      option['definition'] = this.value;
-      setMyOptions('definition', option['definition']);
-      if (player['isGetting']) {
-	cleanMyElement(player['buttonGetLink'], false);
-	player['isGetting'] = false;
+    /* Options */
+    var optionsBox, optionBox, optionLabel, optionMenu, optionMenuItem;
+    for (var o in options) {
+      if (feature[o] === false) continue;
+      if (options[o][2]) {
+	optionsBox = createMyElement('div');
+	styleMyElement(optionsBox, {display: 'block', padding: '20px 0px 20px 0px'});
+	appendMyElement(player['optionsContent'], optionsBox);
       }
-      selectMyVideo();
-    });
-    styleMyElement(definitionOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-    appendMyElement(definitionOption, definitionOptionLabel);
-    appendMyElement(definitionOption, definitionOptionMenu);
-    appendMyElement(entryOption, definitionOption);
-    var definitionOptionMenuItem;
-    for (var i = 0; i < player['videoDefinitions'].length; i++) {
-      definitionOptionMenuItem = createMyElement('option', {value: player['videoDefinitions'][i], textContent: player['videoDefinitions'][i]});
-      styleMyElement(definitionOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-      appendMyElement(definitionOptionMenu, definitionOptionMenuItem);
-    }
-    definitionOptionMenu.value = option['definition'];
-
-    /* Container */
-    if (feature['container']) {
-      var containerOption = createMyElement('div');
-      styleMyElement(containerOption, {display: 'inline-block'});
-      var containerOptionLabel = createMyElement('div', {textContent: 'and the container'});
-      styleMyElement(containerOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-      var containerOptionMenu = createMyElement('select', '', 'change', function() {
-	option['container'] = this.value;
-	setMyOptions('container', option['container']);
-	if (player['isGetting']) {
-	  cleanMyElement(player['buttonGetLink'], false);
-	  player['isGetting'] = false;
+      optionBox = createMyElement('div');
+      styleMyElement(optionBox, {display: 'inline-block'});
+      optionLabel = createMyElement('div', {textContent: options[o][0]});
+      styleMyElement(optionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
+      optionMenu = createMyElement('select', {id: o}, 'change', function() {
+	if (this.value == 'On' || this.value == 'Off') {
+	  option[this.id] = (this.value == 'On') ? true : false;
 	}
-	selectMyVideo();
+	else {
+	  option[this.id] = this.value;
+	}
+	setMyOptions(this.id, option[this.id]);
+	if (options[this.id][3]) {
+	  if (player['isGetting']) {
+	    cleanMyElement(player['buttonGetLink'], false);
+	    player['isGetting'] = false;
+	  }
+	  selectMyVideo();
+	}
       });
-      styleMyElement(containerOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-      appendMyElement(containerOption, containerOptionLabel);
-      appendMyElement(containerOption, containerOptionMenu);
-      appendMyElement(entryOption, containerOption);
-      var containerOptionMenuItem;
-      for (var i = 0; i < player['videoContainers'].length; i++) {
-	containerOptionMenuItem = createMyElement('option', {value: player['videoContainers'][i], textContent: player['videoContainers'][i]});
-	styleMyElement(containerOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-	appendMyElement(containerOptionMenu, containerOptionMenuItem);
+      styleMyElement(optionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
+      appendMyElement(optionBox, optionLabel);
+      appendMyElement(optionBox, optionMenu);
+      appendMyElement(optionsBox, optionBox);
+      for (var i = 0; i < options[o][1].length; i++) {
+	optionMenuItem = createMyElement('option', {value: options[o][1][i], textContent: options[o][1][i]});
+	styleMyElement(optionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
+	appendMyElement(optionMenu, optionMenuItem);
       }
-      containerOptionMenu.value = option['container'];
-    }
-
-    /* Autoplay */
-    var autoplayOption = createMyElement('div');
-    styleMyElement(autoplayOption, {display: 'block', padding: '20px 0px 20px 0px'});
-    var autoplayOptionLabel = createMyElement('div', {textContent: 'Autoplay'});
-    styleMyElement(autoplayOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-    var autoplayOptionMenu = createMyElement('select', '', 'change', function() {
-      option['autoplay'] = (this.value == 'On') ? true : false;
-      setMyOptions('autoplay', option['autoplay']);
-    });
-    styleMyElement(autoplayOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-    appendMyElement(autoplayOption, autoplayOptionLabel);
-    appendMyElement(autoplayOption, autoplayOptionMenu);
-    appendMyElement(player['optionsContent'], autoplayOption);
-    var autoplayOptionMenuItem;
-    for (var i = 0; i < ['On', 'Off'].length; i++) {
-      autoplayOptionMenuItem = createMyElement('option', {value: ['On', 'Off'][i], textContent: ['On', 'Off'][i]});
-      styleMyElement(autoplayOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-      appendMyElement(autoplayOptionMenu, autoplayOptionMenuItem);
-    }
-    if (option['autoplay']) autoplayOptionMenu.value = 'On';
-    else autoplayOptionMenu.value = 'Off';
-
-    /* DASH */
-    if (feature['dash']) {
-      var dashOption = createMyElement('div');
-      styleMyElement(dashOption, {display: 'block', padding: '20px 0px 20px 0px'});
-      var dashOptionLabel = createMyElement('div', {textContent: 'DASH (Video With Audio) playback support'});
-      styleMyElement(dashOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-      var dashOptionMenu = createMyElement('select', '', 'change', function() {
-	option['dash'] = (this.value == 'On') ? true : false;
-	setMyOptions('dash', option['dash']);
-      });
-      styleMyElement(dashOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-      appendMyElement(dashOption, dashOptionLabel);
-      appendMyElement(dashOption, dashOptionMenu);
-      appendMyElement(player['optionsContent'], dashOption);
-      var dashOptionMenuItem;
-      for (var i = 0; i < ['On', 'Off'].length; i++) {
-	dashOptionMenuItem = createMyElement('option', {value: ['On', 'Off'][i], textContent: ['On', 'Off'][i]});
-	styleMyElement(dashOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-	appendMyElement(dashOptionMenu, dashOptionMenuItem);
+      if (optionMenu.value == 'On' || optionMenu.value == 'Off') {
+	if (option[o]) optionMenu.value = 'On';
+	else optionMenu.value = 'Off';
       }
-      if (option['dash']) dashOptionMenu.value = 'On';
-      else dashOptionMenu.value = 'Off';
-    }
-
-    /* DVL */
-    if (feature['direct']) {
-      var directOption = createMyElement('div');
-      styleMyElement(directOption, {display: 'block', padding: '20px 0px 20px 0px'});
-      var directOptionLabel = createMyElement('div', {textContent: 'DVL (Pass the page video link to the player)'});
-      styleMyElement(directOptionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px'});
-      var directOptionMenu = createMyElement('select', '', 'change', function() {
-	option['direct'] = (this.value == 'On') ? true : false;
-	setMyOptions('direct', option['direct']);
-	selectMyVideo();
-      });
-      styleMyElement(directOptionMenu, {display: 'inline-block', color: '#CCCCCC', backgroundColor: '#000000', border: '1px solid #777777', fontSize: '14px', fontWeight: 'bold', marginRight: '10px'});
-      appendMyElement(directOption, directOptionLabel);
-      appendMyElement(directOption, directOptionMenu);
-      appendMyElement(player['optionsContent'], directOption);
-      var directOptionMenuItem;
-      for (var i = 0; i < ['On', 'Off'].length; i++) {
-	directOptionMenuItem = createMyElement('option', {value: ['On', 'Off'][i], textContent: ['On', 'Off'][i]});
-	styleMyElement(directOptionMenuItem, {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-	appendMyElement(directOptionMenu, directOptionMenuItem);
+      else {
+	optionMenu.value = option[o];
       }
-      if (option['direct']) directOptionMenu.value = 'On';
-      else directOptionMenu.value = 'Off';
     }
   }
   appendMyElement(player['playerContent'], player['optionsContent']);
@@ -754,8 +632,8 @@ function getMyOptions() {
       }
     }
   }
-  if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = 'Video';
-  if (!option['media'] || mediakeys.indexOf(option['media']) == -1) option['media'] = 'Auto';
+  if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = embedtypes[0];
+  if (!option['media'] || mediakeys.indexOf(option['media']) == -1) option['media'] = mediakeys[0];
   var boolOptions = ['autoplay', 'dash', 'direct', 'widesize', 'fullsize'];
   for (var i = 0; i < boolOptions.length; i++) {
     option[boolOptions[i]] = (option[boolOptions[i]] === true || option[boolOptions[i]] == 'true') ? true : false;
