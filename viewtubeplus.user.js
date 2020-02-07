@@ -935,7 +935,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: repPlayerWidth + 'px', height: repPlayerHeight + 'px', backgroundColor: '#F4F4F4'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: repPlayerWidth + 'px', height: repPlayerHeight + 'px', textAlign: 'center'});
 		styleMyElement(repPlayerWindow, {background: 'rgba(0, 0, 0, 0)'});
 		cleanMyElement(repPlayerWindow, true);
 		appendMyElement(repPlayerWindow, myPlayerWindow);
@@ -1033,7 +1033,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '656px', height: '391px', backgroundColor: '#F4F4F4', zIndex: '2'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: '656px', height: '391px', textAlign: 'center', zIndex: '2'});
 		styleMyElement(corPlayerWindow, {marginBottom: '50px'});
 		cleanMyElement(corPlayerWindow, true);
 		appendMyElement(corPlayerWindow, myPlayerWindow);
@@ -1104,7 +1104,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '954px', height: '560px', backgroundColor: '#F4F4F4', zIndex: '2'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: '954px', height: '560px', textAlign: 'center', zIndex: '2'});
 		cleanMyElement(aaPlayerWindow, false);
 		appendMyElement(aaPlayerWindow, myPlayerWindow);
 
@@ -1160,7 +1160,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '680px', height: '420px', backgroundColor: '#F4F4F4'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: '680px', height: '420px', textAlign: 'center'});
 		cleanMyElement(ifqPlayerWindow, true);
 		appendMyElement(ifqPlayerWindow, myPlayerWindow);
 
@@ -1175,9 +1175,9 @@ function ViewTube() {
 			var ifqVideoList = {};
 			var ifqVideoFound = false;
 			var ifqVideoFormats = {'180p': 'Very Low Definition MP4', '270p': 'Low Definition MP4', '406p': 'Standard Definition MP4'};
-			var ifqVideo, ifqPattern
+			var ifqVideo, ifqPattern;
 			for (var vCode in ifqVideoFormats) {
-				ifqPattern = 'mp4","file":"(.*?)","label":"' + vCode + '"';
+				ifqPattern = '"file":"([^,]*?mp4)"[^\}]*?"label":"' + vCode + '"';
 				ifqVideo = ifqVideosContent.match(ifqPattern);
 				ifqVideo = (ifqVideo) ? ifqVideo[1] : null;
 				if (ifqVideo) {
@@ -1229,7 +1229,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '760px', height: '480px', backgroundColor: '#F4F4F4'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: '760px', height: '480px', textAlign: 'center'});
 		styleMyElement(msPlayerWindow, {height: '590px'});
 		cleanMyElement(msPlayerWindow, true);
 		appendMyElement(msPlayerWindow, myPlayerWindow);
@@ -1300,7 +1300,7 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: yrPlayerWidth + 'px', height: yrPlayerHeight + 'px', backgroundColor: '#F7F8FC'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: yrPlayerWidth + 'px', height: yrPlayerHeight + 'px', textAlign: 'center'});
 		cleanMyElement(yrPlayerWindow, true);
 		appendMyElement(yrPlayerWindow, myPlayerWindow);
 
@@ -1372,7 +1372,7 @@ function ViewTube() {
 			}
 
 			/* My Player Window */
-			styleMyElement(myPlayerWindow, {position: 'relative', width: '710px', height: '420px', backgroundColor: '#F4F4F4', margin: '50px auto'});
+			styleMyElement(myPlayerWindow, {position: 'relative', width: '710px', height: '420px', textAlign: 'center', margin: '50px auto'});
 			cleanMyElement(ggPlayerWindow, true);
 			appendMyElement(ggPlayerWindow, myPlayerWindow);
 
@@ -1550,7 +1550,7 @@ function ViewTube() {
 			if (yleVideoFound) {
 				/* My Player Window */
 				myPlayerWindow = createMyElement('div', '', '', '', '');
-				styleMyElement(myPlayerWindow, {position: 'relative', width: ylePlayerWidth + 'px', height: ylePlayerHeight + 'px', backgroundColor: '#F7F8FC'});
+				styleMyElement(myPlayerWindow, {position: 'relative', width: ylePlayerWidth + 'px', height: ylePlayerHeight + 'px', textAlign: 'center'});
 				cleanMyElement(ylePlayerWindow, true);
 				appendMyElement(ylePlayerWindow, myPlayerWindow);
 
