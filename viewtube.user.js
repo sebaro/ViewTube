@@ -237,7 +237,7 @@ function cleanMyContent(content, unesc, extra) {
 function getMyContent(url, pattern, clean) {
 	var myPageContent, myVideosParse, myVideosContent;
 	if (!sources[url]) {
-		var XHRequest = new f();
+		var XHRequest = new XMLHttpRequest();
 		XHRequest.open('GET', url, false);
 		XHRequest.send();
 		sources[url] = (XHRequest.responseText) ? XHRequest.responseText : XHRequest.responseXML;
