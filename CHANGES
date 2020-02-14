@@ -3,6 +3,12 @@
 /* ViewTube Changelog */
 
 
+#2020.02.14
+- Script: group streams by type
+- Dailymotion: fixed progressive (MP4) streams
+- Viki: adds support for the new player
+- Viki: fixed HLS/DASH streams
+
 #2020.01.24
 - Script: style/design fixes
 - YouTube: fixed for new signature
