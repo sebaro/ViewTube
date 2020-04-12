@@ -3,10 +3,17 @@
 s="$(echo "$1" | sed -e "s/viewtube://")"
 v="$(echo "$s" | awk -F 'SEPARATOR' '{print $1}')"
 a="$(echo "$s" | awk -F 'SEPARATOR' '{print $2}')"
+t="$(echo "$s" | awk -F 'SEPARATOR' '{print $3}')"
 if [ "$a" = "" ]; then
-  mpv --osc --fs "$v" || cvlc -f "$v"
-  #cvlc -f "$v"
+	if [ "$t" = "" ]; then
+		mpv --osc --fs "$v" || cvlc -f "$v"
+	else
+		mpv --osc --fs --sub-file="$t" "$v" || cvlc -f "$v" --sub-file="$t"
+	fi
 else
-  mpv --osc --fs --audio-file "$a" "$v"
-  #cvlc -f --input-slave "$a" "$v"
+	if [ "$t" = "" ]; then
+		mpv --osc --fs --audio-file "$a" "$v" || cvlc -f --input-slave "$a" "$v"
+	else
+		mpv --osc --fs --sub-file="$t" --audio-file "$a" "$v" || cvlc -f --sub-file="$t" --input-slave "$a" "$v"
+	fi
 fi

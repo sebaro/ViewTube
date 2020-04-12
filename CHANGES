@@ -3,6 +3,11 @@
 /* ViewTube Changelog */
 
 
+#2020.04.12
+- YouTube: fixes matching new design vs old design
+- YouTube: adds subtitles
+- VIKI: adds subtitles
+
 #2020.02.14
 - Script: group streams by type
 - Dailymotion: fixed progressive (MP4) streams

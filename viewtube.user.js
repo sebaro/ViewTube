@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.02.14
+// @version         2020.04.12
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -89,8 +89,8 @@ var myPlayerWindow;
 var myPlayerPanelHeight = 30;
 
 // Features/Options
-var feature = {'definition': true, 'container': true, 'openpagelink': true, 'autoplay': true, 'playdash': false, 'widesize': true, 'fullsize': true};
-var option = {'embed': 'Video', 'media': 'Auto', 'definition': 'High Definition', 'container': 'MP4', 'openpagelink': false, 'autoplay': false, 'playdash': false, 'widesize': false, 'fullsize': false};
+var feature = {'definition': true, 'container': true, 'openpagelink': true, 'autoplay': true, 'subtitles': false, 'playdash': false, 'widesize': true, 'fullsize': true};
+var option = {'embed': 'Video', 'media': 'Auto', 'definition': 'High Definition', 'container': 'MP4', 'openpagelink': false, 'autoplay': false, 'subtitles': 'None', 'playdash': false, 'widesize': false, 'fullsize': false};
 
 // Embed
 var embedtypes = ['Video', 'Object', 'Embed', 'Protocol'];
@@ -467,9 +467,34 @@ function createMyPlayer() {
 		appendMyElement(player['playerPanel'], player['buttonFullsize']);
 	}
 
-	/* Disable Features */
+	/* Definitions Option */
 	if (player['videoDefinitions'].length < 2) feature['definition'] = false;
+
+	/* Containers Option */
 	if (player['videoContainers'].length < 2) feature['container'] = false;
+
+	/* Subtitles */
+	if (player['subtitlesList']) {
+		player['subtitlesLanguages'] = [];
+		for (var subtitlesLanguage in player['subtitlesList']) {
+			player['subtitlesLanguages'].push(subtitlesLanguage);
+		}
+		if (player['subtitlesLanguages'].length > 0) {
+			player['subtitlesLanguages'].unshift('None');
+			feature['subtitles'] = true;
+			if (!player['subtitlesList'][option['subtitles']]) {
+				option['subtitles'] = 'None';
+			}
+		}
+		else {
+			feature['subtitles'] = false;
+			option['subtitles'] = 'None';
+		}
+	}
+	else {
+		feature['subtitles'] = false;
+		option['subtitles'] = 'None';
+	}
 
 	/* Resize My Player */
 	if (option['widesize']) resizeMyPlayer('widesize');
@@ -576,6 +601,7 @@ function createMyOptions() {
 			'container': ['and the container', player['videoContainers'], false, true],
 			'openpagelink': ['Open Page Link', ['On', 'Off'], true, true],
 			'autoplay': ['Autoplay', ['On', 'Off'], true, false],
+			'subtitles': ['Subtitles', player['subtitlesLanguages'], true, false],
 			'playdash': ['Play DASH (Video With Audio)', ['On', 'Off'], true, false]
 		};
 
@@ -667,6 +693,7 @@ function getMyOptions() {
 	}
 	if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = embedtypes[0];
 	if (!option['media'] || mediakeys.indexOf(option['media']) == -1) option['media'] = mediakeys[0];
+	if (!option['subtitles']) option['subtitles'] = 'None';
 	var boolOptions = ['openpagelink', 'autoplay', 'playdash', 'widesize', 'fullsize'];
 	for (var i = 0; i < boolOptions.length; i++) {
 		option[boolOptions[i]] = (option[boolOptions[i]] === true || option[boolOptions[i]] == 'true') ? true : false;
@@ -763,7 +790,7 @@ function playDASHwithHTML5() {
 	var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
 											|| player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
 	player['contentVideo'] = createMyElement('video', {id: 'vtVideo', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentVideo, controls: 'controls', autoplay: 'autoplay', innerHTML: embedcontent['Video']});
-	player['contentAudio'] = createMyElement('video', {id: 'vtVideo', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentAudio, autoplay: 'autoplay'});
+	player['contentAudio'] = createMyElement('audio', {id: 'vtAudio', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentAudio, autoplay: 'autoplay'});
 	player['contentAudio'].pause();
 	player['contentVideo'].addEventListener('play', function() {
 		player['contentAudio'].play();
@@ -790,15 +817,18 @@ function playDASHwithHTML5() {
 function playMyVideo(play) {
 	if (play) {
 		if (option['embed'] == 'Protocol') {
-			if (player['videoList'][player['videoPlay']] != 'DASH') {
-				page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
-			}
-			else {
-				var contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
-				var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
+			var contentVideo = player['videoList'][player['videoPlay']];
+			var contentAudio = '';
+			var contentTrack = '';
+			if (player['videoList'][player['videoPlay']] == 'DASH') {
+				contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
+				contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
 														|| player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
-				page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio;
 			}
+			if (option['subtitles'] != 'None') {
+				contentTrack = player['subtitlesList'][option['subtitles']];
+			}
+			page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio + 'SEPARATOR' + contentTrack;
 			return;
 		}
 		player['isPlaying'] = true;
@@ -840,6 +870,10 @@ function playMyVideo(play) {
 		player['contentVideo'].height = player['contentHeight'];
 		styleMyElement(player['contentVideo'], {position: 'relative', width: player['contentWidth'] + 'px', height: player['contentHeight'] + 'px'});
 		appendMyElement(player['playerContent'], player['contentVideo']);
+		if (option['subtitles'] != 'None') {
+			player['contentTrack'] = createMyElement('track', {id: 'vtTrack', default: 'default', src: player['subtitlesList'][option['subtitles']]});
+			appendMyElement(player['contentVideo'], player['contentTrack']);
+		}
 	}
 	else {
 		player['isPlaying'] = false;
@@ -965,7 +999,7 @@ function ViewTube() {
 
 	// =====YouTube===== //
 
-	if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'kevlar_(flexy)', false) || getMyContent(page.url, 'watch-(flexy)', false))) {
+	if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'skeleton\\s+(flexy)', false))) {
 
 		/* Video Availability */
 		if (getMyContent(page.url, '"playabilityStatus":\\{"status":"(ERROR|UNPLAYABLE)"', false)) return;
@@ -1002,7 +1036,7 @@ function ViewTube() {
 		/* Player/Sidebar */
 		var ytPlayerWindow, ytSidebarWindow;
 
-		/* Player Sizes */
+		/* Player Size */
 		var ytPlayerWidth, ytPlayerHeight;
 		var ytPlayerWideWidth, ytPlayerWideHeight;
 		var ytSidebarMarginWide;
@@ -1019,7 +1053,7 @@ function ViewTube() {
 			}
 		}
 
-		/* Player Sizes Update */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			ytSizes();
 			player['playerWidth'] = ytPlayerWidth;
@@ -1124,6 +1158,7 @@ function ViewTube() {
 				'videoPlay': ytDefaultVideo,
 				'videoThumb': ytVideoThumb,
 				'videoTitle': ytVideoTitle,
+				'subtitlesList': ytSubtitlesList,
 				'playerWidth': ytPlayerWidth,
 				'playerHeight': ytPlayerHeight,
 				'playerWideWidth': ytPlayerWideWidth,
@@ -1296,6 +1331,32 @@ function ViewTube() {
 			var ytVideoAuthor = getMyContent(page.url, '"author":"((\\\\"|[^"])*?)"', false);
 			if (ytVideoAuthor) ytVideoTitle = ytVideoTitle + ' by ' + ytVideoAuthor;
 			ytVideoTitle = cleanMyContent(ytVideoTitle, false, true);
+		}
+
+		/* Get Video Subtitles */
+		var ytSubtitlesList = {};
+		var ytSubtitlesContent = getMyContent(page.url, '"captionTracks\\\\?":\\[(.*?)\\]', false);
+		if (ytSubtitlesContent) {
+			var ytSubtitlesLink = ytSubtitlesContent.match(/\{\\?"baseUrl\\?":\\?"([^"]*?lang=en[^\\?"]*)\\?"/);
+			ytSubtitlesLink = (ytSubtitlesLink) ? ytSubtitlesLink[1] : null;
+			if (ytSubtitlesLink) {
+				var ytSubtitlesLinkBase = cleanMyContent(ytSubtitlesLink, false, false);
+				var ytSubtitlesLinkLang = ytSubtitlesLinkBase.replace(/lang=.*?(&|$)/, '').replace(/&$/, '');
+				var ytSubtitlesLanguagePattern = /"languageCode\\?":\\?"(.*?)\\?"/g;
+				var ytSubtitlesLanguageMatches = [];
+				var ytSubtitlesLanguage;
+				while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {
+					ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
+					if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
+				}
+				var ytSubtitlesTranslationLanguages = getMyContent(page.url, '"translationLanguages\\\\?":\\[(.*?)\\]', false);
+				if (ytSubtitlesTranslationLanguages) {
+					while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesTranslationLanguages)) !== null) {
+						ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
+						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
+					}
+				}
+			}
 		}
 
 		/* Get Videos Content */
@@ -1945,14 +2006,14 @@ function ViewTube() {
 		if (getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"error":\\{"title":"(.*?)"', false)) return;
 		if (getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"error_title":"(.*?)"', false)) return;
 
-		/* Player Sizes */
+		/* Player Size */
 		var dmPlayerWidth, dmPlayerHeight;
 		function dmSizes() {
 			if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth;
 			if (dmPlayerWidth) dmPlayerHeight = Math.ceil(dmPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
-		/* Resize Event */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			page.win.setTimeout(function() {
 				dmSizes();
@@ -2262,15 +2323,15 @@ function ViewTube() {
 		}
 		mcGetSizes();
 
+		/* Player Resize */
+		page.win.addEventListener('resize', mcUpdateSizes, false);
+
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: mcPlayerWidth + 'px', height: mcPlayerHeight + 'px', textAlign: 'center'});
 		cleanMyElement(mcPlayerWindow, true);
 		appendMyElement(mcPlayerWindow, myPlayerWindow);
 		blockObject = mcPlayerWindow;
-
-		/* Resize Event */
-		page.win.addEventListener('resize', mcUpdateSizes, false);
 
 		/* Hide Ads */
 		var mcTopAd = getMyElement('', 'div', 'class', 'mc-action', 0, false);
@@ -2434,7 +2495,7 @@ function ViewTube() {
 
 		/* Get Player Window */
 		var vkPlayerWindow = getMyElement('', 'div', 'class', 'video-column', 0, false);
-		if (!vkPlayerWindow) vkPlayerWindow = getMyElement('', 'main', 'tag', '', 0, false);
+		if (!vkPlayerWindow) vkPlayerWindow = page.body;
 		if (!vkPlayerWindow) {
 			showMyMessage('!player');
 			return;
@@ -2490,7 +2551,12 @@ function ViewTube() {
 		/* Player Size */
 		var vkPlayerWidth, vkPlayerHeight;
 		function vkGetSizes() {
-			vkPlayerWidth = vkPlayerWindow.clientWidth - 17;
+			if (vkPlayerWindow == page.body) {
+				vkPlayerWidth = vkPlayerWindow.clientWidth;
+			}
+			else {
+				vkPlayerWidth = vkPlayerWindow.clientWidth - 17;
+			}
 			vkPlayerHeight = Math.ceil(vkPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 		function vkUpdateSizes() {
@@ -2501,6 +2567,9 @@ function ViewTube() {
 		}
 		vkGetSizes();
 
+		/* Player Resize */
+		page.win.addEventListener('resize', vkUpdateSizes, false);
+
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', textAlign: 'center', margin: '0px auto'});
@@ -2508,9 +2577,6 @@ function ViewTube() {
 		styleMyElement(vkPlayerWindow, {marginBottom: '10px'});
 		appendMyElement(vkPlayerWindow, myPlayerWindow);
 		blockObject = vkPlayerWindow;
-
-		/* Resize Event */
-		page.win.addEventListener('resize', vkUpdateSizes, false);
 
 		/* Get Videos */
 		if (vkVideosContent) {
@@ -2627,6 +2693,17 @@ function ViewTube() {
 					}
 				}
 			}
+			// Subtitles
+			var vkSubtitlesList = {};
+			var vkSubtitlesContent = vkVideosContent.match(/parsedSubtitles\s*=\s*\[(.*?)\]/);
+			vkSubtitlesContent = (vkSubtitlesContent) ? vkSubtitlesContent[1] : null;
+			if (vkSubtitlesContent) {
+				var vkSubtitlesLanguagePattern = /"srclang":"(.*?)".*?"src":"(.*?)"/g;
+				var vkSubtitlesLanguageMatches = [];
+				while ((vkSubtitlesLanguageMatches = vkSubtitlesLanguagePattern.exec(vkSubtitlesContent)) !== null) {
+					vkSubtitlesList[vkSubtitlesLanguageMatches[1]] = vkSubtitlesLanguageMatches[2];
+				}
+			}
 
 			/* Create Player */
 			if (vkVideoFound) {
@@ -2640,6 +2717,7 @@ function ViewTube() {
 					'videoPlay': vkDefaultVideo,
 					'videoThumb': vkVideoThumb,
 					'videoTitle' : vkVideoTitle,
+					'subtitlesList': vkSubtitlesList,
 					'playerWidth': vkPlayerWidth,
 					'playerHeight': vkPlayerHeight
 				};
@@ -2675,14 +2753,14 @@ function ViewTube() {
 			return;
 		}
 
-		/* Player Sizes */
+		/* Player Size */
 		var imdbPlayerWidth, imdbPlayerHeight;
 		function imdbSizes() {
 			if (imdbPlayerWindow) imdbPlayerWidth = imdbPlayerWindow.clientWidth;
 			if (imdbPlayerWidth) imdbPlayerHeight = Math.ceil(imdbPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
-		/* Resize Event */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			imdbSizes();
 			player['playerWidth'] = imdbPlayerWidth;
@@ -2770,8 +2848,22 @@ function ViewTube() {
 			}
 
 			if (imdbVideoFound) {
-				imdbVideosReady = true;
-				if (imdbPlayerWindow) imdbPlayer();
+				//imdbVideosReady = true;
+				//if (imdbPlayerWindow) imdbPlayer();
+				var imdbDefaultVideo = 'Low Definition MP4';
+			player = {
+			'playerSocket': imdbPlayerWindow,
+			'playerWindow': myPlayerWindow,
+			'videoList': imdbVideoList,
+			'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
+			'videoContainers': ['MP4', 'M3U8', 'Any'],
+			'videoPlay': imdbDefaultVideo,
+			'videoThumb': imdbVideoThumb,
+			'videoTitle' : imdbVideoTitle,
+			'playerWidth': imdbPlayerWidth,
+			'playerHeight': imdbPlayerHeight
+			};
+			createMyPlayer();
 			}
 			else {
 				showMyMessage('!videos');
