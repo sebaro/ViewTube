@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.01.24
+// @version         2020.04.12
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -11,8 +11,6 @@
 // @include         http://www.youtube.com*
 // @include         https://youtube.com*
 // @include         https://www.youtube.com*
-// @include         http://gaming.youtube.com*
-// @include         https://gaming.youtube.com*
 // @include         http://m.youtube.com*
 // @include         https://m.youtube.com*
 // @include         http://dailymotion.com*
@@ -91,8 +89,8 @@ var myPlayerWindow;
 var myPlayerPanelHeight = 30;
 
 // Features/Options
-var feature = {'definition': true, 'container': true, 'autoplay': true, 'dash': false, 'direct': false, 'widesize': true, 'fullsize': true};
-var option = {'embed': 'Video', 'media': 'Auto', 'autoplay': false, 'autoget': false, 'definition': 'High Definition', 'container': 'MP4', 'dash': false, 'direct': false, 'widesize': false, 'fullsize': false};
+var feature = {'definition': true, 'container': true, 'openpagelink': true, 'autoplay': true, 'subtitles': false, 'playdash': false, 'widesize': true, 'fullsize': true};
+var option = {'embed': 'Video', 'media': 'Auto', 'definition': 'High Definition', 'container': 'MP4', 'openpagelink': false, 'autoplay': false, 'subtitles': 'None', 'playdash': false, 'widesize': false, 'fullsize': false};
 
 // Embed
 var embedtypes = ['Video', 'Object', 'Embed', 'Protocol'];
@@ -239,10 +237,10 @@ function cleanMyContent(content, unesc, extra) {
 function getMyContent(url, pattern, clean) {
 	var myPageContent, myVideosParse, myVideosContent;
 	if (!sources[url]) {
-		var xmlHTTP = new XMLHttpRequest();
-		xmlHTTP.open('GET', url, false);
-		xmlHTTP.send();
-		sources[url] = (xmlHTTP.responseText) ? xmlHTTP.responseText : xmlHTTP.responseXML;
+		var XHRequest = new XMLHttpRequest();
+		XHRequest.open('GET', url, false);
+		XHRequest.send();
+		sources[url] = (XHRequest.responseText) ? XHRequest.responseText : XHRequest.responseXML;
 		//console.log('Request: ' + url + ' ' + pattern);
 		//console.log(sources[url]);
 	}
@@ -306,27 +304,30 @@ function createMyPlayer() {
 	/* Panel Video Menu */
 	player['videoMenu'] = createMyElement('select', {title: '{Videos: select the video format for playback}'}, 'change', function() {
 		player['videoPlay'] = this.value;
-		if (player['isGetting']) {
-			cleanMyElement(player['buttonGetLink'], false);
-			player['isGetting'] = false;
+		if (player['isSaving']) {
+			cleanMyElement(player['buttonSaveLink'], false);
+			player['isSaving'] = false;
 		}
 		if (player['isPlaying']) playMyVideo(option['autoplay']);
 	});
 	styleMyElement(player['videoMenu'], {display: 'inline-block', width: 'auto', height: '20px', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold', padding: '0px 3px', overflow: 'hidden', border: '1px solid #777777', color: '#CCCCCC', backgroundColor: '#000000', lineHeight: 'normal', verticalAlign: 'middle', cursor: 'pointer', boxSizing: 'content-box'});
 	appendMyElement(player['playerPanel'], player['videoMenu']);
+	if (feature['openpagelink']) {
+		player['videoList']['Page Link'] = page.url;
+	}
 	var videosProgressive = [];
-	var videosAdaptiveVideo = [];
-	var videosAdaptiveAudio = [];
-	var videosAdaptiveMuxed = [];
+	var videosAdaptiveHLS = [];
+	var videosAdaptiveDASHVideo = [];
+	var videosAdaptiveDASHAudio = [];
+	var videosAdaptiveDASHMuxed = [];
+	var videosExtra = [];
 	for (var videoCode in player['videoList']) {
-		if (videoCode.indexOf('Video') != -1) {
-			if (videoCode.indexOf('Direct') == -1) videosAdaptiveVideo.push(videoCode);
-		}
-		else if (videoCode.indexOf('Audio') != -1) videosAdaptiveAudio.push(videoCode);
-		else {
-			if (player['videoList'][videoCode] == 'DASH') videosAdaptiveMuxed.push(videoCode);
-			else videosProgressive.push(videoCode);
-		}
+		if (videoCode.indexOf('Video') != -1) videosAdaptiveDASHVideo.push(videoCode);
+		else if (videoCode.indexOf('Audio') != -1) videosAdaptiveDASHAudio.push(videoCode);
+		else if (player['videoList'][videoCode] == 'DASH') videosAdaptiveDASHMuxed.push(videoCode);
+		else if (videoCode.indexOf('M3U8') != -1) videosAdaptiveHLS.push(videoCode);
+		else if (videoCode.indexOf('MP4') != -1 || videoCode.indexOf('WebM') != -1) videosProgressive.push(videoCode);
+		else videosExtra.push(videoCode);
 	}
 	if (videosProgressive.length > 0) {
 		for (var i = 0; i < videosProgressive.length; i++) {
@@ -335,47 +336,68 @@ function createMyPlayer() {
 			appendMyElement(player['videoMenu'], player['videoItem']);
 		}
 	}
-	if (videosAdaptiveVideo.length > 0) {
+	if (videosAdaptiveHLS.length > 0) {
+		player['videoItem'] = createMyElement('option', {value: 'HLS', textContent: 'HLS'});
+		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
+		player['videoItem'].disabled = 'disabled';
+		appendMyElement(player['videoMenu'], player['videoItem']);
+		for (var i = 0; i < videosAdaptiveHLS.length; i++) {
+			player['videoItem'] = createMyElement('option', {value: videosAdaptiveHLS[i], textContent: videosAdaptiveHLS[i]});
+			styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
+			appendMyElement(player['videoMenu'], player['videoItem']);
+		}
+	}
+	if (videosAdaptiveDASHVideo.length > 0) {
 		player['videoItem'] = createMyElement('option', {value: 'DASH (Video Only)', textContent: 'DASH (Video Only)'});
 		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
 		player['videoItem'].disabled = 'disabled';
 		appendMyElement(player['videoMenu'], player['videoItem']);
-		for (var i = 0; i < videosAdaptiveVideo.length; i++) {
-			player['videoItem'] = createMyElement('option', {value: videosAdaptiveVideo[i], textContent: videosAdaptiveVideo[i]});
+		for (var i = 0; i < videosAdaptiveDASHVideo.length; i++) {
+			player['videoItem'] = createMyElement('option', {value: videosAdaptiveDASHVideo[i], textContent: videosAdaptiveDASHVideo[i]});
 			styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
 			appendMyElement(player['videoMenu'], player['videoItem']);
 		}
 	}
-	if (videosAdaptiveAudio.length > 0) {
+	if (videosAdaptiveDASHAudio.length > 0) {
 		player['videoItem'] = createMyElement('option', {value: 'DASH (Audio Only)', textContent: 'DASH (Audio Only)'});
 		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
 		player['videoItem'].disabled = 'disabled';
 		appendMyElement(player['videoMenu'], player['videoItem']);
-		for (var i = 0; i < videosAdaptiveAudio.length; i++) {
-			player['videoItem'] = createMyElement('option', {value: videosAdaptiveAudio[i], textContent: videosAdaptiveAudio[i]});
+		for (var i = 0; i < videosAdaptiveDASHAudio.length; i++) {
+			player['videoItem'] = createMyElement('option', {value: videosAdaptiveDASHAudio[i], textContent: videosAdaptiveDASHAudio[i]});
 			styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
 			appendMyElement(player['videoMenu'], player['videoItem']);
 		}
 	}
-	if (videosAdaptiveMuxed.length > 0) {
-		player['videoItem'] = createMyElement('option', {value: 'DASH (Video With Audio)', textContent: 'DASH (Video With Audio)'});
+	if (videosAdaptiveDASHMuxed.length > 0) {
+		feature['playdash'] = true;
+		if (option['playdash']) {
+			player['videoItem'] = createMyElement('option', {value: 'DASH (Video With Audio)', textContent: 'DASH (Video With Audio)'});
+			styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
+			player['videoItem'].disabled = 'disabled';
+			appendMyElement(player['videoMenu'], player['videoItem']);
+			for (var i = 0; i < videosAdaptiveDASHMuxed.length; i++) {
+				player['videoItem'] = createMyElement('option', {value: videosAdaptiveDASHMuxed[i], textContent: videosAdaptiveDASHMuxed[i]});
+				styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
+				appendMyElement(player['videoMenu'], player['videoItem']);
+			}
+		}
+		else {
+			for (var videoCode in player['videoList']) {
+				if (player['videoList'][videoCode] == 'DASH') delete player['videoList'][videoCode];
+			}
+		}
+	}
+	if (videosExtra.length > 0) {
+		player['videoItem'] = createMyElement('option', {value: 'Extra', textContent: 'Extra'});
 		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
 		player['videoItem'].disabled = 'disabled';
 		appendMyElement(player['videoMenu'], player['videoItem']);
-		for (var i = 0; i < videosAdaptiveMuxed.length; i++) {
-			player['videoItem'] = createMyElement('option', {value: videosAdaptiveMuxed[i], textContent: videosAdaptiveMuxed[i]});
+		for (var i = 0; i < videosExtra.length; i++) {
+			player['videoItem'] = createMyElement('option', {value: videosExtra[i], textContent: videosExtra[i]});
 			styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
 			appendMyElement(player['videoMenu'], player['videoItem']);
 		}
-	}
-	if (feature['direct']) {
-		player['videoItem'] = createMyElement('option', {value: 'DVL (Open Video Link)', textContent: 'DVL (Open Video Link)'});
-		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', color: '#FF0000'});
-		player['videoItem'].disabled = 'disabled';
-		appendMyElement(player['videoMenu'], player['videoItem']);
-		player['videoItem'] = createMyElement('option', {value: 'Direct Video Link', textContent: 'Direct Video Link'});
-		styleMyElement(player['videoItem'], {fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'});
-		appendMyElement(player['videoMenu'], player['videoItem']);
 	}
 
 	/* Panel Options Button */
@@ -403,19 +425,23 @@ function createMyPlayer() {
 	styleMyElement(player['buttonPlay'], {width: '0px', height: '0px', display: 'inline-block', borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '15px solid #CCCCCC', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '20px', cursor: 'pointer', boxSizing: 'content-box'});
 	appendMyElement(player['playerPanel'], player['buttonPlay']);
 
-	/* Panel Get Button */
-	player['buttonGet'] = createMyElement('div', {title: '{Get: click to download the selected video format}'}, 'click', function() {
-		getMyVideo();
+	/* Panel Save Button */
+	player['buttonSave'] = createMyElement('div', {title: '{Save: click to download the selected video format}'}, 'click', function() {
+		saveMyVideo();
 	});
-	styleMyElement(player['buttonGet'], {width: '0px', height: '0px', display: 'inline-block', borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '15px solid #CCCCCC', lineHeight: 'normal', verticalAlign: 'middle', marginTop: '2px', marginLeft: '20px', cursor: 'pointer', boxSizing: 'content-box'});
-	appendMyElement(player['playerPanel'], player['buttonGet']);
+	styleMyElement(player['buttonSave'], {width: '0px', height: '0px', display: 'inline-block', borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '15px solid #CCCCCC', lineHeight: 'normal', verticalAlign: 'middle', marginTop: '2px', marginLeft: '20px', cursor: 'pointer', boxSizing: 'content-box'});
+	appendMyElement(player['playerPanel'], player['buttonSave']);
 
-	/* Panel Get Button Link */
-	player['buttonGetLink'] = createMyElement('div', {title: '{Get: right click & save as to download the selected video format}'});
-	styleMyElement(player['buttonGetLink'], {display: 'inline-block', color: '#CCCCCC', fontSize: '14px', fontWeight: 'bold', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '5px', marginBottom: '2px', boxSizing: 'content-box'});
-	appendMyElement(player['playerPanel'], player['buttonGetLink']);
+	/* Panel Save Button Link */
+	player['buttonSaveLink'] = createMyElement('div', {title: '{Save: right click & save as to download the selected video format}'});
+	styleMyElement(player['buttonSaveLink'], {display: 'inline-block', color: '#CCCCCC', fontSize: '14px', fontWeight: 'bold', lineHeight: 'normal', verticalAlign: 'middle', marginLeft: '5px', marginBottom: '2px', boxSizing: 'content-box'});
+	appendMyElement(player['playerPanel'], player['buttonSaveLink']);
 
 	/* Panel Widesize Button */
+	if (!player['playerWideWidth']) {
+		feature['widesize'] = false;
+		option['widesize'] = false;
+	}
 	if (feature['widesize']) {
 		player['buttonWidesize'] = createMyElement('div', {title: '{Widesize: click to enter player widesize or return to normal size}'}, 'click', function() {
 			option['widesize'] = (option['widesize']) ? false : true;
@@ -441,12 +467,41 @@ function createMyPlayer() {
 		appendMyElement(player['playerPanel'], player['buttonFullsize']);
 	}
 
+	/* Definitions Option */
+	if (player['videoDefinitions'].length < 2) feature['definition'] = false;
+
+	/* Containers Option */
+	if (player['videoContainers'].length < 2) feature['container'] = false;
+
+	/* Subtitles */
+	if (player['subtitlesList']) {
+		player['subtitlesLanguages'] = [];
+		for (var subtitlesLanguage in player['subtitlesList']) {
+			player['subtitlesLanguages'].push(subtitlesLanguage);
+		}
+		if (player['subtitlesLanguages'].length > 0) {
+			player['subtitlesLanguages'].unshift('None');
+			feature['subtitles'] = true;
+			if (!player['subtitlesList'][option['subtitles']]) {
+				option['subtitles'] = 'None';
+			}
+		}
+		else {
+			feature['subtitles'] = false;
+			option['subtitles'] = 'None';
+		}
+	}
+	else {
+		feature['subtitles'] = false;
+		option['subtitles'] = 'None';
+	}
+
 	/* Resize My Player */
 	if (option['widesize']) resizeMyPlayer('widesize');
 	if (option['fullsize']) resizeMyPlayer('fullsize');
 
 	/* Select The Video */
-	if (feature['definition'] || feature['container'] || feature['direct']) {
+	if (feature['definition'] || feature['container'] || feature['openpagelink']) {
 		if (!option['definition'] || player['videoDefinitions'].indexOf(option['definition']) == -1) option['definition'] = player['videoPlay'].replace(/Definition.*/, 'Definition');
 		if (!option['container'] || player['videoContainers'].indexOf(option['container']) == -1) option['container'] = player['videoPlay'].replace(/.*\s/, '');
 		selectMyVideo();
@@ -544,9 +599,10 @@ function createMyOptions() {
 			'media': ['and play as/with', mediakeys, false, false],
 			'definition': ['Select the definition', player['videoDefinitions'], true, true],
 			'container': ['and the container', player['videoContainers'], false, true],
-			'autoplay': ['Autoplay', ['On', 'Off'], true, false, true],
-			'dash': ['DASH (Video With Audio) playback support', ['On', 'Off'], true, false],
-			'direct': ['DVL (Pass the page video link to the player)', ['On', 'Off'], true, true]
+			'openpagelink': ['Open Page Link', ['On', 'Off'], true, true],
+			'autoplay': ['Autoplay', ['On', 'Off'], true, false],
+			'subtitles': ['Subtitles', player['subtitlesLanguages'], true, false],
+			'playdash': ['Play DASH (Video With Audio)', ['On', 'Off'], true, false]
 		};
 
 		/* Options */
@@ -562,18 +618,19 @@ function createMyOptions() {
 			styleMyElement(optionBox, {display: 'inline-block'});
 			optionLabel = createMyElement('div', {textContent: options[o][0]});
 			styleMyElement(optionLabel, {display: 'inline-block', color: '#CCCCCC', marginRight: '10px', verticalAlign: 'middle'});
-			optionMenu = createMyElement('select', {id: o}, 'change', function() {
+			optionMenu = createMyElement('select', {id: 'viewtube-option-' + o}, 'change', function() {
+				var id = this.id.replace('viewtube-option-', '');
 				if (this.value == 'On' || this.value == 'Off') {
-					option[this.id] = (this.value == 'On') ? true : false;
+					option[id] = (this.value == 'On') ? true : false;
 				}
 				else {
-					option[this.id] = this.value;
+					option[id] = this.value;
 				}
-				setMyOptions(this.id, option[this.id]);
-				if (options[this.id][3]) {
-					if (player['isGetting']) {
-						cleanMyElement(player['buttonGetLink'], false);
-						player['isGetting'] = false;
+				setMyOptions(id, option[id]);
+				if (options[id][3]) {
+					if (player['isSaving']) {
+						cleanMyElement(player['buttonSaveLink'], false);
+						player['isSaving'] = false;
 					}
 					selectMyVideo();
 				}
@@ -636,44 +693,49 @@ function getMyOptions() {
 	}
 	if (!option['embed'] || embedtypes.indexOf(option['embed']) == -1) option['embed'] = embedtypes[0];
 	if (!option['media'] || mediakeys.indexOf(option['media']) == -1) option['media'] = mediakeys[0];
-	var boolOptions = ['autoplay', 'dash', 'direct', 'widesize', 'fullsize'];
+	if (!option['subtitles']) option['subtitles'] = 'None';
+	var boolOptions = ['openpagelink', 'autoplay', 'playdash', 'widesize', 'fullsize'];
 	for (var i = 0; i < boolOptions.length; i++) {
 		option[boolOptions[i]] = (option[boolOptions[i]] === true || option[boolOptions[i]] == 'true') ? true : false;
 	}
 }
 
 function selectMyVideo() {
-	var vdoCont = (option['container'] != 'Any') ? [option['container']] : player['videoContainers'];
-	var vdoDef = player['videoDefinitions'];
-	var vdoList = {};
-	for (var vC = 0; vC < vdoCont.length; vC++) {
-		if (vdoCont[vC] != 'Any') {
-			for (var vD = 0; vD < vdoDef.length; vD++) {
-				var format = vdoDef[vD] + ' ' + vdoCont[vC];
-				if (!vdoList[vdoDef[vD]]) {
-					for (var vL in player['videoList']) {
-						if (vL == format) {
-							vdoList[vdoDef[vD]] = vL;
-							break;
+	if (option['openpagelink']) {
+		player['videoPlay'] = 'Page Link';
+	}
+	else {
+		var vdoCont = (option['container'] != 'Any') ? [option['container']] : player['videoContainers'];
+		var vdoDef = player['videoDefinitions'];
+		var vdoList = {};
+		for (var vC = 0; vC < vdoCont.length; vC++) {
+			if (vdoCont[vC] != 'Any') {
+				for (var vD = 0; vD < vdoDef.length; vD++) {
+					var format = vdoDef[vD] + ' ' + vdoCont[vC];
+					if (!vdoList[vdoDef[vD]]) {
+						for (var vL in player['videoList']) {
+							if (vL == format) {
+								vdoList[vdoDef[vD]] = vL;
+								break;
+							}
 						}
 					}
 				}
 			}
 		}
-	}
-	var vdoDef2 = [];
-	var keepDef = false;
-	for (var vD = 0; vD < vdoDef.length; vD++) {
-		if (vdoDef[vD] == option['definition'] && keepDef == false) keepDef = true;
-		if (keepDef == true) vdoDef2.push(vdoDef[vD])
-	}
-	for (var vD = 0; vD < vdoDef2.length; vD++) {
-		if (vdoList[vdoDef2[vD]]) {
-			player['videoPlay'] = vdoList[vdoDef2[vD]];
-			break;
+		var vdoDef2 = [];
+		var keepDef = false;
+		for (var vD = 0; vD < vdoDef.length; vD++) {
+			if (vdoDef[vD] == option['definition'] && keepDef == false) keepDef = true;
+			if (keepDef == true) vdoDef2.push(vdoDef[vD])
+		}
+		for (var vD = 0; vD < vdoDef2.length; vD++) {
+			if (vdoList[vdoDef2[vD]]) {
+				player['videoPlay'] = vdoList[vdoDef2[vD]];
+				break;
+			}
 		}
 	}
-	if (option['direct']) player['videoPlay'] = 'Direct Video Link';
 	player['videoMenu'].value = player['videoPlay'];
 }
 
@@ -728,7 +790,7 @@ function playDASHwithHTML5() {
 	var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
 											|| player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
 	player['contentVideo'] = createMyElement('video', {id: 'vtVideo', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentVideo, controls: 'controls', autoplay: 'autoplay', innerHTML: embedcontent['Video']});
-	player['contentAudio'] = createMyElement('video', {id: 'vtVideo', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentAudio, autoplay: 'autoplay'});
+	player['contentAudio'] = createMyElement('audio', {id: 'vtAudio', type: mediatypes[player['videoPlay'].replace(/.*\s/, '')], src: contentAudio, autoplay: 'autoplay'});
 	player['contentAudio'].pause();
 	player['contentVideo'].addEventListener('play', function() {
 		player['contentAudio'].play();
@@ -755,15 +817,18 @@ function playDASHwithHTML5() {
 function playMyVideo(play) {
 	if (play) {
 		if (option['embed'] == 'Protocol') {
-			if (player['videoList'][player['videoPlay']] != 'DASH') {
-				page.win.location.href = 'viewtube:' + player['videoList'][player['videoPlay']];
-			}
-			else {
-				var contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
-				var contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
+			var contentVideo = player['videoList'][player['videoPlay']];
+			var contentAudio = '';
+			var contentTrack = '';
+			if (player['videoList'][player['videoPlay']] == 'DASH') {
+				contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
+				contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
 														|| player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
-				page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio;
 			}
+			if (option['subtitles'] != 'None') {
+				contentTrack = player['subtitlesList'][option['subtitles']];
+			}
+			page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio + 'SEPARATOR' + contentTrack;
 			return;
 		}
 		player['isPlaying'] = true;
@@ -805,6 +870,10 @@ function playMyVideo(play) {
 		player['contentVideo'].height = player['contentHeight'];
 		styleMyElement(player['contentVideo'], {position: 'relative', width: player['contentWidth'] + 'px', height: player['contentHeight'] + 'px'});
 		appendMyElement(player['playerContent'], player['contentVideo']);
+		if (option['subtitles'] != 'None') {
+			player['contentTrack'] = createMyElement('track', {id: 'vtTrack', default: 'default', src: player['subtitlesList'][option['subtitles']]});
+			appendMyElement(player['contentVideo'], player['contentTrack']);
+		}
 	}
 	else {
 		player['isPlaying'] = false;
@@ -815,21 +884,21 @@ function playMyVideo(play) {
 	}
 }
 
-function getMyVideo() {
+function saveMyVideo() {
 	var vdoURL = player['videoList'][player['videoPlay']];
 	if (vdoURL == 'DASH') return;
 	if (vdoURL == page.url) return;
 	var vdoDef = ' (' + player['videoPlay'].split(' ').slice(0, -1).join('').match(/[A-Z]/g).join('') + ')';
 	var vdoExt = '.' + player['videoPlay'].split(' ').slice(-1).join('').toLowerCase();
-	var vdoTle = (player['videoTitle']) ? player['videoTitle'] : '';
-	if (option['autoget'] && vdoTle && player['videoPlay'] == 'High Definition MP4') {
+	var vdoTle = (player['videoTitle']) ? player['videoTitle'] : page.url.replace(/https?:\/\//, '').replace(/[^0-9a-zA-Z]/g, '-');;
+	if (page.site == 'youtube' && player['videoPlay'] == 'High Definition MP4') {
 		page.win.location.href = vdoURL + '&title=' + vdoTle + vdoDef;
 	}
-	if (!player['isGetting']) {
+	if (!player['isSaving']) {
 		var vdoLnk = createMyElement('a', {href: vdoURL, target: '_blank', textContent: '[Link]'});
 		styleMyElement(vdoLnk, {color: '#CCCCCC', textDecoration: 'underline'});
-		appendMyElement(player['buttonGetLink'], vdoLnk);
-		player['isGetting'] = true;
+		appendMyElement(player['buttonSaveLink'], vdoLnk);
+		player['isSaving'] = true;
 	}
 }
 
@@ -930,7 +999,7 @@ function ViewTube() {
 
 	// =====YouTube===== //
 
-	if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'kevlar_(flexy)', false) || getMyContent(page.url, 'watch-(flexy)', false))) {
+	if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'skeleton\\s+(flexy)', false))) {
 
 		/* Video Availability */
 		if (getMyContent(page.url, '"playabilityStatus":\\{"status":"(ERROR|UNPLAYABLE)"', false)) return;
@@ -967,7 +1036,7 @@ function ViewTube() {
 		/* Player/Sidebar */
 		var ytPlayerWindow, ytSidebarWindow;
 
-		/* Player Sizes */
+		/* Player Size */
 		var ytPlayerWidth, ytPlayerHeight;
 		var ytPlayerWideWidth, ytPlayerWideHeight;
 		var ytSidebarMarginWide;
@@ -984,7 +1053,7 @@ function ViewTube() {
 			}
 		}
 
-		/* Player Sizes Update */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			ytSizes();
 			player['playerWidth'] = ytPlayerWidth;
@@ -1089,6 +1158,7 @@ function ViewTube() {
 				'videoPlay': ytDefaultVideo,
 				'videoThumb': ytVideoThumb,
 				'videoTitle': ytVideoTitle,
+				'subtitlesList': ytSubtitlesList,
 				'playerWidth': ytPlayerWidth,
 				'playerHeight': ytPlayerHeight,
 				'playerWideWidth': ytPlayerWideWidth,
@@ -1195,24 +1265,15 @@ function ViewTube() {
 
 			if (ytVideoFound) {
 				/* DASH */
-				feature['dash'] = true;
-				if (option['dash']) {
-					if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
-						for (var myVideoCode in ytVideoList) {
-							if (myVideoCode.indexOf('Video') != -1) {
-								if (!ytVideoList[myVideoCode.replace(' Video', '')]) {
-									ytVideoList[myVideoCode.replace(' Video', '')] = 'DASH';
-								}
+				if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
+					for (var myVideoCode in ytVideoList) {
+						if (myVideoCode.indexOf('Video') != -1) {
+							if (!ytVideoList[myVideoCode.replace(' Video', '')]) {
+								ytVideoList[myVideoCode.replace(' Video', '')] = 'DASH';
 							}
 						}
 					}
 				}
-
-				/* DVL */
-				feature['direct'] = true;
-				ytVideoList['Direct Video Link'] = page.url;
-
-				option['autoget'] = true;
 				ytVideosReady = true;
 				if (ytPlayerWindow) ytPlayer();
 			}
@@ -1231,7 +1292,7 @@ function ViewTube() {
 				'95': 'High Definition M3U8',
 				'96': 'Full High Definition M3U8'
 			};
-			ytVideoList["Any Definition M3U8"] = ytHLSVideos;
+			ytVideoList["Multi Definition M3U8"] = ytHLSVideos;
 			if (ytHLSContent) {
 				var ytHLSVideo, ytVideoCodeParse, ytVideoCode, myVideoCode;
 				var ytHLSMatcher = new RegExp('(http.*?m3u8)', 'g');
@@ -1250,13 +1311,7 @@ function ViewTube() {
 					}
 				}
 			}
-
-			/* DVL */
-			feature['direct'] = true;
-			ytVideoList['Direct Video Link'] = page.url;
-
-			ytVideoTitle = null;
-			ytDefaultVideo = 'Any Definition M3U8';
+			ytDefaultVideo = 'Multi Definition M3U8';
 			ytVideosReady = true;
 			if (ytPlayerWindow) ytPlayer();
 		}
@@ -1276,6 +1331,32 @@ function ViewTube() {
 			var ytVideoAuthor = getMyContent(page.url, '"author":"((\\\\"|[^"])*?)"', false);
 			if (ytVideoAuthor) ytVideoTitle = ytVideoTitle + ' by ' + ytVideoAuthor;
 			ytVideoTitle = cleanMyContent(ytVideoTitle, false, true);
+		}
+
+		/* Get Video Subtitles */
+		var ytSubtitlesList = {};
+		var ytSubtitlesContent = getMyContent(page.url, '"captionTracks\\\\?":\\[(.*?)\\]', false);
+		if (ytSubtitlesContent) {
+			var ytSubtitlesLink = ytSubtitlesContent.match(/\{\\?"baseUrl\\?":\\?"([^"]*?lang=en[^\\?"]*)\\?"/);
+			ytSubtitlesLink = (ytSubtitlesLink) ? ytSubtitlesLink[1] : null;
+			if (ytSubtitlesLink) {
+				var ytSubtitlesLinkBase = cleanMyContent(ytSubtitlesLink, false, false);
+				var ytSubtitlesLinkLang = ytSubtitlesLinkBase.replace(/lang=.*?(&|$)/, '').replace(/&$/, '');
+				var ytSubtitlesLanguagePattern = /"languageCode\\?":\\?"(.*?)\\?"/g;
+				var ytSubtitlesLanguageMatches = [];
+				var ytSubtitlesLanguage;
+				while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {
+					ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
+					if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
+				}
+				var ytSubtitlesTranslationLanguages = getMyContent(page.url, '"translationLanguages\\\\?":\\[(.*?)\\]', false);
+				if (ytSubtitlesTranslationLanguages) {
+					while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesTranslationLanguages)) !== null) {
+						ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
+						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
+					}
+				}
+			}
 		}
 
 		/* Get Videos Content */
@@ -1701,6 +1782,7 @@ function ViewTube() {
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center'});
+		styleMyElement(ytPlayerWindow, {paddingBottom: '0px'});
 		cleanMyElement(ytPlayerWindow, true);
 		appendMyElement(ytPlayerWindow, myPlayerWindow);
 		blockObject = ytPlayerWindow;
@@ -1835,24 +1917,15 @@ function ViewTube() {
 
 			if (ytVideoFound) {
 				/* DASH */
-				feature['dash'] = true;
-				if (option['dash']) {
-					if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
-						for (var myVideoCode in ytVideoList) {
-							if (myVideoCode.indexOf('Video') != -1) {
-								if (!ytVideoList[myVideoCode.replace(' Video', '')]) {
-									ytVideoList[myVideoCode.replace(' Video', '')] = 'DASH';
-								}
+				if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
+					for (var myVideoCode in ytVideoList) {
+						if (myVideoCode.indexOf('Video') != -1) {
+							if (!ytVideoList[myVideoCode.replace(' Video', '')]) {
+								ytVideoList[myVideoCode.replace(' Video', '')] = 'DASH';
 							}
 						}
 					}
 				}
-
-				/* DVL */
-				feature['direct'] = true;
-				ytVideoList['Direct Video Link'] = page.url;
-
-				option['autoget'] = true;
 				ytPlayer();
 			}
 			else {
@@ -1870,7 +1943,7 @@ function ViewTube() {
 				'95': 'High Definition M3U8',
 				'96': 'Full High Definition M3U8'
 			};
-			ytVideoList["Any Definition M3U8"] = ytHLSVideos;
+			ytVideoList["Multi Definition M3U8"] = ytHLSVideos;
 			if (ytHLSContent) {
 				var ytHLSVideo, ytVideoCodeParse, ytVideoCode, myVideoCode;
 				var ytHLSMatcher = new RegExp('(http.*?m3u8)', 'g');
@@ -1889,13 +1962,7 @@ function ViewTube() {
 					}
 				}
 			}
-
-			/* DVL */
-			feature['direct'] = true;
-			ytVideoList['Direct Video Link'] = page.url;
-
-			ytVideoTitle = null;
-			ytDefaultVideo = 'Any Definition M3U8';
+			ytDefaultVideo = 'Multi Definition M3U8';
 			ytPlayer();
 		}
 
@@ -1939,14 +2006,14 @@ function ViewTube() {
 		if (getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"error":\\{"title":"(.*?)"', false)) return;
 		if (getMyContent(page.url.replace(/\/video\//, "/embed/video/"), '"error_title":"(.*?)"', false)) return;
 
-		/* Player Sizes */
+		/* Player Size */
 		var dmPlayerWidth, dmPlayerHeight;
 		function dmSizes() {
 			if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth;
 			if (dmPlayerWidth) dmPlayerHeight = Math.ceil(dmPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
-		/* Resize Event */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			page.win.setTimeout(function() {
 				dmSizes();
@@ -1990,7 +2057,7 @@ function ViewTube() {
 			/* Hide Player Placeholder */
 			var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
 			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none',});
-		}, 500);
+		}, 1000);
 		intervals.push(dmWaitForObject);
 
 		/* Create Player */
@@ -2002,15 +2069,13 @@ function ViewTube() {
 				'playerWindow': myPlayerWindow,
 				'videoList': dmVideoList,
 				'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
-				'videoContainers': ['MP4', 'M3U8'],
+				'videoContainers': ['MP4', 'M3U8', 'Any'],
 				'videoPlay': dmDefaultVideo,
 				'videoThumb': dmVideoThumb,
 				'videoTitle': dmVideoTitle,
 				'playerWidth': dmPlayerWidth,
 				'playerHeight': dmPlayerHeight
 			};
-			feature['container'] = false;
-			feature['widesize'] = false;
 			createMyPlayer();
 		}
 
@@ -2039,25 +2104,44 @@ function ViewTube() {
 			for (var dmVideoCode in dmVideoFormats) {
 				dmVideoParser = '"' + dmVideoCode + '".*?"type":"video.*?mp4","url":"(.*?)"';
 				dmVideoParse = dmVideosContent.match(dmVideoParser);
-				if (!dmVideoParse) {
-					dmVideoParser = '"' + dmVideoCode + '".*?"type":"application.*?mpegURL","url":"(.*?)"';
-					dmVideoParse = dmVideosContent.match(dmVideoParser);
-				}
 				dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
 				if (dmVideo) {
 					if (!dmVideoFound) dmVideoFound = true;
 					dmVideo = cleanMyContent(dmVideo, true);
 					myVideoCode = dmVideoFormats[dmVideoCode];
-					if (dmVideo.indexOf('.m3u8') != -1) myVideoCode = myVideoCode.replace('MP4', 'M3U8');
 					if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
+				}
+			}
+			if (!dmVideoFound) {
+				dmVideoParser = '"' + dmVideoCode + '".*?"type":"application.*?mpegURL","url":"(.*?)"';
+				dmVideoParse = dmVideosContent.match(dmVideoParser);
+				if (dmVideoParse) {
+					dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
+					if (!dmVideoFound) dmVideoFound = true;
+					dmVideo = cleanMyContent(dmVideo, true);
+					dmVideoList["Multi Definition M3U8"] = dmVideo;
+					var dmManifestSource = getMyContent(dmVideo, 'TEXT', false);
+					if (dmManifestSource) {
+						dmManifestSource = cleanMyContent(dmManifestSource, false);
+						for (var dmVideoCode in dmVideoFormats) {
+							dmVideoParser = 'RESOLUTION=\\d*x\\d*?,NAME="' + dmVideoCode + '",PROGRESSIVE-URI="(.*?)"([^"]*)(#|$)';
+							dmVideoParse = dmManifestSource.match(dmVideoParser);
+							dmVideo = (dmVideoParse) ? dmVideoParse[1] : null;
+							if (dmVideo) {
+								myVideoCode = dmVideoFormats[dmVideoCode];
+								if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
+							}
+							dmVideo = (dmVideoParse) ? dmVideoParse[2] : null;
+							if (dmVideo) {
+								myVideoCode = dmVideoFormats[dmVideoCode].replace('MP4', 'M3U8');
+								if (!dmVideoList[myVideoCode]) dmVideoList[myVideoCode] = dmVideo;
+							}
+						}
+					}
 				}
 			}
 
 			if (dmVideoFound) {
-				/* DVL */
-				feature['direct'] = true;
-				dmVideoList['Direct Video Link'] = page.url;
-
 				dmVideosReady = true;
 				//if (dmPlayerWindow) dmPlayer();
 			}
@@ -2177,10 +2261,6 @@ function ViewTube() {
 					}
 				}
 
-				/* DVL */
-				feature['direct'] = true;
-				viVideoList['Direct Video Link'] = page.url;
-
 				/* Create Player */
 				var viDefaultVideo = 'Low Definition MP4';
 				player = {
@@ -2195,8 +2275,6 @@ function ViewTube() {
 					'playerWidth': 920,
 					'playerHeight': 548
 				};
-				feature['container'] = false;
-				feature['widesize'] = false;
 				createMyPlayer();
 			}
 			else {
@@ -2245,15 +2323,15 @@ function ViewTube() {
 		}
 		mcGetSizes();
 
+		/* Player Resize */
+		page.win.addEventListener('resize', mcUpdateSizes, false);
+
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: mcPlayerWidth + 'px', height: mcPlayerHeight + 'px', textAlign: 'center'});
 		cleanMyElement(mcPlayerWindow, true);
 		appendMyElement(mcPlayerWindow, myPlayerWindow);
 		blockObject = mcPlayerWindow;
-
-		/* Resize Event */
-		page.win.addEventListener('resize', mcUpdateSizes, false);
 
 		/* Hide Ads */
 		var mcTopAd = getMyElement('', 'div', 'class', 'mc-action', 0, false);
@@ -2298,8 +2376,6 @@ function ViewTube() {
 					'playerWidth': mcPlayerWidth,
 					'playerHeight': mcPlayerHeight
 				};
-				feature['container'] = false;
-				feature['widesize'] = false;
 				createMyPlayer();
 			}
 			else {
@@ -2391,8 +2467,6 @@ function ViewTube() {
 						'playerWidth': 640,
 						'playerHeight': 390
 					};
-					feature['container'] = false;
-					feature['widesize'] = false;
 					createMyPlayer();
 				}
 				else {
@@ -2421,6 +2495,7 @@ function ViewTube() {
 
 		/* Get Player Window */
 		var vkPlayerWindow = getMyElement('', 'div', 'class', 'video-column', 0, false);
+		if (!vkPlayerWindow) vkPlayerWindow = page.body;
 		if (!vkPlayerWindow) {
 			showMyMessage('!player');
 			return;
@@ -2476,7 +2551,12 @@ function ViewTube() {
 		/* Player Size */
 		var vkPlayerWidth, vkPlayerHeight;
 		function vkGetSizes() {
-			vkPlayerWidth = vkPlayerWindow.clientWidth - 17;
+			if (vkPlayerWindow == page.body) {
+				vkPlayerWidth = vkPlayerWindow.clientWidth;
+			}
+			else {
+				vkPlayerWidth = vkPlayerWindow.clientWidth - 17;
+			}
 			vkPlayerHeight = Math.ceil(vkPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 		function vkUpdateSizes() {
@@ -2487,16 +2567,16 @@ function ViewTube() {
 		}
 		vkGetSizes();
 
+		/* Player Resize */
+		page.win.addEventListener('resize', vkUpdateSizes, false);
+
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', textAlign: 'center'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: vkPlayerWidth + 'px', height: vkPlayerHeight + 'px', textAlign: 'center', margin: '0px auto'});
 		cleanMyElement(vkPlayerWindow, true);
 		styleMyElement(vkPlayerWindow, {marginBottom: '10px'});
 		appendMyElement(vkPlayerWindow, myPlayerWindow);
 		blockObject = vkPlayerWindow;
-
-		/* Resize Event */
-		page.win.addEventListener('resize', vkUpdateSizes, false);
 
 		/* Get Videos */
 		if (vkVideosContent) {
@@ -2522,11 +2602,11 @@ function ViewTube() {
 			// DASH/HLS
 			vkVideosContent = getMyContent(page.url.replace('/videos/', '/player5_fragment/'), 'TEXT', false);
 			if (vkVideosContent) {
-				vkVideoEncDASH = vkVideosContent.match(/dash\+xml".*?stream=(.*?)"/);
-				vkVideoEncDASH = (vkVideoEncDASH) ? vkVideoEncDASH[1] : null;
 				vkVideoEncHLS = vkVideosContent.match(/x-mpegURL".*?stream=(.*?)"/);
 				vkVideoEncHLS = (vkVideoEncHLS) ? vkVideoEncHLS[1] : null;
-				if (vkVideoEncDASH || vkVideoEncHLS) {
+				vkVideoEncDASH = vkVideosContent.match(/dash\+xml".*?stream=(.*?)"/);
+				vkVideoEncDASH = (vkVideoEncDASH) ? vkVideoEncDASH[1] : null;
+				if (vkVideoEncHLS || vkVideoEncDASH) {
 					vkVideoEncKey = vkVideosContent.match(/chabi:\s*'(.*?)'/);
 					vkVideoEncKey = (vkVideoEncKey) ? vkVideoEncKey[1] : null;
 					vkVideoEncIV = vkVideosContent.match(/ecta:\s*'(.*?)'/);
@@ -2538,16 +2618,16 @@ function ViewTube() {
 						See https://github.com/ricmoo/aes-js/ for more information
 						*/
 						var AESFuncBody;
-						var AESKey = 'aesjs';
+						var AESFuncKey = 'aesjs';
 						try {
-							if (localStorage.getItem(AESKey)) {
-								AESFuncBody = localStorage.getItem(AESKey);
+							if (localStorage.getItem(AESFuncKey)) {
+								AESFuncBody = localStorage.getItem(AESFuncKey);
 							}
 							else throw false;
 						}
 						catch(e) {
 							AESFuncBody = getMyContent('https://raw.githack.com/ricmoo/aes-js/master/index.js', 'TEXT', false);
-							localStorage.setItem(AESKey, AESFuncBody);
+							localStorage.setItem(AESFuncKey, AESFuncBody);
 						}
 						var AESFunc = new Function('a', AESFuncBody);
 						var AES = new AESFunc();
@@ -2555,48 +2635,50 @@ function ViewTube() {
 						var AESIV = AES.aesjs.utils.utf8.toBytes(vkVideoEncIV);
 						var encryptedBytes, decryptedBytes;
 						// HLS
-						encryptedBytes = AES.aesjs.utils.hex.toBytes(vkVideoEncHLS);
-						AESCBC = new AES.aesjs.ModeOfOperation.cbc(AESKey, AESIV);
-						decryptedBytes = AESCBC.decrypt(encryptedBytes);
-						var vkHLSManifest = AES.aesjs.utils.utf8.fromBytes(decryptedBytes);
-						if (vkHLSManifest) {
-							if (!vkVideoFound) vkVideoFound = true;
-							vkVideoList['Any Definition M3U8'] = vkHLSManifest;
+						if (vkVideoEncHLS) {
+							encryptedBytes = AES.aesjs.utils.hex.toBytes(vkVideoEncHLS);
+							AESCBC = new AES.aesjs.ModeOfOperation.cbc(AESKey, AESIV);
+							decryptedBytes = AESCBC.decrypt(encryptedBytes);
+							var vkHLSManifest = AES.aesjs.utils.utf8.fromBytes(decryptedBytes);
+							if (vkHLSManifest) {
+								if (!vkVideoFound) vkVideoFound = true;
+								vkVideoList['Multi Definition M3U8'] = vkHLSManifest;
+							}
 						}
 						// DASH
-						encryptedBytes = AES.aesjs.utils.hex.toBytes(vkVideoEncDASH);
-						AESCBC = new AES.aesjs.ModeOfOperation.cbc(AESKey, AESIV);
-						decryptedBytes = AESCBC.decrypt(encryptedBytes);
-						var vkDASHManifest = AES.aesjs.utils.utf8.fromBytes(decryptedBytes);
-						if (vkDASHManifest) {
-							var vkDASHDomain = vkDASHManifest.split('/').splice(0, 5).join('/');
-							var vkDASHContent = getMyContent(vkDASHManifest, 'TEXT', false);
-							if (vkDASHContent) {
-								var vkDASHVideo;
-								var vkDASHVideos = vkDASHContent.match(new RegExp('<BaseURL>.*?</BaseURL>', 'g'));
-								if (vkDASHVideos) {
-									for (var i = 0; i < vkDASHVideos.length; i++) {
-										vkDASHVideo = vkDASHVideos[i].replace('<BaseURL>', '').replace('</BaseURL>', '');
-										if (vkDASHVideo.indexOf('http') != 0) vkDASHVideo = vkDASHDomain + '/' + vkDASHVideo;
-										for (var vkVideoCode in vkVideoFormats) {
-											if (vkDASHVideo.indexOf(vkVideoCode) != -1) {
-												myVideoCode = vkVideoFormats[vkVideoCode];
-												if (vkDASHVideo.indexOf('track1') != -1) {
-													if (!vkVideoFound) vkVideoFound = true;
-													if (!vkVideoList[myVideoCode]) {
-														vkVideoList[myVideoCode.replace('MP4', 'Video MP4')] = vkDASHVideo;
+						if (vkVideoEncDASH) {
+							encryptedBytes = AES.aesjs.utils.hex.toBytes(vkVideoEncDASH);
+							AESCBC = new AES.aesjs.ModeOfOperation.cbc(AESKey, AESIV);
+							decryptedBytes = AESCBC.decrypt(encryptedBytes);
+							var vkDASHManifest = AES.aesjs.utils.utf8.fromBytes(decryptedBytes);
+							if (vkDASHManifest) {
+								var vkDASHDomain = vkDASHManifest.split('/').splice(0, 5).join('/');
+								var vkDASHContent = getMyContent(vkDASHManifest, 'TEXT', false);
+								if (vkDASHContent) {
+									var vkDASHVideo;
+									var vkDASHVideos = vkDASHContent.match(new RegExp('<BaseURL>.*?</BaseURL>', 'g'));
+									if (vkDASHVideos) {
+										for (var i = 0; i < vkDASHVideos.length; i++) {
+											vkDASHVideo = vkDASHVideos[i].replace('<BaseURL>', '').replace('</BaseURL>', '');
+											if (vkDASHVideo.indexOf('http') != 0) vkDASHVideo = vkDASHDomain + '/' + vkDASHVideo;
+											for (var vkVideoCode in vkVideoFormats) {
+												if (vkDASHVideo.indexOf(vkVideoCode) != -1) {
+													myVideoCode = vkVideoFormats[vkVideoCode];
+													if (vkDASHVideo.indexOf('track1') != -1) {
+														if (!vkVideoFound) vkVideoFound = true;
+														if (!vkVideoList[myVideoCode]) {
+															vkVideoList[myVideoCode.replace('MP4', 'Video MP4')] = vkDASHVideo;
+														}
 													}
-												}
-												if (vkDASHVideo.indexOf('track2') != -1) {
-													if (!vkVideoList[myVideoCode]) {
-														vkVideoList[myVideoCode.replace('MP4', 'Audio MP4')] = vkDASHVideo;
+													if (vkDASHVideo.indexOf('track2') != -1) {
+														if (!vkVideoList[myVideoCode]) {
+															vkVideoList[myVideoCode.replace('MP4', 'Audio MP4')] = vkDASHVideo;
+														}
 													}
 												}
 											}
 										}
 									}
-								}
-								if (option['dash']) {
 									for (var vkVideoCode in vkVideoFormats) {
 										myVideoCode = vkVideoFormats[vkVideoCode];
 										if (!vkVideoList[myVideoCode]) {
@@ -2609,6 +2691,17 @@ function ViewTube() {
 							}
 						}
 					}
+				}
+			}
+			// Subtitles
+			var vkSubtitlesList = {};
+			var vkSubtitlesContent = vkVideosContent.match(/parsedSubtitles\s*=\s*\[(.*?)\]/);
+			vkSubtitlesContent = (vkSubtitlesContent) ? vkSubtitlesContent[1] : null;
+			if (vkSubtitlesContent) {
+				var vkSubtitlesLanguagePattern = /"srclang":"(.*?)".*?"src":"(.*?)"/g;
+				var vkSubtitlesLanguageMatches = [];
+				while ((vkSubtitlesLanguageMatches = vkSubtitlesLanguagePattern.exec(vkSubtitlesContent)) !== null) {
+					vkSubtitlesList[vkSubtitlesLanguageMatches[1]] = vkSubtitlesLanguageMatches[2];
 				}
 			}
 
@@ -2624,11 +2717,10 @@ function ViewTube() {
 					'videoPlay': vkDefaultVideo,
 					'videoThumb': vkVideoThumb,
 					'videoTitle' : vkVideoTitle,
+					'subtitlesList': vkSubtitlesList,
 					'playerWidth': vkPlayerWidth,
 					'playerHeight': vkPlayerHeight
 				};
-				feature['widesize'] = false;
-				feature['dash'] = true;
 				createMyPlayer();
 				vkUpdateSizes();
 			}
@@ -2661,14 +2753,14 @@ function ViewTube() {
 			return;
 		}
 
-		/* Player Sizes */
+		/* Player Size */
 		var imdbPlayerWidth, imdbPlayerHeight;
 		function imdbSizes() {
 			if (imdbPlayerWindow) imdbPlayerWidth = imdbPlayerWindow.clientWidth;
 			if (imdbPlayerWidth) imdbPlayerHeight = Math.ceil(imdbPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
-		/* Resize Event */
+		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			imdbSizes();
 			player['playerWidth'] = imdbPlayerWidth;
@@ -2720,8 +2812,6 @@ function ViewTube() {
 			'playerWidth': imdbPlayerWidth,
 			'playerHeight': imdbPlayerHeight
 			};
-			feature['container'] = false;
-			feature['widesize'] = false;
 			createMyPlayer();
 		}
 
@@ -2742,7 +2832,7 @@ function ViewTube() {
 		var imdbVideoList = {};
 		if (imdbVideosContent) {
 			var imdbVideoFormats = {'1080p': 'Full High Definition MP4', '720p': 'High Definition MP4', '480p': 'Standard Definition MP4',
-															'360p': 'Low Definition MP4', 'SD': 'Low Definition MP4', '240p': 'Very Low Definition MP4', 'AUTO': 'Any Definition M3U8'};
+															'360p': 'Low Definition MP4', 'SD': 'Low Definition MP4', '240p': 'Very Low Definition MP4', 'AUTO': 'Multi Definition M3U8'};
 			var imdbVideoFound = false;
 			var imdbVideoParser, imdbVideoParse, myVideoCode, imdbVideo;
 			for (var imdbVideoCode in imdbVideoFormats) {
@@ -2758,8 +2848,22 @@ function ViewTube() {
 			}
 
 			if (imdbVideoFound) {
-				imdbVideosReady = true;
-				if (imdbPlayerWindow) imdbPlayer();
+				//imdbVideosReady = true;
+				//if (imdbPlayerWindow) imdbPlayer();
+				var imdbDefaultVideo = 'Low Definition MP4';
+			player = {
+			'playerSocket': imdbPlayerWindow,
+			'playerWindow': myPlayerWindow,
+			'videoList': imdbVideoList,
+			'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
+			'videoContainers': ['MP4', 'M3U8', 'Any'],
+			'videoPlay': imdbDefaultVideo,
+			'videoThumb': imdbVideoThumb,
+			'videoTitle' : imdbVideoTitle,
+			'playerWidth': imdbPlayerWidth,
+			'playerHeight': imdbPlayerHeight
+			};
+			createMyPlayer();
 			}
 			else {
 				showMyMessage('!videos');
