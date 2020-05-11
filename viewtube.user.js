@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.04.12
+// @version         2020.05.10
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1367,12 +1367,12 @@ function ViewTube() {
 			if (ytVideosEncodedFmtsNew) {
 				ytVideosEncodedFmts = '';
 				ytVideosEncodedFmtsNew = cleanMyContent(ytVideosEncodedFmtsNew, false);
-				ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+				ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 				if (ytVideosEncodedFmtsNew) {
 					for (var i = 0 ; i < ytVideosEncodedFmtsNew.length; i++) {
-						ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+						ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 					}
-					if (ytVideosEncodedFmts.indexOf('%3A%2F%2F') != -1) {
+					if (ytVideosEncodedFmts.indexOf('itag%3D') != -1) {
 						ytVideosEncodedFmts = cleanMyContent(ytVideosEncodedFmts, true);
 					}
 				}
@@ -1384,12 +1384,12 @@ function ViewTube() {
 			if (ytVideosAdaptiveFmtsNew) {
 				ytVideosAdaptiveFmts = '';
 				ytVideosAdaptiveFmtsNew = cleanMyContent(ytVideosAdaptiveFmtsNew, false);
-				ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+				ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 				if (ytVideosAdaptiveFmtsNew) {
 					for (var i = 0 ; i < ytVideosAdaptiveFmtsNew.length; i++) {
-						ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+						ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 					}
-					if (ytVideosAdaptiveFmts.indexOf('%3A%2F%2F') != -1) {
+					if (ytVideosAdaptiveFmts.indexOf('itag%3D') != -1) {
 						ytVideosAdaptiveFmts = cleanMyContent(ytVideosAdaptiveFmts, true);
 					}
 				}
@@ -1447,12 +1447,12 @@ function ViewTube() {
 						if (ytVideosEncodedFmtsNew) {
 							ytVideosEncodedFmts = '';
 							ytVideosEncodedFmtsNew = cleanMyContent(ytVideosEncodedFmtsNew, true);
-							ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+							ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 							if (ytVideosEncodedFmtsNew) {
 								for (var i = 0 ; i < ytVideosEncodedFmtsNew.length; i++) {
-									ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+									ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 								}
-								if (ytVideosEncodedFmts.indexOf('%3A%2F%2F') != -1) {
+								if (ytVideosEncodedFmts.indexOf('itag%3D') != -1) {
 									ytVideosEncodedFmts = cleanMyContent(ytVideosEncodedFmts, true);
 								}
 								ytVideosContent = ytVideosEncodedFmts;
@@ -1469,12 +1469,12 @@ function ViewTube() {
 							if (ytVideosAdaptiveFmtsNew) {
 								ytVideosAdaptiveFmts = '';
 								ytVideosAdaptiveFmtsNew = cleanMyContent(ytVideosAdaptiveFmtsNew, true);
-								ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+								ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 								if (ytVideosAdaptiveFmtsNew) {
 									for (var i = 0 ; i < ytVideosAdaptiveFmtsNew.length; i++) {
-										ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+										ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 									}
-									if (ytVideosAdaptiveFmts.indexOf('%3A%2F%2F') != -1) {
+									if (ytVideosAdaptiveFmts.indexOf('itag%3D') != -1) {
 										ytVideosAdaptiveFmts = cleanMyContent(ytVideosAdaptiveFmts, true);
 									}
 								}
@@ -2778,7 +2778,12 @@ function ViewTube() {
 		var imdbWaitForObject = page.win.setInterval(function() {
 			if (!imdbPlayerWindow) {
 				imdbPlayerWindow = getMyElement('', 'div', 'class', 'video-player__video', 0, false);
-				imdbPlayerWindow = (imdbPlayerWindow.parentNode) ? imdbPlayerWindow.parentNode : null;
+				if (imdbPlayerWindow) {
+					imdbPlayerWindow = (imdbPlayerWindow.parentNode) ? imdbPlayerWindow.parentNode : null;
+				}
+				else {
+					imdbPlayerWindow = getMyElement('', 'div', 'class', 'webPlayerSDKContainer', 0, false);
+				}
 				if (imdbPlayerWindow) {
 					cleanMyElement(imdbPlayerWindow, true);
 					appendMyElement(imdbPlayerWindow, myPlayerWindow);
@@ -2787,6 +2792,11 @@ function ViewTube() {
 					styleMyElement(imdbPlayerWindow, {width: imdbPlayerWidth + 'px', height: imdbPlayerHeight + 'px'});
 					styleMyElement(myPlayerWindow, {width: imdbPlayerWidth + 'px', height: imdbPlayerHeight + 'px', textAlign: 'center'});
 					if (imdbVideosReady) imdbPlayer();
+					// Hide Arrows
+					var imdbArrowLeft = getMyElement('', 'div', 'class', 'ipc-shoveler__arrow--left', 0, false);
+					if (imdbArrowLeft) styleMyElement(imdbArrowLeft, {display: 'none'});
+					var imdbArrowRight = getMyElement('', 'div', 'class', 'ipc-shoveler__arrow--right', 0, false);
+					if (imdbArrowRight) styleMyElement(imdbArrowRight, {display: 'none'});
 				}
 			}
 			ytWaitForLoops--;
@@ -2823,7 +2833,9 @@ function ViewTube() {
 		if (imdbVideoTitle) imdbVideoTitle = cleanMyContent(imdbVideoTitle, false, true);
 
 		/* Get Data Key */
-		var imdbDataKey = getMyContent(page.url, '"playbackDataKey":\\["(.*?)"\\]');
+		var imdbVideoId = page.url.replace(/^.*?\/(vi\d+).*/, '$1');
+		var imdbDataJSON = '{"type": "VIDEO_PLAYER", "subType": "FORCE_LEGACY", "id": "' + imdbVideoId + '"}';
+		var imdbDataKey = btoa(imdbDataJSON);
 
 		/* Get Videos Content */
 		var imdbVideosContent = getMyContent(page.url.replace(/video\/.*/, 've/data/VIDEO_PLAYBACK_DATA?key=' + imdbDataKey), '"videoLegacyEncodings":\\[(.*?)\\]', false);
@@ -2848,22 +2860,8 @@ function ViewTube() {
 			}
 
 			if (imdbVideoFound) {
-				//imdbVideosReady = true;
-				//if (imdbPlayerWindow) imdbPlayer();
-				var imdbDefaultVideo = 'Low Definition MP4';
-			player = {
-			'playerSocket': imdbPlayerWindow,
-			'playerWindow': myPlayerWindow,
-			'videoList': imdbVideoList,
-			'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
-			'videoContainers': ['MP4', 'M3U8', 'Any'],
-			'videoPlay': imdbDefaultVideo,
-			'videoThumb': imdbVideoThumb,
-			'videoTitle' : imdbVideoTitle,
-			'playerWidth': imdbPlayerWidth,
-			'playerHeight': imdbPlayerHeight
-			};
-			createMyPlayer();
+				imdbVideosReady = true;
+				if (imdbPlayerWindow) imdbPlayer();
 			}
 			else {
 				showMyMessage('!videos');

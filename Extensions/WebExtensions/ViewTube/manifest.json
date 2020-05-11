@@ -2,7 +2,7 @@
 
 	"manifest_version": 2,
 	"name": "ViewTube",
-	"version": "2020.4.12",
+	"version": "2020.5.10",
 
 	"description": "Watch videos from video sharing websites with extra options.",
 
@@ -22,8 +22,6 @@
 				"http://www.youtube.com/*",
 				"https://youtube.com/*",
 				"https://www.youtube.com/*",
-				"http://gaming.youtube.com/*",
-				"https://gaming.youtube.com/*",
 				"http://m.youtube.com/*",
 				"https://m.youtube.com/*",
 				"http://dailymotion.com/*",
