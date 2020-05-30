@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.05.10
+// @version         2020.05.30
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1634,12 +1634,12 @@ function ViewTube() {
 			if (ytVideosEncodedFmtsNew) {
 				ytVideosEncodedFmts = '';
 				ytVideosEncodedFmtsNew = cleanMyContent(ytVideosEncodedFmtsNew, false);
-				ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+				ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 				if (ytVideosEncodedFmtsNew) {
 					for (var i = 0 ; i < ytVideosEncodedFmtsNew.length; i++) {
-						ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+						ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 					}
-					if (ytVideosEncodedFmts.indexOf('%3A%2F%2F') != -1) {
+					if (ytVideosEncodedFmts.indexOf('itag%3D') != -1) {
 						ytVideosEncodedFmts = cleanMyContent(ytVideosEncodedFmts, true);
 					}
 				}
@@ -1651,12 +1651,12 @@ function ViewTube() {
 			if (ytVideosAdaptiveFmtsNew) {
 				ytVideosAdaptiveFmts = '';
 				ytVideosAdaptiveFmtsNew = cleanMyContent(ytVideosAdaptiveFmtsNew, false);
-				ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+				ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 				if (ytVideosAdaptiveFmtsNew) {
 					for (var i = 0 ; i < ytVideosAdaptiveFmtsNew.length; i++) {
-						ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+						ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 					}
-					if (ytVideosAdaptiveFmts.indexOf('%3A%2F%2F') != -1) {
+					if (ytVideosAdaptiveFmts.indexOf('itag%3D') != -1) {
 						ytVideosAdaptiveFmts = cleanMyContent(ytVideosAdaptiveFmts, true);
 					}
 				}
@@ -1714,12 +1714,12 @@ function ViewTube() {
 						if (ytVideosEncodedFmtsNew) {
 							ytVideosEncodedFmts = '';
 							ytVideosEncodedFmtsNew = cleanMyContent(ytVideosEncodedFmtsNew, true);
-							ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+							ytVideosEncodedFmtsNew = ytVideosEncodedFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 							if (ytVideosEncodedFmtsNew) {
 								for (var i = 0 ; i < ytVideosEncodedFmtsNew.length; i++) {
-									ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+									ytVideosEncodedFmts += ytVideosEncodedFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 								}
-								if (ytVideosEncodedFmts.indexOf('%3A%2F%2F') != -1) {
+								if (ytVideosEncodedFmts.indexOf('itag%3D') != -1) {
 									ytVideosEncodedFmts = cleanMyContent(ytVideosEncodedFmts, true);
 								}
 								ytVideosContent = ytVideosEncodedFmts;
@@ -1736,12 +1736,12 @@ function ViewTube() {
 							if (ytVideosAdaptiveFmtsNew) {
 								ytVideosAdaptiveFmts = '';
 								ytVideosAdaptiveFmtsNew = cleanMyContent(ytVideosAdaptiveFmtsNew, true);
-								ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher)":\s*".*?"', 'g'));
+								ytVideosAdaptiveFmtsNew = ytVideosAdaptiveFmtsNew.match(new RegExp('"(url|cipher|signatureCipher)":\s*".*?"', 'g'));
 								if (ytVideosAdaptiveFmtsNew) {
 									for (var i = 0 ; i < ytVideosAdaptiveFmtsNew.length; i++) {
-										ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '') + ',';
+										ytVideosAdaptiveFmts += ytVideosAdaptiveFmtsNew[i].replace(/"/g, '').replace('url:', 'url=').replace('cipher:', '').replace('signatureCipher:', '') + ',';
 									}
-									if (ytVideosAdaptiveFmts.indexOf('%3A%2F%2F') != -1) {
+									if (ytVideosAdaptiveFmts.indexOf('itag%3D') != -1) {
 										ytVideosAdaptiveFmts = cleanMyContent(ytVideosAdaptiveFmts, true);
 									}
 								}
