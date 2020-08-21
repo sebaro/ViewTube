@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2020.08.20
+- YouTube: drops support for old layout
+- YouTube: fixes mobile version
+
 #2020.05.30
 - fixes YouTube
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2020.03.01
+// @version         2020.08.10
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -29,6 +29,10 @@
 // @include         http://www.archive.org/*
 // @include         https://archive.org/*
 // @include         https://www.archive.org/*
+// @include         http://streamable.com/*
+// @include         http://www.streamable.com/*
+// @include         https://streamable.com/*
+// @include         https://www.streamable.com/*
 // @noframes
 // @grant           none
 // @run-at          document-end
@@ -1237,7 +1241,14 @@ function ViewTube() {
 			}
 		}
 		else {
-			showMyMessage('!content');
+			var ytVideoId = getMyContent(page.url, 'youtube.com/embed/(.*?)("|\\?)', false);
+			if (ytVideoId) {
+				var ytVideoLink = 'http://youtube.com/watch?v=' + ytVideoId;
+				showMyMessage('embed', ytVideoLink);
+			}
+			else {
+				showMyMessage('!content');
+			}
 		}
 
 	}
@@ -1675,7 +1686,7 @@ function ViewTube() {
 		var arcVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 
 		/* Get Videos Content */
-		var arcVideosContent = getMyContent(page.url, '"sources":\\s*\\s*\\[(.*?)\\]', false);
+		var arcVideosContent = getMyContent(page.url, '"sources":\\s*\\[(.*?)\\]', false);
 
 		if (arcVideosContent) {
 			var arcVideoList = {};
@@ -1705,6 +1716,94 @@ function ViewTube() {
 					'videoThumb': arcVideoThumb,
 					'playerWidth': arcPlayerWidth,
 					'playerHeight': arcPlayerHeight
+				};
+				createMyPlayer();
+			}
+			else {
+				showMyMessage('!videos');
+			}
+		}
+		else {
+			showMyMessage('!content');
+		}
+
+	}
+
+	// =====Streamable===== //
+
+	else if (page.url.indexOf('streamable.com/') != -1) {
+
+		/* Page Type */
+		var strPageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
+		if (!strPageType || (strPageType != 'video.episode' && strPageType != 'video.other' && strPageType != 'video.movie')) return;
+
+		/* Get Player Window */
+		var strPlayerWindow = getMyElement('', 'div', 'id', 'media-container', -1, false);
+		if (!strPlayerWindow) {
+			showMyMessage('!player');
+			return;
+		}
+
+		/* Player Sizes */
+		var strPlayerWidth, strPlayerHeight;
+		function strSizes() {
+			if (strPlayerWindow) strPlayerWidth = strPlayerWindow.clientWidth;
+			if (strPlayerWidth) strPlayerHeight = Math.ceil(strPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
+		}
+
+		/* Resize Event */
+		page.win.addEventListener('resize', function() {
+			strSizes();
+			if (player) {
+				player['playerWidth'] = strPlayerWidth;
+				player['playerHeight'] = strPlayerHeight;
+				resizeMyPlayer('widesize');
+			}
+		}, false);
+		strSizes();
+
+		/* My Player Window */
+		myPlayerWindow = createMyElement('div', '', '', '', '');
+		styleMyElement(myPlayerWindow, {position: 'relative', width: strPlayerWidth + 'px', height: strPlayerHeight + 'px', textAlign: 'center'});
+		styleMyElement(strPlayerWindow, {padding: '0px'});
+		cleanMyElement(strPlayerWindow, true);
+		appendMyElement(strPlayerWindow, myPlayerWindow);
+
+
+		/* Get Video Thumb */
+		var strVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+
+		/* Get Videos Content */
+		var strVideosContent = getMyContent(page.url, '"files":\\s*\\{(.*?)\\};', false);
+
+		if (strVideosContent) {
+			var strVideoList = {};
+			var strVideoFound = false;
+			var strVideoFormats = {'360': 'Low Definition MP4', '720': 'High Definition MP4', '1080': 'Full High Definition MP4'};
+			var strVideo, strPattern;
+			for (var vCode in strVideoFormats) {
+				strPattern = '"height":\\s*' + vCode + '.*?"url":\\s*"(.*?)"';
+				strVideo = strVideosContent.match(strPattern);
+				strVideo = (strVideo) ? strVideo[1] : null;
+				if (strVideo) {
+					if (!strVideoFound) strVideoFound = true;
+					strVideoList[strVideoFormats[vCode]] = cleanMyContent(strVideo, false);
+				}
+			}
+
+			if (strVideoFound) {
+				/* Create Player */
+				var strDefaultVideo = 'Low Definition MP4';
+				player = {
+					'playerSocket': strPlayerWindow,
+					'playerWindow': myPlayerWindow,
+					'videoList': strVideoList,
+					'videoDefinitions': ['Full High Definition', 'High Definition', 'Low Definition'],
+					'videoContainers': ['MP4'],
+					'videoPlay': strDefaultVideo,
+					'videoThumb': strVideoThumb,
+					'playerWidth': strPlayerWidth,
+					'playerHeight': strPlayerHeight
 				};
 				createMyPlayer();
 			}

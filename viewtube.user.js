@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.05.30
+// @version         2020.08.20
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -999,7 +999,7 @@ function ViewTube() {
 
 	// =====YouTube===== //
 
-	if (page.url.indexOf('youtube.com/watch') != -1 && (getMyContent(page.url, 'skeleton\\s+(flexy)', false))) {
+	if (page.url.indexOf('youtube.com/watch') != -1 && page.url.indexOf('m.youtube.com') == -1) {
 
 		/* Video Availability */
 		if (getMyContent(page.url, '"playabilityStatus":\\{"status":"(ERROR|UNPLAYABLE)"', false)) return;
@@ -1040,7 +1040,6 @@ function ViewTube() {
 		var ytPlayerWidth, ytPlayerHeight;
 		var ytPlayerWideWidth, ytPlayerWideHeight;
 		var ytSidebarMarginWide;
-		var ytScreenWidth, ytScreenHeight;
 		function ytSizes() {
 			if (ytPlayerWindow) {
 				if (ytPlayerWindow.clientWidth) ytPlayerWidth = ytPlayerWindow.clientWidth;
@@ -1056,12 +1055,14 @@ function ViewTube() {
 		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			ytSizes();
-			player['playerWidth'] = ytPlayerWidth;
-			player['playerHeight'] = ytPlayerHeight;
-			player['playerWideWidth'] = ytPlayerWideWidth;
-			player['playerWideHeight'] = ytPlayerWideHeight;
-			player['sidebarMarginWide'] = ytSidebarMarginWide;
-			resizeMyPlayer('widesize');
+			if (player['playerSocket']) {
+				player['playerWidth'] = ytPlayerWidth;
+				player['playerHeight'] = ytPlayerHeight;
+				player['playerWideWidth'] = ytPlayerWideWidth;
+				player['playerWideHeight'] = ytPlayerWideHeight;
+				player['sidebarMarginWide'] = ytSidebarMarginWide;
+				resizeMyPlayer('widesize');
+			}
 		}, false);
 
 		/* My Player */
@@ -1521,28 +1522,12 @@ function ViewTube() {
 
 	}
 
-	// =====YouTube Old===== //
+	// =====YouTube Mobile===== //
 
-	else if (page.url.indexOf('youtube.com/watch') != -1) {
-
-		/* Get Player Window */
-		var ytPlayerWindow = getMyElement('', 'div', 'id', 'player', -1, false);
-		if (!ytPlayerWindow) {
-			showMyMessage('!player');
-			return;
-		}
+	else if (page.url.indexOf('m.youtube.com/watch') != -1) {
 
 		/* Video Availability */
-		var ytVideoUnavailable = getMyElement('', 'div', 'id', 'player-unavailable', -1, false);
-		if (ytVideoUnavailable) {
-			if (ytVideoUnavailable.className.indexOf('hid') == -1) {
-				var ytAgeGateContent = getMyElement('', 'div', 'id', 'watch7-player-age-gate-content', -1, true);
-				if (!ytAgeGateContent) return;
-				else {
-					if(ytAgeGateContent.indexOf('feature=private_video') != -1) return;
-				}
-			}
-		}
+		if (getMyContent(page.url, '"playabilityStatus":\\{"status":"(ERROR|UNPLAYABLE)"', false)) return;
 
 		/* Decrypt Signature */
 		var ytScriptSrc;
@@ -1573,40 +1558,27 @@ function ViewTube() {
 			}
 		}
 
-		/* Player Size */
-		var ytSidebarMarginNormal = 390;
-		var ytSidebarWindow = getMyElement('', 'div', 'id', 'watch7-sidebar', -1, false);
-		if (ytSidebarWindow) {
-			var ytSidebarWindowStyle = ytSidebarWindow.currentStyle || window.getComputedStyle(ytSidebarWindow, null);
-			if (ytSidebarWindowStyle) ytSidebarMarginNormal = -20 + parseInt(ytSidebarWindowStyle.marginTop.replace('px', ''));
-			styleMyElement(ytSidebarWindow, {marginTop: ytSidebarMarginNormal + 'px'});
+		/* Get Player Window */
+		var ytPlayerWindow = getMyElement('', 'div', 'id', 'player', -1, false);
+		if (!ytPlayerWindow) {
+			showMyMessage('!player');
+			return;
 		}
+
+		/* Player Size */
 		var ytPlayerWidth, ytPlayerHeight;
 		var ytPlayerWideWidth, ytPlayerWideHeight;
-		var ytSidebarMarginWide;
-		var ytScreenWidth, ytScreenHeight;
 		function ytSizes() {
-			ytScreenWidth = page.win.innerWidth || page.doc.documentElement.clientWidth;
-			ytScreenHeight = page.win.innerHeight || page.doc.documentElement.clientHeight;
-			if (ytScreenWidth >= 1720 && ytScreenHeight >= 980) {
-				ytPlayerWidth = 1280;
-				ytPlayerHeight = 750;
-				ytPlayerWideWidth = 1706;
-				ytPlayerWideHeight = 990;
+			if (ytPlayerWindow) {
+				if (ytPlayerWindow.clientHeight) ytPlayerHeight = ytPlayerWindow.clientHeight;
+				else ytPlayerHeight = ytPlayerWindow.parentNode.clientHeight;
+				if (!ytPlayerHeight) {
+					var ytPlayerWindowSize = getMyElement('', 'div', 'class', 'player-size', 1, false);
+					if (ytPlayerWindowSize.clientHeight) ytPlayerHeight = ytPlayerWindowSize.clientHeight;
+					else ytPlayerHeight = ytPlayerWindowSize.parentNode.clientHeight;
+				}
+				ytPlayerWidth = Math.ceil(ytPlayerHeight * (16 / 9));
 			}
-			else if (ytScreenWidth >= 1294 && ytScreenHeight >= 630) {
-				ytPlayerWidth = 854;
-				ytPlayerHeight = 510;
-				ytPlayerWideWidth = 1280;
-				ytPlayerWideHeight = 750;
-			}
-			else {
-				ytPlayerWidth = 640;
-				ytPlayerHeight = 390;
-				ytPlayerWideWidth = 1066;
-				ytPlayerWideHeight = 630;
-			}
-			ytSidebarMarginWide = ytPlayerHeight + ytSidebarMarginNormal;
 		}
 
 		/* Get Video ID */
@@ -1759,44 +1731,36 @@ function ViewTube() {
 		/* Get Sizes */
 		ytSizes();
 
-		/* Hide Player Window */
-		var ytPlaceholderPlayer = getMyElement('', 'div', 'id', 'placeholder-player', -1, false);
-		if (ytPlaceholderPlayer) styleMyElement(ytPlaceholderPlayer, {display: 'none'});
-
-		/* Hide Sidebar Ads */
-		var ytSidebarAds = getMyElement('', 'div', 'id', 'watch7-sidebar-ads', -1, false);
-		if (ytSidebarAds) styleMyElement(ytSidebarAds, {display: 'none'});
-
-		/* Hide Autoplay */
-		var ytAutoplay = getMyElement('', 'div', 'class', 'checkbox-on-off', 0, false);
-		if (ytAutoplay) styleMyElement(ytAutoplay, {display: 'none'});
-
-		/* Playlist */
-		var ytPlaylist = getMyElement('', 'div', 'id', 'player-playlist', -1, false);
-		if (ytPlaylist) {
-			styleMyElement(ytPlaylist, {marginLeft: '-' + ytPlayerWidth + 'px'});
-			var ytPlaceholderPlaylist = getMyElement('', 'div', 'id', 'placeholder-playlist', -1, false);
-			if (ytPlaceholderPlaylist) appendMyElement(ytPlaceholderPlaylist, ytPlaylist);
-		}
-
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center'});
-		styleMyElement(ytPlayerWindow, {paddingBottom: '0px'});
+		styleMyElement(ytPlayerWindow, {paddingBottom: '0px', display: 'block'});
 		cleanMyElement(ytPlayerWindow, true);
 		appendMyElement(ytPlayerWindow, myPlayerWindow);
 		blockObject = ytPlayerWindow;
 
+		/* Fix Player Window */
+		page.win.setTimeout(function() {
+			if (myPlayerWindow != ytPlayerWindow.lastElementChild) {
+				cleanMyElement(ytPlayerWindow, true);
+				appendMyElement(ytPlayerWindow, myPlayerWindow);
+			}
+		}, 1000);
+
+		/* Live Videos */
+		var ytPlayerControlOverlay = getMyElement('', 'div', 'id', 'player-control-overlay', -1, false);
+		if (ytPlayerControlOverlay) {
+			styleMyElement(ytPlayerControlOverlay, {display: 'none'});
+		}
+
 		/* Update Sizes */
 		page.win.addEventListener('resize', function() {
 			ytSizes();
-			player['playerWidth'] = ytPlayerWidth;
-			player['playerHeight'] = ytPlayerHeight;
-			player['playerWideWidth'] = ytPlayerWideWidth;
-			player['playerWideHeight'] = ytPlayerWideHeight;
-			player['sidebarMarginWide'] = ytSidebarMarginWide;
-			resizeMyPlayer('widesize');
-			if (ytPlaylist) styleMyElement(ytPlaylist, {marginLeft: '-' + ytPlayerWidth + 'px'});
+			if (player['playerSocket']) {
+				player['playerWidth'] = ytPlayerWidth;
+				player['playerHeight'] = ytPlayerHeight;
+				resizeMyPlayer('widesize');
+			}
 		}, false);
 
 		/* Create Player */
@@ -1812,12 +1776,7 @@ function ViewTube() {
 				'videoThumb': ytVideoThumb,
 				'videoTitle': ytVideoTitle,
 				'playerWidth': ytPlayerWidth,
-				'playerHeight': ytPlayerHeight,
-				'playerWideWidth': ytPlayerWideWidth,
-				'playerWideHeight': ytPlayerWideHeight,
-				'sidebarWindow': ytSidebarWindow,
-				'sidebarMarginNormal': ytSidebarMarginNormal,
-				'sidebarMarginWide': ytSidebarMarginWide
+				'playerHeight': ytPlayerHeight
 			};
 			createMyPlayer();
 		}
@@ -2017,9 +1976,11 @@ function ViewTube() {
 		page.win.addEventListener('resize', function() {
 			page.win.setTimeout(function() {
 				dmSizes();
-				player['playerWidth'] = dmPlayerWidth;
-				player['playerHeight'] = dmPlayerHeight;
-				resizeMyPlayer('widesize');
+				if (player['playerSocket']) {
+					player['playerWidth'] = dmPlayerWidth;
+					player['playerHeight'] = dmPlayerHeight;
+					resizeMyPlayer('widesize');
+				}
 			}, 300);
 		}, false);
 
@@ -2317,9 +2278,11 @@ function ViewTube() {
 		}
 		function mcUpdateSizes() {
 			mcGetSizes();
-			player['playerWidth'] = mcPlayerWidth;
-			player['playerHeight'] = mcPlayerHeight;
-			resizeMyPlayer('widesize');
+			if (player['playerSocket']) {
+				player['playerWidth'] = mcPlayerWidth;
+				player['playerHeight'] = mcPlayerHeight;
+				resizeMyPlayer('widesize');
+			}
 		}
 		mcGetSizes();
 
@@ -2561,9 +2524,11 @@ function ViewTube() {
 		}
 		function vkUpdateSizes() {
 			vkGetSizes();
-			player['playerWidth'] = vkPlayerWidth;
-			player['playerHeight'] = vkPlayerHeight;
-			resizeMyPlayer('widesize');
+			if (player['playerSocket']) {
+				player['playerWidth'] = vkPlayerWidth;
+				player['playerHeight'] = vkPlayerHeight;
+				resizeMyPlayer('widesize');
+			}
 		}
 		vkGetSizes();
 
@@ -2763,9 +2728,11 @@ function ViewTube() {
 		/* Player Resize */
 		page.win.addEventListener('resize', function() {
 			imdbSizes();
-			player['playerWidth'] = imdbPlayerWidth;
-			player['playerHeight'] = imdbPlayerHeight;
-			resizeMyPlayer('widesize');
+			if (player['playerSocket']) {
+				player['playerWidth'] = imdbPlayerWidth;
+				player['playerHeight'] = imdbPlayerHeight;
+				resizeMyPlayer('widesize');
+			}
 		}, false);
 
 		/* My Player Window */
