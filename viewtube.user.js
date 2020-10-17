@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.08.20
+// @version         2020.10.15
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -2126,7 +2126,9 @@ function ViewTube() {
 
 		/* Get Player Window */
 		var viPlayerWindow;
-		if (viPageType == 'video') viPlayerWindow = getMyElement('', 'div', 'class', 'player_area', 0, false);
+		if (viPageType == 'video') {
+			viPlayerWindow = getMyElement('', 'div', 'class', 'player_area', 0, false) || getMyElement('', 'div', 'class', 'player_container', 0, false);
+		}
 		else {
 			viPlayerWindow = getMyElement('', 'div', 'class', 'player_container', 1, false) || getMyElement('', 'div', 'class', 'player_container', 0, false);
 		}
@@ -2489,26 +2491,25 @@ function ViewTube() {
 			try {
 				if (localStorage.getItem(SHA1Key)) {
 					SHA1FuncBody = localStorage.getItem(SHA1Key);
+					if (SHA1FuncBody.indexOf('SHA-1') == -1) throw false;
 				}
 				else throw false;
 			}
 			catch(e) {
-				SHA1FuncBody = getMyContent('https://raw.githack.com/Caligatio/jsSHA/master/src/sha1.js', 'TEXT', false);
+				SHA1FuncBody = getMyContent('https://raw.githack.com/Caligatio/jsSHA/master/dist/sha1.js', 'TEXT', false);
 				localStorage.setItem(SHA1Key, SHA1FuncBody);
 			}
 			var SHA1Func = new Function('a', SHA1FuncBody);
 			var SHA1 = new SHA1Func();
-			if (SHA1.jsSHA) {
-				var shaObj = new SHA1.jsSHA("SHA-1", "TEXT");
-				var vkTimestamp = parseInt(Date.now() / 1000);
-				var vkQuery = "/v5/videos/" + vkVideoID + "/streams.json?app=100005a&t=" + vkTimestamp + "&site=www.viki.com"
-				var vkToken = "MM_d*yP@`&1@]@!AVrXf_o-HVEnoTnm$O-ti4[G~$JDI/Dc-&piU&z&5.;:}95\=Iad";
-				shaObj.setHMACKey(vkToken, "TEXT");
-				shaObj.update(vkQuery);
-				var vkSig = shaObj.getHMAC("HEX");
-				var vkSource = "https://api.viki.io" + vkQuery + "&sig=" + vkSig;
-				vkVideosContent = getMyContent(vkSource, 'TEXT', false);
-			}
+			var shaObj = (SHA1.jsSHA) ? new SHA1.jsSHA("SHA-1", "TEXT") : new jsSHA("SHA-1", "TEXT");
+			var vkTimestamp = parseInt(Date.now() / 1000);
+			var vkQuery = "/v5/videos/" + vkVideoID + "/streams.json?app=100005a&t=" + vkTimestamp + "&site=www.viki.com"
+			var vkToken = "MM_d*yP@`&1@]@!AVrXf_o-HVEnoTnm$O-ti4[G~$JDI/Dc-&piU&z&5.;:}95\=Iad";
+			shaObj.setHMACKey(vkToken, "TEXT");
+			shaObj.update(vkQuery);
+			var vkSig = shaObj.getHMAC("HEX");
+			var vkSource = "https://api.viki.io" + vkQuery + "&sig=" + vkSig;
+			vkVideosContent = getMyContent(vkSource, 'TEXT', false);
 		}
 
 		/* Player Size */

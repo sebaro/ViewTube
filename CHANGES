@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2020.10.15
+- fixes Vimeo, VIKI
+
 #2020.08.20
 - YouTube: drops support for old layout
 - YouTube: fixes mobile version
