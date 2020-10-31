@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.10.15
+// @version         2020.10.31
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1494,8 +1494,8 @@ function ViewTube() {
 		var ytVideoList = {};
 		if (ytVideosContent) {
 			if (ytVideosContent.match(/^s=/) || ytVideosContent.match(/&s=/) || ytVideosContent.match(/,s=/) || ytVideosContent.match(/u0026s=/)) {
-				var ytScriptURL = getMyContent(page.url, '"js":\\s*"(.*?)"', true);
-				if (!ytScriptURL) ytScriptURL = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"js":\\s*"(.*?)"', true);
+				var ytScriptURL = getMyContent(page.url, '"js(?:Url)?":\\s*"(.*?)"', true);
+				if (!ytScriptURL) ytScriptURL = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"js(?:Url)?":\\s*"(.*?)"', true);
 				if (ytScriptURL) {
 					ytScriptURL = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptURL;
 					ytScriptSrc = getMyContent(ytScriptURL, 'TEXT', false);
@@ -1929,8 +1929,8 @@ function ViewTube() {
 		var ytVideoList = {};
 		if (ytVideosContent) {
 			if (ytVideosContent.match(/^s=/) || ytVideosContent.match(/&s=/) || ytVideosContent.match(/,s=/) || ytVideosContent.match(/u0026s=/)) {
-				var ytScriptURL = getMyContent(page.url, '"js":\\s*"(.*?)"', true);
-				if (!ytScriptURL) ytScriptURL = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"js":\\s*"(.*?)"', true);
+				var ytScriptURL = getMyContent(page.url, '"js(?:Url)?":\\s*"(.*?)"', true);
+				if (!ytScriptURL) ytScriptURL = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), '"js(?:Url)?":\\s*"(.*?)"', true);
 				if (ytScriptURL) {
 					ytScriptURL = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptURL;
 					ytScriptSrc = getMyContent(ytScriptURL, 'TEXT', false);
