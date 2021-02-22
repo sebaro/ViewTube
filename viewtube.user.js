@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2020.10.31
+// @version         2021.02.22
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -45,7 +45,7 @@
 
 /*
 
-	Copyright (C) 2010 - 2020 Sebastian Luncan
+	Copyright (C) 2010 - 2021 Sebastian Luncan
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -2122,11 +2122,11 @@ function ViewTube() {
 
 		/* Page Type */
 		var viPageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
-		if (!viPageType || (viPageType != 'video' && viPageType != 'profile')) return;
+		if (!viPageType || (viPageType.indexOf('video') == -1 && viPageType.indexOf('profile') == -1)) return;
 
 		/* Get Player Window */
 		var viPlayerWindow;
-		if (viPageType == 'video') {
+		if (viPageType.indexOf('video') != -1) {
 			viPlayerWindow = getMyElement('', 'div', 'class', 'player_area', 0, false) || getMyElement('', 'div', 'class', 'player_container', 0, false);
 		}
 		else {
@@ -2139,7 +2139,7 @@ function ViewTube() {
 
 		/* Get Video Thumbnail */
 		var viVideoThumb;
-		if (viPageType == 'video') {
+		if (viPageType.indexOf('video') != -1) {
 			viVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
 			if (!viVideoThumb) viVideoThumb = getMyContent(page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
 		}
@@ -2151,7 +2151,7 @@ function ViewTube() {
 
 		/* Get Video Title */
 		var viVideoTitle;
-		if (viPageType == 'video') {
+		if (viPageType.indexOf('video') != -1) {
 			viVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
 		}
 		else {
@@ -2180,11 +2180,11 @@ function ViewTube() {
 
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '920px', height: '548px', textAlign: 'center', margin: '0px auto'});
-		styleMyElement(viPlayerWindow, {minHeight: '548px', position: 'static'});
+		styleMyElement(myPlayerWindow, {position: 'relative', width: '906px', height: '540px', textAlign: 'center', margin: '0px auto'});
+		styleMyElement(viPlayerWindow, {minHeight: '540px', position: 'static'});
 		if (viPlayerWindow.parentNode) {
-			styleMyElement(viPlayerWindow.parentNode, {minHeight: '548px', position: 'relative'});
-			if (viPageType == 'profile') {
+			styleMyElement(viPlayerWindow.parentNode, {minHeight: '540px', position: 'relative'});
+			if (viPageType.indexOf('profile') != -1) {
 				styleMyElement(viPlayerWindow.parentNode, {marginLeft: '-50px'});
 			}
 		}
@@ -2235,8 +2235,8 @@ function ViewTube() {
 					'videoPlay': viDefaultVideo,
 					'videoThumb': viVideoThumb,
 					'videoTitle' : viVideoTitle,
-					'playerWidth': 920,
-					'playerHeight': 548
+					'playerWidth': 906,
+					'playerHeight': 540
 				};
 				createMyPlayer();
 			}
@@ -2630,13 +2630,13 @@ function ViewTube() {
 											for (var vkVideoCode in vkVideoFormats) {
 												if (vkDASHVideo.indexOf(vkVideoCode) != -1) {
 													myVideoCode = vkVideoFormats[vkVideoCode];
-													if (vkDASHVideo.indexOf('track1') != -1) {
+													if (vkDASHVideo.indexOf('track1') != -1 || vkDASHVideo.indexOf('video') != -1) {
 														if (!vkVideoFound) vkVideoFound = true;
 														if (!vkVideoList[myVideoCode]) {
 															vkVideoList[myVideoCode.replace('MP4', 'Video MP4')] = vkDASHVideo;
 														}
 													}
-													if (vkDASHVideo.indexOf('track2') != -1) {
+													if (vkDASHVideo.indexOf('track2') != -1 || vkDASHVideo.indexOf('audio') != -1) {
 														if (!vkVideoList[myVideoCode]) {
 															vkVideoList[myVideoCode.replace('MP4', 'Audio MP4')] = vkDASHVideo;
 														}
