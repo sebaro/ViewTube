@@ -2,7 +2,7 @@
 
 	"manifest_version": 2,
 	"name": "ViewTube",
-	"version": "2021.2.22",
+	"version": "2021.6.15",
 
 	"description": "Watch videos from video sharing websites with extra options.",
 
@@ -40,10 +40,6 @@
 				"http://www.veoh.com/*",
 				"https://veoh.com/*",
 				"https://www.veoh.com/*",
-				"http://viki.com/*",
-				"http://www.viki.com/*",
-				"https://viki.com/*",
-				"https://www.viki.com/*",
 				"http://imdb.com/*",
 				"http://www.imdb.com/*",
 				"https://imdb.com/*",
@@ -58,9 +54,7 @@
 		"http://manifest.googlevideo.com/*",
 		"https://manifest.googlevideo.com/*",
 		"http://player.vimeo.com/*",
-		"https://player.vimeo.com/*",
-		"http://api.viki.io/*",
-		"https://api.viki.io/*"
+		"https://player.vimeo.com/*"
 	]
 
 }

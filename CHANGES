@@ -3,6 +3,10 @@
 /* ViewTube Changelog */
 
 
+#2021.06.25
+- fixes YouTube age restricted videos
+- drops support for VIKI, DRM protected
+
 #2021.02.22
 - fixes Vimeo
 
