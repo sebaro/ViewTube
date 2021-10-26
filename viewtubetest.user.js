@@ -1238,12 +1238,10 @@ function ViewTube() {
 
 		/* Get Videos Content */
 		var ytVideosContent = {};
-		var ytVideoInfoKey, ytVideoInfoUrl;
-		var ytVideoInfoClientName = 'WEB'; /* WEB, ANDROID */
-		var ytVideoInfoClientVersion = {'WEB': '', 'ANDROID': '16.10'}
-		var ytVideoInfoClientScreen = 'EMBED';
-		var ytVideoInfoDataRequest = {'context':{'client':{}},'videoId':ytVideoId};
-		ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s+=\s+(\{.*?\});/);
+		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
+		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
+		var ytVideoInfoDataRequest = {'context':{'client':{'clientName':'ANDROID','clientVersion':'16.20'}},'videoId':ytVideoId};
+		ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
 		try {
 			ytVideosContent = JSON.parse(ytVideosContent);
 		}
@@ -1251,20 +1249,6 @@ function ViewTube() {
 			ytVideosContent = {};
 		}
 		ytVideosContent = (ytVideosContent['streamingData']) ? ytVideosContent['streamingData'] : {};
-		if (option['embed'] == 'Protocol' || (ytVideosContent['formats'] && ytVideosContent['formats'].length == 1)) {
-			ytVideoInfoKey = getMyContent(page.url, /"INNERTUBE_API_KEY":"(.*?)"/);
-			ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-			ytVideoInfoDataRequest['context']['client']['clientName'] = 'ANDROID';
-			ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion['ANDROID']
-			ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
-			try {
-				ytVideosContent = JSON.parse(ytVideosContent);
-			}
-			catch(e) {
-				ytVideosContent = {};
-			}
-			ytVideosContent = (ytVideosContent['streamingData']) ? ytVideosContent['streamingData'] : {};
-		}
 
 		/* Get Videos */
 		var ytVideoList = {};
@@ -1298,13 +1282,7 @@ function ViewTube() {
 		}
 		else {
 			if (!ytVideosContent['formats']) {
-			  if (!ytVideoInfoUrl) {
-					ytVideoInfoKey = getMyContent(page.url, /"INNERTUBE_API_KEY":"(.*?)"/);
-					ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-				}
-				ytVideoInfoDataRequest['context']['client']['clientName'] = 'WEB';
-				ytVideoInfoDataRequest['context']['client']['clientVersion'] = getMyContent(page.url, /"INNERTUBE_CLIENT_VERSION":"(.*?)"/);
-				ytVideoInfoDataRequest['context']['client']['clientScreen'] = ytVideoInfoClientScreen;
+				ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 				ytVideoInfoDataRequest['context']['thirdParty'] = {};
 				ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
 				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
@@ -1566,12 +1544,10 @@ function ViewTube() {
 
 		/* Get Videos Content */
 		var ytVideosContent = {};
-		var ytVideoInfoKey, ytVideoInfoUrl;
-		var ytVideoInfoClientName = 'WEB'; /* WEB, ANDROID */
-		var ytVideoInfoClientVersion = {'WEB': '', 'ANDROID': '16.10'}
-		var ytVideoInfoClientScreen = 'EMBED';
-		var ytVideoInfoDataRequest = {'context':{'client':{}},'videoId':ytVideoId};
-		ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s+=\s+(\{.*?\});/);
+		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
+		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
+		var ytVideoInfoDataRequest = {'context':{'client':{'clientName':'ANDROID','clientVersion':'16.20'}},'videoId':ytVideoId};
+		ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
 		try {
 			ytVideosContent = JSON.parse(ytVideosContent);
 		}
@@ -1579,20 +1555,6 @@ function ViewTube() {
 			ytVideosContent = {};
 		}
 		ytVideosContent = (ytVideosContent['streamingData']) ? ytVideosContent['streamingData'] : {};
-		if (option['embed'] == 'Protocol' || (ytVideosContent['formats'] && ytVideosContent['formats'].length == 1)) {
-			ytVideoInfoKey = getMyContent(page.url, /"INNERTUBE_API_KEY":"(.*?)"/);
-			ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-			ytVideoInfoDataRequest['context']['client']['clientName'] = 'ANDROID';
-			ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion['ANDROID']
-			ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
-			try {
-				ytVideosContent = JSON.parse(ytVideosContent);
-			}
-			catch(e) {
-				ytVideosContent = {};
-			}
-			ytVideosContent = (ytVideosContent['streamingData']) ? ytVideosContent['streamingData'] : {};
-		}
 
 		/* Get Videos */
 		var ytVideoList = {};
@@ -1626,13 +1588,7 @@ function ViewTube() {
 		}
 		else {
 			if (!ytVideosContent['formats']) {
-			  if (!ytVideoInfoUrl) {
-					ytVideoInfoKey = getMyContent(page.url, /"INNERTUBE_API_KEY":"(.*?)"/);
-					ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-				}
-				ytVideoInfoDataRequest['context']['client']['clientName'] = 'WEB';
-				ytVideoInfoDataRequest['context']['client']['clientVersion'] = getMyContent(page.url, /"INNERTUBE_CLIENT_VERSION":"(.*?)"/);
-				ytVideoInfoDataRequest['context']['client']['clientScreen'] = ytVideoInfoClientScreen;
+				ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 				ytVideoInfoDataRequest['context']['thirdParty'] = {};
 				ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
 				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
@@ -1921,7 +1877,7 @@ function ViewTube() {
 	else if (page.url.indexOf('vimeo.com/') != -1) {
 
 		/* Page Type */
-		var viPageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
+		var viPageType = getMyContent(page.url, /meta\s+property="og:type"\s+content="(.*?)"/);
 		if (!viPageType || (viPageType.indexOf('video') == -1 && viPageType.indexOf('profile') == -1)) return;
 
 		/* Get Player Window */
@@ -1940,42 +1896,42 @@ function ViewTube() {
 		/* Get Video Thumbnail */
 		var viVideoThumb;
 		if (viPageType.indexOf('video') != -1) {
-			viVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-			if (!viVideoThumb) viVideoThumb = getMyContent(page.url, 'meta\\s+name="twitter:image"\\s+content="(.*?)"', false);
+			viVideoThumb = getMyContent(page.url, /meta\s+property="og:image"\s+content="(.*?)"/);
+			if (!viVideoThumb) viVideoThumb = getMyContent(page.url, /meta\s+name="twitter:image"\s+content="(.*?)"/);
 		}
 		else {
-			viVideoThumb = getMyContent(page.url, '"src_4x":"(.*?)"', false);
-			if (!viVideoThumb) viVideoThumb = getMyContent(page.url, '"src_2x":"(.*?)"', false);
+			viVideoThumb = getMyContent(page.url, /"src_4x":"(.*?)"/);
+			if (!viVideoThumb) viVideoThumb = getMyContent(page.url, /"src_2x":"(.*?)"/);
 			if (viVideoThumb) viVideoThumb = cleanMyContent(viVideoThumb, false);
 		}
 
 		/* Get Video Title */
 		var viVideoTitle;
 		if (viPageType.indexOf('video') != -1) {
-			viVideoTitle = getMyContent(page.url, 'meta\\s+property="og:title"\\s+content="(.*?)"', false);
+			viVideoTitle = getMyContent(page.url, /meta\s+property="og:title"\s+content="(.*?)"/);
 		}
 		else {
-			viVideoTitle = getMyContent(page.url, '"title":"((\\\\"|[^"])*?)"', false);
+			viVideoTitle = getMyContent(page.url, /"title":"((\\"|[^"])*?)"/);
 		}
 		if (viVideoTitle) {
 			viVideoTitle = viVideoTitle.replace(/\s*on\s*Vimeo$/, '');
-			var viVideoAuthor = getMyContent(page.url, '"display_name":"((\\\\"|[^"])*?)"', false);
+			var viVideoAuthor = getMyContent(page.url, /"display_name":"((\\"|[^"])*?)"/);
 			if (viVideoAuthor) viVideoTitle = viVideoTitle + ' by ' + viVideoAuthor;
 			viVideoTitle = cleanMyContent(viVideoTitle, false, true);
 		}
 
 		/* Get Content Source */
-		var viVideoSource = getMyContent(page.url, 'config_url":"(.*?)"', false);
+		var viVideoSource = getMyContent(page.url, /config_url":"(.*?)"/);
 		if (viVideoSource) viVideoSource = cleanMyContent(viVideoSource, false);
 		else {
-			viVideoSource = getMyContent(page.url, 'data-config-url="(.*?)"', false);
+			viVideoSource = getMyContent(page.url, /data-config-url="(.*?)"'/);
 			if (viVideoSource) viVideoSource = viVideoSource.replace(/&amp;/g, '&');
 		}
 
 		/* Get Videos Content */
 		var viVideosContent;
 		if (viVideoSource) {
-			viVideosContent = getMyContent(viVideoSource, '"progressive":\\[(.*?)\\]', false);
+			viVideosContent = getMyContent(viVideoSource, /"progressive":\[(.*?)\]/);
 		}
 
 		/* My Player Window */
