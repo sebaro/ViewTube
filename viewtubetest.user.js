@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2999.99.99
+// @version         2021.11.04
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -2062,7 +2062,7 @@ function ViewTube() {
 						'playerSocket': vePlayerWindow,
 						'playerWindow': myPlayerWindow,
 						'videoList': veVideoList,
-						'videoDefinitions': ['Low Definition', 'Very Low Definition'],
+						'videoDefinitions': ['Standard Definition', 'Low Definition'],
 						'videoContainers': ['MP4'],
 						'videoPlay': veDefaultVideo,
 						'videoThumb': veVideoThumb,
