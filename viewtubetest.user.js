@@ -1215,7 +1215,7 @@ function ViewTube() {
 			if (ytSubtitlesLink) {
 				var ytSubtitlesLinkBase = cleanMyContent(ytSubtitlesLink, false, false);
 				var ytSubtitlesLinkLang = ytSubtitlesLinkBase.replace(/lang=.*?(&|$)/, '').replace(/&$/, '');
-				var ytSubtitlesLanguagePattern = /"languageCode\\?":\\?"(.*?)\\?"/g;
+				var ytSubtitlesLanguagePattern = /"languageCode":"(.*?)"/g;
 				var ytSubtitlesLanguageMatches = [];
 				var ytSubtitlesLanguage;
 				while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {

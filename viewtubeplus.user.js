@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2020.08.10
+// @version         2021.11.04
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -41,7 +41,7 @@
 
 /*
 
-  Copyright (C) 2010 - 2020 Sebastian Luncan
+  Copyright (C) 2010 - 2021 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1257,49 +1257,79 @@ function ViewTube() {
 
 	else if (page.url.indexOf('mediaset.it/') != -1) {
 
-		/* Get Player Window */
-		var msPlayerWindow = getMyElement('', 'div', 'class', '_3Xr09', 0, false);
-		if (!msPlayerWindow) {
-			showMyMessage ('!player');
-			return;
+		function msInit() {
+
+			/* My Player Window */
+			myPlayerWindow = createMyElement('div', '', '', '', '');
+			styleMyElement(myPlayerWindow, {position: 'relative', width: '760px', height: '480px', textAlign: 'center'});
+			styleMyElement(msPlayerWindow, {height: '590px'});
+			cleanMyElement(msPlayerWindow, true);
+			appendMyElement(msPlayerWindow, myPlayerWindow);
+
+			/* Get Video Thumb */
+			var msVideoThumb = getMyContent(page.url, '"thumbnailUrl"\\s*:\\s*"(.*?)"', false);
+
+			/* Get Videos */
+			var msVideoID, msVideoPID, msVideo;
+			msVideoID = getMyContent(page.url, '"@id"\\s*:\\s*".*programGuid=(.*?)"', false);
+			if (msVideoID) msVideoPID = getMyContent('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-ext-programs/guid/-/' + msVideoID, '"pid":"(.*?)"', false);
+			if (msVideoPID) msVideo = 'https://link.theplatform.eu/s/PR1GhC/media/' + msVideoPID + '?formats=mpeg4';
+			if (msVideo) {
+				/* Create Player */
+				var msVideoList = {};
+				var msDefaultVideo = 'Standard Definition MP4';
+				msVideoList[msDefaultVideo] = msVideo;
+				player = {
+					'playerSocket': msPlayerWindow,
+					'playerWindow': myPlayerWindow,
+					'videoList': msVideoList,
+					'videoDefinitions': ['Standard Definition'],
+					'videoContainers': ['MP4'],
+					'videoPlay': msDefaultVideo,
+					'videoThumb': msVideoThumb,
+					'playerWidth': 760,
+					'playerHeight': 480
+				};
+				createMyPlayer();
+			}
+			else {
+				showMyMessage('!videos');
+			}
+
 		}
 
-		/* My Player Window */
-		myPlayerWindow = createMyElement('div', '', '', '', '');
-		styleMyElement(myPlayerWindow, {position: 'relative', width: '760px', height: '480px', textAlign: 'center'});
-		styleMyElement(msPlayerWindow, {height: '590px'});
-		cleanMyElement(msPlayerWindow, true);
-		appendMyElement(msPlayerWindow, myPlayerWindow);
-
-		/* Get Video Thumb */
-		var msVideoThumb = getMyContent(page.url, '"thumbnailUrl"\\s*:\\s*"(.*?)"', false);
-
-		/* Get Videos */
-		var msVideoID, msVideoPID, msVideo;
-		msVideoID = getMyContent(page.url, '"@id"\\s*:\\s*".*?_(.*?)"', false);
-		if (msVideoID) msVideoPID = getMyContent('https://feed.entertainment.tv.theplatform.eu/f/PR1GhC/mediaset-prod-ext-programs/guid/-/' + msVideoID, '"pid":"(.*?)"', false);
-		if (msVideoPID) msVideo = 'https://link.theplatform.eu/s/PR1GhC/media/' + msVideoPID + '?formats=mpeg4';
-		if (msVideo) {
-			/* Create Player */
-			var msVideoList = {};
-			var msDefaultVideo = 'Standard Definition MP4';
-			msVideoList[msDefaultVideo] = msVideo;
-			player = {
-				'playerSocket': msPlayerWindow,
-				'playerWindow': myPlayerWindow,
-				'videoList': msVideoList,
-				'videoDefinitions': ['Standard Definition'],
-				'videoContainers': ['MP4'],
-				'videoPlay': msDefaultVideo,
-				'videoThumb': msVideoThumb,
-				'playerWidth': 760,
-				'playerHeight': 480
-			};
-			createMyPlayer();
-		}
-		else {
-			showMyMessage('!videos');
-		}
+		var msWaitForLoops = 50;
+		var msWaitForObjects = 3;
+		var msPlayerWindow, msPlayerError, msPlayerErrorPopup;
+		var msWaitForObject = page.win.setInterval(function() {
+			if (!msPlayerWindow) {
+				msPlayerWindow = getMyElement('', 'div', 'class', '_3Xr09', 0, false);
+				if (msPlayerWindow) {
+					msInit();
+					msWaitForObjects--;
+				}
+			}
+			if (!msPlayerError) {
+				msPlayerError = getMyElement('', 'div', 'class', 'Iv5CT', 0, false);
+				if (msPlayerError) {
+					removeMyElement(msPlayerError.parentNode, msPlayerError);
+					msWaitForObjects--;
+				}
+			}
+			if (!msPlayerErrorPopup) {
+				msPlayerErrorPopup = getMyElement('', 'div', 'class', '_3l53i', 0, false);
+				if (msPlayerErrorPopup) {
+					removeMyElement(msPlayerErrorPopup.parentNode, msPlayerErrorPopup);
+					msWaitForObjects--;
+				}
+			}
+			msWaitForLoops--;
+			if (msWaitForLoops == 0 || msWaitForObjects == 0) {
+				if (!msPlayerWindow) showMyMessage ('!player');
+				clearInterval(msWaitForObject);
+			}
+		}, 1000);
+		intervals.push(msWaitForObject);
 
 	}
 
@@ -1400,7 +1430,7 @@ function ViewTube() {
 			}
 
 			/* My Player Window */
-			styleMyElement(myPlayerWindow, {position: 'relative', width: '710px', height: '420px', textAlign: 'center', margin: '50px auto'});
+			styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '390px', textAlign: 'center', margin: '50px auto'});
 			cleanMyElement(ggPlayerWindow, true);
 			appendMyElement(ggPlayerWindow, myPlayerWindow);
 
@@ -1409,6 +1439,10 @@ function ViewTube() {
 
 			/* Get Videos Content */
 			var ggVideosContent = getMyContent(page.url, '"url_encoded_fmt_stream_map",\\s*"(.*?)"', false);
+			if (!ggVideosContent) {
+				ggVideosContent = getMyContent(page.url.replace('file/d/', 'get_video_info?docid=').replace(/\/[^\/]+$/, ''), 'url_encoded_fmt_stream_map=(.*?)&', false);
+				ggVideosContent = cleanMyContent(ggVideosContent, true);
+			}
 
 			/* Get Videos */
 			if (ggVideosContent) {
@@ -1466,8 +1500,8 @@ function ViewTube() {
 						'videoContainers': ['MP4'],
 						'videoPlay': ggDefaultVideo,
 						'videoThumb': ggVideoThumb,
-						'playerWidth': 710,
-						'playerHeight': 420
+						'playerWidth': 640,
+						'playerHeight': 390
 					};
 					createMyPlayer();
 				}

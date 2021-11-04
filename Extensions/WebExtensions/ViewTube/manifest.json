@@ -2,7 +2,7 @@
 
 	"manifest_version": 2,
 	"name": "ViewTube",
-	"version": "2021.6.15",
+	"version": "2021.11.4",
 
 	"description": "Watch videos from video sharing websites with extra options.",
 
@@ -32,10 +32,6 @@
 				"http://www.vimeo.com/*",
 				"https://vimeo.com/*",
 				"https://www.vimeo.com/*",
-				"http://metacafe.com/*",
-				"http://www.metacafe.com/*",
-				"https://metacafe.com/*",
-				"https://www.metacafe.com/*",
 				"http://veoh.com/*",
 				"http://www.veoh.com/*",
 				"https://veoh.com/*",
