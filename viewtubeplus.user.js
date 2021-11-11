@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2021.11.04
+// @version         2021.11.11
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1325,7 +1325,7 @@ function ViewTube() {
 			}
 			msWaitForLoops--;
 			if (msWaitForLoops == 0 || msWaitForObjects == 0) {
-				if (!msPlayerWindow) showMyMessage ('!player');
+				if (!msPlayerWindow) showMyMessage('!player');
 				clearInterval(msWaitForObject);
 			}
 		}, 1000);
@@ -1417,19 +1417,17 @@ function ViewTube() {
 
 	else if (page.url.indexOf('google.com/file/d') != -1) {
 
-		/* My Player Window */
-		myPlayerWindow = createMyElement('div', '', '', '', '');
-
-		page.win.setTimeout(function() {
+		function ggInit() {
 
 			/* Get Player Window */
 			var ggPlayerWindow = getMyElement('', 'div', 'class', 'ndfHFb-c4YZDc-aTv5jf', 0, false);
 			if (!ggPlayerWindow) {
-				showMyMessage ('!player');
+				showMyMessage('!player');
 				return;
 			}
 
 			/* My Player Window */
+			myPlayerWindow = createMyElement('div', '', '', '', '');
 			styleMyElement(myPlayerWindow, {position: 'relative', width: '640px', height: '390px', textAlign: 'center', margin: '50px auto'});
 			cleanMyElement(ggPlayerWindow, true);
 			appendMyElement(ggPlayerWindow, myPlayerWindow);
@@ -1513,7 +1511,24 @@ function ViewTube() {
 				showMyMessage('!content');
 			}
 
+		}
+
+		var ggWaitForLoops = 50;
+		var ggPlayerWindow;
+		var ggWaitForObject = page.win.setInterval(function() {
+			if (!ggPlayerWindow) {
+				ggPlayerWindow = getMyElement('', 'div', 'class', 'ndfHFb-c4YZDc-aTv5jf', 0, false);
+				if (ggPlayerWindow) {
+					ggInit();
+				}
+			}
+			ggWaitForLoops--;
+			if (ggWaitForLoops == 0) {
+				if (!ggPlayerWindow) showMyMessage('!player');
+				clearInterval(ggWaitForObject);
+			}
 		}, 1000);
+		intervals.push(ggWaitForObject);
 
 	}
 
