@@ -1446,7 +1446,7 @@ function ViewTube() {
 			if (ggVideosContent) {
 				var ggVideoList = {};
 				var ggVideoFound = false;
-				var ggVideoFormats = {'18': 'Low Definition MP4', '59': 'Standard Definition MP4', '22': 'High Definition MP4'};
+				var ggVideoFormats = {'18': 'Low Definition MP4', '59': 'Standard Definition MP4', '22': 'High Definition MP4', '37': 'Full High Definition MP4'};
 				var ggVideos = ggVideosContent.split(',');
 				var ggVideoParse, ggVideoCodeParse, ggVideoCode, myVideoCode, ggVideo;
 				for (var i = 0; i < ggVideos.length; i++) {
@@ -1494,7 +1494,7 @@ function ViewTube() {
 						'playerSocket': ggPlayerWindow,
 						'playerWindow': myPlayerWindow,
 						'videoList': ggVideoList,
-						'videoDefinitions': ['High Definition', 'Standard Definition', 'Low Definition'],
+						'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition'],
 						'videoContainers': ['MP4'],
 						'videoPlay': ggDefaultVideo,
 						'videoThumb': ggVideoThumb,
