@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2021.11.11
+// @version         2021.11.16
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1765,11 +1765,11 @@ function ViewTube() {
 	else if (page.url.indexOf('dailymotion.com/video') != -1) {
 
 		/* Video Source */
-		var dmEmbedUrl = page.url.replace(/\/video\//, "/embed/video/");
+		var dmMetadataUrl = page.url.replace(/\/video\//, "/player/metadata/video/");
 
 		/* Video Availability */
-		if (getMyContent(dmEmbedUrl, /"error":\{"title":"(.*?)"'/)) return;
-		if (getMyContent(dmEmbedUrl, /"error_title":"(.*?)"/)) return;
+		if (getMyContent(dmMetadataUrl, /"error":\{"title":"(.*?)"'/)) return;
+		if (getMyContent(dmMetadataUrl, /"error_title":"(.*?)"/)) return;
 
 		/* Player Size */
 		var dmPlayerWidth, dmPlayerHeight;
@@ -1815,12 +1815,10 @@ function ViewTube() {
 				clearInterval(dmWaitForObject);
 			}
 			/* Hide Ads */
-			var dmAdsTop = getMyElement('', 'div', 'query', '[class^="AdTop__adTop"]', -1, false);
-			if (dmAdsTop && dmAdsTop.parentNode) removeMyElement(dmAdsTop.parentNode, dmAdsTop);
-			var dmAdsRightBottom = getMyElement('', 'div', 'query', '[class^="AdWatchingRight__container"]', -1, false);
-			if (dmAdsRightBottom && dmAdsRightBottom.parentNode) removeMyElement(dmAdsRightBottom.parentNode, dmAdsRightBottom);
-			var dmAdsRight = getMyElement('', 'div', 'query', '[class^="DiscoveryVideoSection__adCell"]', -1, false);
-			if (dmAdsRight && dmAdsRight.parentNode && dmAdsRight.parentNode.parentNode) removeMyElement(dmAdsRight.parentNode.parentNode, dmAdsRight.parentNode);
+			var dmAdsRight = getMyElement('', 'div', 'query', '[class*="videoInfoAdContainer"]', -1, false);
+			if (dmAdsRight && dmAdsRight.parentNode) removeMyElement(dmAdsRight.parentNode, dmAdsRight);
+			var dmAdsBottom = getMyElement('', 'div', 'query', '[class*="DisplayAd__adContainer"]', -1, false);
+			if (dmAdsBottom && dmAdsBottom.parentNode) removeMyElement(dmAdsBottom.parentNode, dmAdsBottom);
 			/* Hide Player Placeholder */
 			var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
 			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none',});
@@ -1847,19 +1845,19 @@ function ViewTube() {
 		}
 
 		/* Get Video Thumbnail */
-		var dmVideoThumb = getMyContent(dmEmbedUrl, /"posters":.*?"720":"(.*?)"/);
+		var dmVideoThumb = getMyContent(dmMetadataUrl, /"posters":.*?"720":"(.*?)"/);
 		if (dmVideoThumb) dmVideoThumb = cleanMyContent(dmVideoThumb, false);
 
 		/* Get Video Title */
-		var dmVideoTitle = getMyContent(dmEmbedUrl, /"title":"((\\"|[^"])*?)"/);
+		var dmVideoTitle = getMyContent(dmMetadataUrl, /"title":"((\\"|[^"])*?)"/);
 		if (dmVideoTitle) {
-			var dmVideoAuthor = getMyContent(dmEmbedUrl, /"screenname":"((\\"|[^"])*?)"/);
+			var dmVideoAuthor = getMyContent(dmMetadataUrl, /"screenname":"((\\"|[^"])*?)"/);
 			if (dmVideoAuthor) dmVideoTitle = dmVideoTitle + ' by ' + dmVideoAuthor;
 			dmVideoTitle = cleanMyContent(dmVideoTitle, false, true);
 		}
 
 		/* Get Videos Content */
-		var dmVideosContent = getMyContent(dmEmbedUrl, /"qualities":\{(.*?)\]\},/);
+		var dmVideosContent = getMyContent(dmMetadataUrl, /"qualities":\{(.*?)\]\},/);
 
 		/* Get Videos */
 		var dmVideoList = {};
