@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2021.11.16
+// @version         2021.11.18
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1511,10 +1511,12 @@ function ViewTube() {
 		var ytVideoList = {};
 		var ytDefaultVideo = 'Low Definition MP4';
 		function ytCreatePlayer() {
-			/* Get Video Thumbnail */
+			/* Get Thumbnail */
 			var ytVideoThumb = (ytVideoId) ? 'https://img.youtube.com/vi/' + ytVideoId + '/maxresdefault.jpg' : null;
-			/* Get Video Title */
-			var ytVideoTitle = getMyContent(page.url, /meta\s+property="og:title"\s+content="(.*?)"/);
+			/* Get Title */
+			var ytVideoTitle = getMyContent(page.url, /"videoDetails".*?"title":"(.*?)"/);
+			if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, /"title":\{"runs":\[\{"text":"(.*?)"/);
+			if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, /meta\s+property="og:title"\s+content="(.*?)"/);
 			if (!ytVideoTitle) ytVideoTitle = getMyContent(page.url, /meta\s+itemprop="name"\s+content="(.*?)"/);
 			if (ytVideoTitle) {
 				var ytVideoAuthor = getMyContent(page.url, /"name":\s*"(.*?)"/);
@@ -1768,7 +1770,7 @@ function ViewTube() {
 		var dmMetadataUrl = page.url.replace(/\/video\//, "/player/metadata/video/");
 
 		/* Video Availability */
-		if (getMyContent(dmMetadataUrl, /"error":\{"title":"(.*?)"'/)) return;
+		if (getMyContent(dmMetadataUrl, /"error":\{"title":"(.*?)"/)) return;
 		if (getMyContent(dmMetadataUrl, /"error_title":"(.*?)"/)) return;
 
 		/* Player Size */
@@ -1821,7 +1823,10 @@ function ViewTube() {
 			if (dmAdsBottom && dmAdsBottom.parentNode) removeMyElement(dmAdsBottom.parentNode, dmAdsBottom);
 			/* Hide Player Placeholder */
 			var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
-			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none',});
+			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none'});
+			/* Continuous Player */
+			var dmContinuousPlace = getMyElement('', 'div', 'id', 'continuous-player', -1, false);
+			if (dmContinuousPlace) styleMyElement(dmContinuousPlace, {display: 'none'});
 		}, 1000);
 		intervals.push(dmWaitForObject);
 

@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2021.11.18
+- fixes Dailymotion
+
 #2021.11.04
 - fixes YouTube stream connection speed
 - drops support for Metacafe, inactive
