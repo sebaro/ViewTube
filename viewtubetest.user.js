@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2021.11.18
+// @version         2021.12.05
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -2291,7 +2291,7 @@ getMyOptions();
 ViewTube();
 
 page.win.setInterval(function() {
-	if (page.url != page.win.location.href) {
+	if (page.url != page.win.location.href.replace(page.win.location.hash, '')) {
 		for (var i = 0; i < intervals.length; i++){
 			clearInterval(intervals[i]);
 		}
@@ -2301,7 +2301,7 @@ page.win.setInterval(function() {
 		}
 		page.doc = page.win.document;
 		page.body = page.doc.body;
-		page.url = page.win.location.href;
+		page.url = page.win.location.href.replace(page.win.location.hash, '');
 		blockInterval = 50;
 		if (player['playerSocket']) blockObject = player['playerSocket'];
 		blockVideos();
