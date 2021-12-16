@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2021.12.05
+// @version         2021.12.16
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1922,7 +1922,7 @@ function ViewTube() {
 
 		/* Page Type */
 		var viPageType = getMyContent(page.url, /meta\s+property="og:type"\s+content="(.*?)"/);
-		if (!viPageType || (viPageType.indexOf('video') == -1 && viPageType.indexOf('profile') == -1)) return;
+		if (!viPageType || viPageType.indexOf('video') == -1) return;
 
 		/* Get Player Window */
 		var viPlayerWindow;
