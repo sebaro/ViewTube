@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2021.11.18
+// @version         2022.02.06
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -37,7 +37,7 @@
 
 /*
 
-	Copyright (C) 2010 - 2021 Sebastian Luncan
+	Copyright (C) 2010 - 2022 Sebastian Luncan
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -1231,6 +1231,7 @@ function ViewTube() {
 			}
 			/* n */
 			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
+			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
@@ -1244,7 +1245,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.20'};
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.49'};
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
 			if (api) {
@@ -1306,6 +1307,9 @@ function ViewTube() {
 			if (!ytVideosContent['formats']) {
 				ytGetVideos(true, 'ANDROID', true);
 			}
+			if (!ytVideosContent['formats']) {
+				ytGetVideos(false, 'WEB', false);
+			}
 			if (ytVideosContent['formats']) {
 				var ytVideoFormats = {
 					'18': 'Low Definition MP4',
@@ -1342,7 +1346,7 @@ function ViewTube() {
 				};
 				var ytVideoFound = false;
 				var ytVideos = (ytVideosContent['adaptiveFormats']) ? ytVideosContent['formats'].concat(ytVideosContent['adaptiveFormats']) : ytVideosContent['formats']
-				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSign, ytSignP;
+				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSParam, ytSParamName, ytNParam;
 				for (var i = 0; i < ytVideos.length; i++) {
 					if (ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher']) {
 						if (!ytScriptUrl) {
@@ -1562,6 +1566,7 @@ function ViewTube() {
 			}
 			/* n */
 			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
+			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
@@ -1575,7 +1580,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.20'};
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.49'};
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
 			if (api) {
@@ -1637,6 +1642,9 @@ function ViewTube() {
 			if (!ytVideosContent['formats']) {
 				ytGetVideos(true, 'ANDROID', true);
 			}
+			if (!ytVideosContent['formats']) {
+				ytGetVideos(false, 'WEB', false);
+			}
 			if (ytVideosContent['formats']) {
 				var ytVideoFormats = {
 					'18': 'Low Definition MP4',
@@ -1673,7 +1681,7 @@ function ViewTube() {
 				};
 				var ytVideoFound = false;
 				var ytVideos = (ytVideosContent['adaptiveFormats']) ? ytVideosContent['formats'].concat(ytVideosContent['adaptiveFormats']) : ytVideosContent['formats']
-				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSign, ytSignP;
+				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSParam, ytSParamName, ytNParam;
 				for (var i = 0; i < ytVideos.length; i++) {
 					if (ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher']) {
 						if (!ytScriptUrl) {
@@ -1922,7 +1930,7 @@ function ViewTube() {
 
 		/* Page Type */
 		var viPageType = getMyContent(page.url, /meta\s+property="og:type"\s+content="(.*?)"/);
-		if (!viPageType || (viPageType.indexOf('video') == -1 && viPageType.indexOf('profile') == -1)) return;
+		if (!viPageType || viPageType.indexOf('video') == -1) return;
 
 		/* Get Player Window */
 		var viPlayerWindow;
@@ -2291,7 +2299,7 @@ getMyOptions();
 ViewTube();
 
 page.win.setInterval(function() {
-	if (page.url != page.win.location.href) {
+	if (page.url != page.win.location.href.replace(page.win.location.hash, '')) {
 		for (var i = 0; i < intervals.length; i++){
 			clearInterval(intervals[i]);
 		}
@@ -2301,7 +2309,7 @@ page.win.setInterval(function() {
 		}
 		page.doc = page.win.document;
 		page.body = page.doc.body;
-		page.url = page.win.location.href;
+		page.url = page.win.location.href.replace(page.win.location.hash, '');
 		blockInterval = 50;
 		if (player['playerSocket']) blockObject = player['playerSocket'];
 		blockVideos();

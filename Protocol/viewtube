@@ -1,19 +1,19 @@
 #! /bin/bash
 
-s="$(echo "$1" | sed -e "s/viewtube://")"
-v="$(echo "$s" | awk -F 'SEPARATOR' '{print $1}')"
-a="$(echo "$s" | awk -F 'SEPARATOR' '{print $2}')"
-t="$(echo "$s" | awk -F 'SEPARATOR' '{print $3}')"
+i="$(echo "$1" | sed -e "s/viewtube://" -e "s/SEPARATOR/|/g")"
+v="$(echo "$i" | cut -d "|" -f 1)"
+a="$(echo "$i" | cut -d "|" -f 2)"
+s="$(echo "$i" | cut -d "|" -f 3)"
 if [ "$a" = "" ]; then
-	if [ "$t" = "" ]; then
+	if [ "$s" = "" ]; then
 		mpv --osc --fs "$v" || cvlc -f "$v"
 	else
-		mpv --osc --fs --sub-file="$t" "$v" || cvlc -f "$v" --sub-file="$t"
+		mpv --osc --fs --sub-file="$s" "$v" || cvlc -f --sub-file="$s" "$v"
 	fi
 else
-	if [ "$t" = "" ]; then
-		mpv --osc --fs --audio-file "$a" "$v" || cvlc -f --input-slave "$a" "$v"
+	if [ "$s" = "" ]; then
+		mpv --osc --fs --audio-file="$a" "$v" || cvlc -f --input-slave="$a" "$v"
 	else
-		mpv --osc --fs --sub-file="$t" --audio-file "$a" "$v" || cvlc -f --sub-file="$t" --input-slave "$a" "$v"
+		mpv --osc --fs --sub-file="$s" --audio-file="$a" "$v" || cvlc -f --sub-file="$s" --input-slave="$a" "$v"
 	fi
 fi
