@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2021.11.11
+// @version         2022.04.27
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -41,7 +41,7 @@
 
 /*
 
-  Copyright (C) 2010 - 2021 Sebastian Luncan
+  Copyright (C) 2010 - 2022 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1541,7 +1541,7 @@ function ViewTube() {
 		if (!ylePageType || (ylePageType != 'video.episode' && ylePageType != 'video.other' && ylePageType != 'video.movie')) return;
 
 		/* Get Player Window */
-		var ylePlayerWindow = getMyElement('', 'div', 'class', 'player-holder', 0, false);
+		var ylePlayerWindow = getMyElement('', 'div', 'class', 'Header_postTitleControls__sWyY1', 0, false);
 		if (!ylePlayerWindow) {
 			showMyMessage('!player');
 			return;
@@ -1550,7 +1550,7 @@ function ViewTube() {
 		/* Player Sizes */
 		var ylePlayerWidth, ylePlayerHeight;
 		function yleSizes() {
-			if (ylePlayerWindow) ylePlayerWidth = ylePlayerWindow.clientWidth;
+			if (ylePlayerWindow) ylePlayerWidth = ylePlayerWindow.clientWidth * 2;
 			if (ylePlayerWidth) ylePlayerHeight = Math.ceil(ylePlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
@@ -1567,6 +1567,8 @@ function ViewTube() {
 
 		/* Get Video Thumb */
 		var yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
+		if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image:url"\\s+content="(.*?)"', false);
+		if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'imagesrcset="([^"]*?) 640', false);
 
 		function ylePlayer() {
 			var yleVideosPath = yleVideosContent.match(/"dataUrl":"(.*?)"/);
@@ -1599,6 +1601,7 @@ function ViewTube() {
 				if (yleVideo) {
 					yleVideoFound = true;
 					yleVideoList['HTTP Live Streaming M3U8'] = yleVideo;
+					/*
 					yleHLSContent = getMyContent(yleVideo, 'TEXT', false);
 					if (yleHLSContent) {
 						var yleHLSMatcher = new RegExp('(http.*?m3u8)', 'g');
@@ -1607,16 +1610,17 @@ function ViewTube() {
 							for (var i = 0; i < yleHLSVideos.length; i++) {
 								yleHLSVideo = yleHLSVideos[i];
 								for (var vCode in yleVideoFormats) {
-									if (!yleVideoList[yleVideoFormats[vCode]]) {
-										if (yleHLSVideo.indexOf('index' + vCode + 'p25') != -1 || yleHLSVideo.indexOf('index-' + vCode + 'p25') != -1 ||
-												yleHLSVideo.indexOf('index' + vCode + 'p50') != -1 || yleHLSVideo.indexOf('index-' + vCode + 'p50') != -1) {
-												yleVideoList[yleVideoFormats[vCode]] = yleHLSVideo;
-										}
+									if (yleHLSVideo.indexOf('index' + vCode + 'p25') != -1 || yleHLSVideo.indexOf('index-' + vCode + 'p25') != -1 ||
+											yleHLSVideo.indexOf('index' + vCode + 'p50') != -1 || yleHLSVideo.indexOf('index-' + vCode + 'p50') != -1) {
+										yleVideoList[yleVideoFormats[vCode].replace('MP4', 'M3U8')] = yleHLSVideo;
 									}
 								}
 							}
 						}
-					}
+					}*/
+					var yleCaptions = yleVideosContent.match(/"translation","uri":"(.*?)"/);
+					yleCaptions = (yleCaptions) ? yleCaptions[1] : null;
+					if (yleCaptions) yleVideoList['Subtitles M3U8'] = yleCaptions;
 				}
 			}
 
@@ -1635,13 +1639,15 @@ function ViewTube() {
 					'playerWindow': myPlayerWindow,
 					'videoList': yleVideoList,
 					'videoDefinitions': ['Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition'],
-					'videoContainers': ['MP4'],
+					'videoContainers': ['MP4', 'M3U8'],
 					'videoPlay': yleDefaultVideo,
 					'videoThumb': yleVideoThumb,
 					'playerWidth': ylePlayerWidth,
 					'playerHeight': ylePlayerHeight
 				};
 				createMyPlayer();
+				var yleHeaderImage = getMyElement('', 'div', 'class', 'Header_image__DGRLC', 0, false);
+				if (yleHeaderImage) removeMyElement(yleHeaderImage.parentNode, yleHeaderImage);
 			}
 			else {
 				//showMyMessage('!videos');
