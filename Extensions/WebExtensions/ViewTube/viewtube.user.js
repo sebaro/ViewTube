@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2022.02.06
+// @version         2022.07.11
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1208,15 +1208,32 @@ function ViewTube() {
 		}, 500);
 		intervals.push(ytWaitForObject);
 
-		/* Parameter Unscrambler */
+		/* Script */
 		var ytScriptUrl;
+		function ytGetScriptUrl() {
+			if (!ytScriptUrl) {
+				ytScriptUrl = getMyContent(page.url, /"js(?:Url)?":\s*"(.*?)"/);
+				if (!ytScriptUrl) {
+					ytScriptUrl = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), /"js(?:Url)?":\s*"(.*?)"/);
+				}
+				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
+					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
+				}
+				if (!ytScriptUrl) {
+					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+				}
+			}
+		}
+
+		/* Parameter Unscrambler */
 		var ytUnscrambleParam = {};
 		function ytGetUnscrambleParamFunc() {
+			ytGetScriptUrl();
 			var ytMainFuncName, ytMainFuncBody, ytExtraFuncName, ytExtraFuncBody;
 			/* s */
 			ytMainFuncName = getMyContent(ytScriptUrl, /c&&\([\w$]+=([\w$]+)\(decodeURIComponent/);
 			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
+				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
 					ytExtraFuncName = parseMyContent(ytMainFuncBody, /([\w$]+)\.[\w$]+\(\w,[0-9]+\)/);
 					if (ytExtraFuncName) {
@@ -1233,7 +1250,7 @@ function ViewTube() {
 			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
 			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
 			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
+				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
 					ytMainFuncBody = 'try {' + ytMainFuncBody + '} catch(e) {return null}';
 					ytUnscrambleParam['n'] = new Function('a', ytMainFuncBody);
@@ -1244,8 +1261,9 @@ function ViewTube() {
 		/* Get Videos Content */
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
-		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.49'};
+		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey + '&prettyPrint=false';
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '16.49', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
+		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
 			if (api) {
@@ -1258,6 +1276,11 @@ function ViewTube() {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
 					ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
+					ytGetScriptUrl();
+					ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
+					ytVideoInfoDataRequest['playbackContext'] = {};
+					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
+					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				}
 				ytVideoInfoDataRequest['videoId'] = ytVideoId;
 				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
@@ -1308,6 +1331,9 @@ function ViewTube() {
 				ytGetVideos(true, 'ANDROID', true);
 			}
 			if (!ytVideosContent['formats']) {
+				ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
+			}
+			if (!ytVideosContent['formats']) {
 				ytGetVideos(false, 'WEB', false);
 			}
 			if (ytVideosContent['formats']) {
@@ -1347,22 +1373,11 @@ function ViewTube() {
 				var ytVideoFound = false;
 				var ytVideos = (ytVideosContent['adaptiveFormats']) ? ytVideosContent['formats'].concat(ytVideosContent['adaptiveFormats']) : ytVideosContent['formats']
 				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSParam, ytSParamName, ytNParam;
+				if (ytVideos[0]['signatureCipher'] || ytVideos[0]['cipher'] || (ytVideos[0]['url'] && parseMyContent(ytVideos[0]['url'], /(?:&|&amp;)n=(.*?)(&|&amp;|$)/))) {
+					ytGetUnscrambleParamFunc();
+				}
 				for (var i = 0; i < ytVideos.length; i++) {
 					if (ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher']) {
-						if (!ytScriptUrl) {
-							ytScriptUrl = getMyContent(page.url, /"js(?:Url)?":\s*"(.*?)"/);
-							if (!ytScriptUrl) {
-								ytScriptUrl = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), /"js(?:Url)?":\s*"(.*?)"/);
-							}
-							if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
-								ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
-								ytGetUnscrambleParamFunc();
-							}
-							else {
-								showMyMessage('other', 'Couldn\'t get the signature link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
-								break;
-							}
-						}
 						ytVideo = ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher'];
 						ytVideo = cleanMyContent(ytVideo, true);
 						ytVideoParse = ytVideo.match(/(.*)(url=.*$)/);
@@ -1543,15 +1558,32 @@ function ViewTube() {
 			createMyPlayer();
 		}
 
-		/* Parameter Unscrambler */
+		/* Script */
 		var ytScriptUrl;
+		function ytGetScriptUrl() {
+			if (!ytScriptUrl) {
+				ytScriptUrl = getMyContent(page.url, /"js(?:Url)?":\s*"(.*?)"/);
+				if (!ytScriptUrl) {
+					ytScriptUrl = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), /"js(?:Url)?":\s*"(.*?)"/);
+				}
+				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
+					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
+				}
+				if (!ytScriptUrl) {
+					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
+				}
+			}
+		}
+
+		/* Parameter Unscrambler */
 		var ytUnscrambleParam = {};
 		function ytGetUnscrambleParamFunc() {
+			ytGetScriptUrl();
 			var ytMainFuncName, ytMainFuncBody, ytExtraFuncName, ytExtraFuncBody;
 			/* s */
 			ytMainFuncName = getMyContent(ytScriptUrl, /c&&\([\w$]+=([\w$]+)\(decodeURIComponent/);
 			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
+				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
 					ytExtraFuncName = parseMyContent(ytMainFuncBody, /([\w$]+)\.[\w$]+\(\w,[0-9]+\)/);
 					if (ytExtraFuncName) {
@@ -1568,7 +1600,7 @@ function ViewTube() {
 			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
 			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
 			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp(';' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
+				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?)\\};'));
 				if (ytMainFuncBody) {
 					ytMainFuncBody = 'try {' + ytMainFuncBody + '} catch(e) {return null}';
 					ytUnscrambleParam['n'] = new Function('a', ytMainFuncBody);
@@ -1580,7 +1612,8 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'ANDROID': '16.49'};
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '16.49', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
+		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
 			if (api) {
@@ -1593,6 +1626,11 @@ function ViewTube() {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
 					ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
+					ytGetScriptUrl();
+					ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
+					ytVideoInfoDataRequest['playbackContext'] = {};
+					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
+					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				}
 				ytVideoInfoDataRequest['videoId'] = ytVideoId;
 				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
@@ -1643,6 +1681,9 @@ function ViewTube() {
 				ytGetVideos(true, 'ANDROID', true);
 			}
 			if (!ytVideosContent['formats']) {
+				ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
+			}
+			if (!ytVideosContent['formats']) {
 				ytGetVideos(false, 'WEB', false);
 			}
 			if (ytVideosContent['formats']) {
@@ -1682,22 +1723,11 @@ function ViewTube() {
 				var ytVideoFound = false;
 				var ytVideos = (ytVideosContent['adaptiveFormats']) ? ytVideosContent['formats'].concat(ytVideosContent['adaptiveFormats']) : ytVideosContent['formats']
 				var ytVideoParse, ytVideoCodeParse, ytVideoCode, myVideoCode, ytVideo, ytSParam, ytSParamName, ytNParam;
+				if (ytVideos[0]['signatureCipher'] || ytVideos[0]['cipher'] || (ytVideos[0]['url'] && parseMyContent(ytVideos[0]['url'], /(?:&|&amp;)n=(.*?)(&|&amp;|$)/))) {
+					ytGetUnscrambleParamFunc();
+				}
 				for (var i = 0; i < ytVideos.length; i++) {
 					if (ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher']) {
-						if (!ytScriptUrl) {
-							ytScriptUrl = getMyContent(page.url, /"js(?:Url)?":\s*"(.*?)"/);
-							if (!ytScriptUrl) {
-								ytScriptUrl = getMyContent(page.url.replace(/watch.*?v=/, 'embed/').replace(/&.*$/, ''), /"js(?:Url)?":\s*"(.*?)"/);
-							}
-							if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
-								ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
-								ytGetUnscrambleParamFunc();
-							}
-							else {
-								showMyMessage('other', 'Couldn\'t get the signature link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
-								break;
-							}
-						}
 						ytVideo = ytVideos[i]['signatureCipher'] || ytVideos[i]['cipher'];
 						ytVideo = cleanMyContent(ytVideo, true);
 						ytVideoParse = ytVideo.match(/(.*)(url=.*$)/);
@@ -2196,7 +2226,7 @@ function ViewTube() {
 		var imdbWaitForLoops = 50;
 		var imdbWaitForObject = page.win.setInterval(function() {
 			if (!imdbPlayerWindow) {
-				imdbPlayerWindow = getMyElement('', 'div', 'class', 'video-player__video', 0, false);
+				imdbPlayerWindow = getMyElement('', 'div', 'class', 'jwplayer', 0, false);
 				if (imdbPlayerWindow) {
 					imdbPlayerWindow = (imdbPlayerWindow.parentNode) ? imdbPlayerWindow.parentNode : null;
 				}
@@ -2245,19 +2275,20 @@ function ViewTube() {
 		}
 
 		/* Get Video Thumbnail */
-		var imdbVideoThumb = getMyContent(page.url, /meta\s+property="image"\s+content="(.*?)"/);
+		var imdbVideoThumb = getMyContent(page.url, /meta\s+property="og:image"\s+content="(.*?)"/);
 
 		/* Get Video Title */
 		var imdbVideoTitle = getMyContent(page.url, /meta\s+property="og:title"\s+content="(.*?)"/);
 		if (imdbVideoTitle) imdbVideoTitle = cleanMyContent(imdbVideoTitle, false, true);
 
-		/* Get Data Key */
-		var imdbVideoId = page.url.replace(/^.*?\/(vi\d+).*/, '$1');
-		var imdbDataJSON = '{"type": "VIDEO_PLAYER", "subType": "FORCE_LEGACY", "id": "' + imdbVideoId + '"}';
-		var imdbDataKey = btoa(imdbDataJSON);
-
 		/* Get Videos Content */
-		var imdbVideosContent = getMyContent(page.url.replace(/video\/.*/, 've/data/VIDEO_PLAYBACK_DATA?key=' + imdbDataKey), /"videoLegacyEncodings":\[(.*?)\]/);
+		var imdbVideosContent = getMyContent(page.url, /"playbackURLs":(\[.*?\])/);
+			try {
+				imdbVideosContent = JSON.parse(imdbVideosContent);
+			}
+			catch(e) {
+				imdbVideosContent = {};
+			}
 
 		/* Get Videos */
 		var imdbVideoList = {};
@@ -2267,15 +2298,16 @@ function ViewTube() {
 			var imdbVideoFound = false;
 			var myVideoCode, imdbVideo;
 			for (var imdbVideoCode in imdbVideoFormats) {
-				imdbVideo = parseMyContent(imdbVideosContent, new RegExp('"definition":"' + imdbVideoCode + '".*?"url":"(.*?)"'));
-				if (imdbVideo) {
-					imdbVideo = cleanMyContent(imdbVideo, false);
-					if (!imdbVideoFound) imdbVideoFound = true;
-					myVideoCode = imdbVideoFormats[imdbVideoCode];
-					if (!imdbVideoList[myVideoCode]) imdbVideoList[myVideoCode] = imdbVideo;
+				for (var i = 0; i < imdbVideosContent.length; i++) {
+					imdbVideo = parseMyContent(JSON.stringify(imdbVideosContent[i]), new RegExp('"url":"(.*?)".*?"value":"' + imdbVideoCode + '"'));
+					if (imdbVideo) {
+						imdbVideo = cleanMyContent(imdbVideo, false);
+						if (!imdbVideoFound) imdbVideoFound = true;
+						myVideoCode = imdbVideoFormats[imdbVideoCode];
+						if (!imdbVideoList[myVideoCode]) imdbVideoList[myVideoCode] = imdbVideo;
+					}
 				}
 			}
-
 			if (imdbVideoFound) {
 				imdbVideosReady = true;
 				if (imdbPlayerWindow) imdbPlayer();
