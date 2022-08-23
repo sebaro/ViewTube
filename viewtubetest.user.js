@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2022.07.11
+// @version         2022.08.10
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1262,7 +1262,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey + '&prettyPrint=false';
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '16.49', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '17.29.34', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1272,6 +1272,9 @@ function ViewTube() {
 				ytVideoInfoDataRequest['context']['client'] = {};
 				ytVideoInfoDataRequest['context']['client']['clientName'] = client;
 				ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion[client];
+				if (client == 'ANDROID') {
+					ytVideoInfoDataRequest['context']['client']['androidSdkVersion'] = 30;
+				}
 				if (embed) {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
@@ -1612,7 +1615,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?key=' + ytVideoInfoKey;
-		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '16.49', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
+		var ytVideoInfoClientVersion = {'WEB': '2.11111111', 'WEB_EMBEDDED_PLAYER': '1.11111111', 'ANDROID': '17.29.34', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1622,6 +1625,9 @@ function ViewTube() {
 				ytVideoInfoDataRequest['context']['client'] = {};
 				ytVideoInfoDataRequest['context']['client']['clientName'] = client;
 				ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion[client];
+				if (client == 'ANDROID') {
+					ytVideoInfoDataRequest['context']['client']['androidSdkVersion'] = 30;
+				}
 				if (embed) {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
@@ -2283,12 +2289,12 @@ function ViewTube() {
 
 		/* Get Videos Content */
 		var imdbVideosContent = getMyContent(page.url, /"playbackURLs":(\[.*?\])/);
-			try {
-				imdbVideosContent = JSON.parse(imdbVideosContent);
-			}
-			catch(e) {
-				imdbVideosContent = {};
-			}
+		try {
+			imdbVideosContent = JSON.parse(imdbVideosContent);
+		}
+		catch(e) {
+			imdbVideosContent = {};
+		}
 
 		/* Get Videos */
 		var imdbVideoList = {};

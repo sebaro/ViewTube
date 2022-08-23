@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2022.04.27
+// @version         2022.08.23
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -966,13 +966,14 @@ function ViewTube() {
 		/* Get Player Window */
 		var repPlayerWindow = getMyElement('', 'div', 'class', 'video-player', 0, false);
 		if (!repPlayerWindow) repPlayerWindow = getMyElement('', 'div', 'id', 'player', -1, false);
+		if (!repPlayerWindow) repPlayerWindow = getMyElement('', 'div', 'class', 'responsive-video', 0, false);
 		if (!repPlayerWindow) {
 			//showMyMessage('!player');
 			return;
 		}
 
-		var repPlayerWidth = 640;
-		var repPlayerHeight = 390;
+		var repPlayerWidth = 970;
+		var repPlayerHeight = 576;
 		if (page.url.indexOf('gelocal.it') != -1) {
 			repPlayerWidth = 580;
 			repPlayerHeight = 326;
@@ -981,7 +982,7 @@ function ViewTube() {
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: repPlayerWidth + 'px', height: repPlayerHeight + 'px', textAlign: 'center'});
-		styleMyElement(repPlayerWindow, {background: 'rgba(0, 0, 0, 0)'});
+		styleMyElement(repPlayerWindow, {marginBottom: '30px', background: 'rgba(0, 0, 0, 0)'});
 		cleanMyElement(repPlayerWindow, true);
 		appendMyElement(repPlayerWindow, myPlayerWindow);
 
@@ -990,16 +991,22 @@ function ViewTube() {
 		if (repPlayerWrapper) styleMyElement(repPlayerWrapper, {backgroundImage: 'none'});
 
 		/* Get Video Thumb */
-		var repVideoThumb = getMyContent(page.url, '\'param\',\\s*\'image\',\\s*\'(.*?)\'', false);
+		var repVideoThumb = getMyContent(page.url, 'posterSrc:\\s*\'(.*?)\'', false);
 
 		/* Get Videos */
 		var repVideoList = {};
 		var repVideoFound, repDefaultVideo;
-		var repVideo = getMyContent(page.url, '\'format\',\\s*\'mp4\',\\s*\'(.*?)\'', true);
+		var repVideo = getMyContent(page.url, '"type":"video\/mp4","src":"(.*?)"', true);
 		if (repVideo) {
 			repVideoFound = true;
 			repVideoList['Low Definition MP4'] = repVideo;
 			repDefaultVideo = 'Low Definition MP4';
+		}
+		repVideo = getMyContent(page.url, '"type":"application\/x-mpegURL","src":"(.*?)"', true);
+		if (repVideo) {
+			repVideoFound = true;
+			repVideoList['Low Definition M3U8'] = repVideo;
+			repDefaultVideo = 'Low Definition M3U8';
 		}
 		if (repVideoFound) {
 			/* Get Watch Sidebar */
@@ -1016,16 +1023,9 @@ function ViewTube() {
 				'videoPlay': repDefaultVideo,
 				'videoThumb': repVideoThumb,
 				'playerWidth': repPlayerWidth,
-				'playerHeight': repPlayerHeight,
-				'playerWideWidth': 970,
-				'playerWideHeight': 576,
-				'sidebarWindow': repSidebarWindow,
-				'sidebarMarginNormal': 12,
-				'sidebarMarginWide': 600
+				'playerHeight': repPlayerHeight
 			};
-			if (page.url.indexOf('gelocal.it') != -1) {
-				feature['widesize'] = false;
-			}
+			feature['widesize'] = false;
 			createMyPlayer ();
 		}
 		else {
