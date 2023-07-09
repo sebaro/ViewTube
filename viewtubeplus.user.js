@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2022.08.23
+// @version         2023.06.20
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -41,7 +41,7 @@
 
 /*
 
-  Copyright (C) 2010 - 2022 Sebastian Luncan
+  Copyright (C) 2010 - 2023 Sebastian Luncan
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1146,8 +1146,7 @@ function ViewTube() {
 		appendMyElement(aaPlayerWindow, myPlayerWindow);
 
 		/* Get Video Thumb */
-		var aaVideoThumb = getMyContent(page.url, 'meta\\s+itemprop="thumbnailUrl"\\s+content="(.*?)"', false);
-		if (aaVideoThumb) aaVideoThumb = page.win.location.protocol + '//' + page.win.location.hostname + aaVideoThumb;
+		var aaVideoThumb = getMyContent(page.url, 'poster="(.*?)"', false);
 
 		/* Get Videos */
 		var aaVideoList = {};
@@ -1155,7 +1154,7 @@ function ViewTube() {
 		var aaVideo = getMyContent(page.url, 'meta\\s+itemprop="contentUrl"\\s+content="(.*?)"', true);
 		if (aaVideo) {
 			aaVideoFound = true;
-			aaVideoList['Low Definition MP4'] = page.win.location.protocol + '//' + page.win.location.hostname + aaVideo;
+			aaVideoList['Low Definition MP4'] = aaVideo;
 			aaDefaultVideo = 'Low Definition MP4';
 		}
 		if (aaVideoFound) {
@@ -1542,6 +1541,7 @@ function ViewTube() {
 
 		/* Get Player Window */
 		var ylePlayerWindow = getMyElement('', 'div', 'class', 'Header_postTitleControls__sWyY1', 0, false);
+		if (!ylePlayerWindow) ylePlayerWindow = getMyElement('', 'div', 'class', 'HeaderPlayControls_root__U3fMC', 0, false);
 		if (!ylePlayerWindow) {
 			showMyMessage('!player');
 			return;
