@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2023.07.07
+// @version         2024.01.09
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -37,7 +37,7 @@
 
 /*
 
-	Copyright (C) 2010 - 2023 Sebastian Luncan
+	Copyright (C) 2010 - 2024 Sebastian Luncan
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -247,7 +247,7 @@ function getMyContent(url, pattern) {
 		url = url.split('|')[0];
 	}
 	if (data) {
-		console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
+		//console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
 		urle = btoa(url + data + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -277,7 +277,7 @@ function getMyContent(url, pattern) {
 		}
 	}
 	else {
-		console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
+		//console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
 		urle = btoa(url + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -1122,13 +1122,13 @@ function ViewTube() {
 					var ytSubtitlesLanguage;
 					while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {
 						ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
+						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang.replace(/&fmt=.*?(&|$)/, '').replace(/&lang=.*?(&|$)/, '') + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
 					}
 					var ytSubtitlesTranslationLanguages = getMyContent(page.url, /"translationLanguages":\[(.*?)\]/, false);
 					if (ytSubtitlesTranslationLanguages) {
 						while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesTranslationLanguages)) !== null) {
 							ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-							if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
+							if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase.replace(/&fmt=.*?(&|$)/, '').replace(/&tlang=.*?(&|$)/, '') + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
 						}
 					}
 				}
@@ -1876,7 +1876,7 @@ function ViewTube() {
 					player['playerHeight'] = dmPlayerHeight;
 					resizeMyPlayer('widesize');
 				}
-			}, 300);
+			}, 500);
 		}, false);
 
 		/* My Player Window */
@@ -1911,18 +1911,8 @@ function ViewTube() {
 				clearInterval(dmWaitForObject);
 			}
 			/* Hide Ads */
-			//var dmAdsRight = getMyElement('', 'div', 'query', '[class*="videoInfoAdContainer"]', -1, false);
-			//if (dmAdsRight && dmAdsRight.parentNode) removeMyElement(dmAdsRight.parentNode, dmAdsRight);
-			//if (dmAdsRight) styleMyElement(dmAdsRight, {position: 'absolute'});
-			/*var dmAdsBottom = getMyElement('', 'div', 'query', '[class*="DisplayAd__adContainer"]', -1, false);
-			//if (dmAdsBottom && dmAdsBottom.parentNode) removeMyElement(dmAdsBottom.parentNode, dmAdsBottom);
-			if (dmAdsBottom) styleMyElement(dmAdsBottom, {position: 'absolute'});
-			/* Hide Player Placeholder */
-			/*var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
-			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none'});
-			/* Continuous Player */
-			/*var dmContinuousPlace = getMyElement('', 'div', 'id', 'continuous-player', -1, false);
-			if (dmContinuousPlace) styleMyElement(dmContinuousPlace, {display: 'none'});*/
+			var dmAdsRight = getMyElement('', 'div', 'query', '[class*="NewWatchingDiscovery__adSection"]', -1, false);
+			if (dmAdsRight && dmAdsRight.parentNode) styleMyElement(dmAdsRight, {width: '0px'});
 		}, 1000);
 		intervals.push(dmWaitForObject);
 
@@ -2448,7 +2438,10 @@ function ViewTube() {
 			var myVideoCode, imdbVideo;
 			for (var imdbVideoCode in imdbVideoFormats) {
 				for (var i = 0; i < imdbVideosContent.length; i++) {
-					imdbVideo = parseMyContent(JSON.stringify(imdbVideosContent[i]), new RegExp('"url":"(.*?)".*?"value":"' + imdbVideoCode + '"'));
+					//imdbVideo = parseMyContent(JSON.stringify(imdbVideosContent[i]), new RegExp('"url":"(.*?)".*?"value":"' + imdbVideoCode + '"'));
+					if (imdbVideosContent[i]["displayName"]["value"] == imdbVideoCode) {
+						imdbVideo = imdbVideosContent[i]["url"];
+					}
 					if (imdbVideo) {
 						imdbVideo = cleanMyContent(imdbVideo, false);
 						if (!imdbVideoFound) imdbVideoFound = true;

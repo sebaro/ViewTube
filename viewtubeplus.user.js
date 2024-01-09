@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2023.06.20
+// @version         2023.07.26
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1540,12 +1540,13 @@ function ViewTube() {
 		if (!ylePageType || (ylePageType != 'video.episode' && ylePageType != 'video.other' && ylePageType != 'video.movie')) return;
 
 		/* Get Player Window */
-		var ylePlayerWindow = getMyElement('', 'div', 'class', 'Header_postTitleControls__sWyY1', 0, false);
-		if (!ylePlayerWindow) ylePlayerWindow = getMyElement('', 'div', 'class', 'HeaderPlayControls_root__U3fMC', 0, false);
+		var ylePlayerWindow = getMyElement('', 'div', 'query', '[class*="HeaderPlayControls_root"]', -1, false);
 		if (!ylePlayerWindow) {
 			showMyMessage('!player');
 			return;
 		}
+		var ylePlayerImage = getMyElement('', 'div', 'query', '[class*="HeaderImage_wrapper"]', -1, false);
+		if (ylePlayerImage) styleMyElement(ylePlayerImage, {display: 'none'});
 
 		/* Player Sizes */
 		var ylePlayerWidth, ylePlayerHeight;
