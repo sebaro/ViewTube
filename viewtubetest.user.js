@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.01.09
+// @version         2024.01.10
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1113,22 +1113,59 @@ function ViewTube() {
 			ytVideoThumb = (ytVideoId) ? 'https://img.youtube.com/vi/' + ytVideoId + '/maxresdefault.jpg' : null;
 			/* Get Subtitles */
 			if (ytSubtitlesContent) {
-				var ytSubtitlesLink = ytSubtitlesContent[0]['baseUrl'];
-				if (ytSubtitlesLink) {
-					var ytSubtitlesLinkBase = cleanMyContent(ytSubtitlesLink, false, false);
-					var ytSubtitlesLinkLang = ytSubtitlesLinkBase.replace(/lang=.*?(&|$)/, '').replace(/&$/, '');
-					var ytSubtitlesLanguagePattern = /"languageCode":"(.*?)"/g;
-					var ytSubtitlesLanguageMatches = [];
-					var ytSubtitlesLanguage;
-					while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {
-						ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang.replace(/&fmt=.*?(&|$)/, '').replace(/&lang=.*?(&|$)/, '') + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
+				var ytSubtitlesLink, ytSubtitlesCode, ytSubtitlesLinkSub, ytSubtitlesLinkCap, ytSubtitlesCodeSub = '', ytSubtitlesCodeCap = '';
+				for (var s = 0; s < ytSubtitlesContent.length; s++) {
+					if (!ytSubtitlesContent[s]['kind'] || ytSubtitlesContent[s]['kind'] != 'asr') {
+						ytSubtitlesLink = ytSubtitlesContent[s]['baseUrl'].replace(/&fmt=.*?(&|$)/, '') + '&fmt=vtt';
+						ytSubtitlesCode = ytSubtitlesContent[s]['languageCode'];
+						if (ytSubtitlesCode == 'en-US') ytSubtitlesCode = 'en';
+						ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLink;
+						if (ytSubtitlesCodeSub != 'en' && ytSubtitlesContent[s]['isTranslatable']) {
+							ytSubtitlesCodeSub = ytSubtitlesContent[s]['languageCode'];
+							if (ytSubtitlesCodeSub == 'en-US') ytSubtitlesCodeSub = 'en';
+							ytSubtitlesLinkSub = ytSubtitlesLink;
+						}
 					}
-					var ytSubtitlesTranslationLanguages = getMyContent(page.url, /"translationLanguages":\[(.*?)\]/, false);
-					if (ytSubtitlesTranslationLanguages) {
-						while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesTranslationLanguages)) !== null) {
-							ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-							if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase.replace(/&fmt=.*?(&|$)/, '').replace(/&tlang=.*?(&|$)/, '') + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
+				}
+				for (var s = 0; s < ytSubtitlesContent.length; s++) {
+					if (ytSubtitlesContent[s]['kind'] == 'asr') {
+						ytSubtitlesLink = ytSubtitlesContent[s]['baseUrl'].replace(/&fmt=.*?(&|$)/, '') + '&fmt=vtt';
+						ytSubtitlesCode = ytSubtitlesContent[s]['languageCode'];
+						if (!ytSubtitlesList[ytSubtitlesCode]) {
+							if (ytSubtitlesCode == 'en-US') ytSubtitlesCode = 'en';
+							ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLink;
+							if (ytSubtitlesCodeCap != 'en' && ytSubtitlesContent[s]['isTranslatable']) {
+								ytSubtitlesCodeCap = ytSubtitlesContent[s]['languageCode'];
+								if (ytSubtitlesCodeCap == 'en-US') ytSubtitlesCodeCap = 'en';
+								ytSubtitlesLinkCap = ytSubtitlesLink;
+							}
+						}
+					}
+				}
+				var ytSubtitlesCodes = getMyContent(page.url, /"translationLanguages":(\[.*?\])/, false);
+				if (ytSubtitlesCodes) {
+					try {
+						ytSubtitlesCodes = JSON.parse(ytSubtitlesCodes);
+					}
+					catch(e) {
+						ytSubtitlesCodes = {};
+					}
+					if (ytSubtitlesCodes) {
+						if (ytSubtitlesLinkSub) {
+							for (var s = 0; s < ytSubtitlesCodes.length; s++) {
+								ytSubtitlesCode = ytSubtitlesCodes[s]['languageCode'];
+								if (ytSubtitlesCodeSub != ytSubtitlesCode) {
+									ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLinkSub + '&tlang=' + ytSubtitlesCode;
+								}
+							}
+						}
+						if (ytSubtitlesLinkCap) {
+							for (var s = 0; s < ytSubtitlesCodes.length; s++) {
+								ytSubtitlesCode = ytSubtitlesCodes[s]['languageCode'];
+								if (!ytSubtitlesList[ytSubtitlesCode]) {
+									ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLinkCap + '&tlang=' + ytSubtitlesCode;
+								}
+							}
 						}
 					}
 				}
