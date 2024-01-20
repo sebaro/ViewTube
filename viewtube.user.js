@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2023.07.07
+// @version         2024.01.19
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -37,7 +37,7 @@
 
 /*
 
-	Copyright (C) 2010 - 2023 Sebastian Luncan
+	Copyright (C) 2010 - 2024 Sebastian Luncan
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -221,7 +221,7 @@ function cleanMyContent(content, unesc, extra) {
 		content = content.replace(/&quot;/g, '\'').replace(/&#34;/g, '\'').replace(/&#034;/g, '\'').replace(/["“”„‘’]/g, '\'');
 		content = content.replace(/&#39;/g, '\'').replace(/&#039;/g, '\'').replace(/'/g, '\'');
 		content = content.replace(/&amp;/g, 'and').replace(/&/g, 'and');
-		content = content.replace(/[^\x20-\xFF]/g, '');
+		//content = content.replace(/[^\x20-\xFF]/g, '');
 		content = content.replace(/[\/\|]/g, '-');
 		content = content.replace(/[<>#:\*\?]/g, '');
 		content = content.replace(/^\s+|\s+$/, '').replace(/\s+/g, ' ').replace(/\.+$/g, '');
@@ -363,7 +363,7 @@ function createMyPlayer() {
 		}
 		if (player['isPlaying']) playMyVideo(option['autoplay']);
 	});
-	styleMyElement(player['videoMenu'], {display: 'inline-block', width: 'auto', height: '20px', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold', padding: '0px 3px', overflow: 'hidden', border: '1px solid #777777', color: '#CCCCCC', backgroundColor: '#000000', lineHeight: 'normal', verticalAlign: 'middle', cursor: 'pointer', boxSizing: 'content-box'});
+	styleMyElement(player['videoMenu'], {display: 'inline-block', maxWidth: '50%', height: '20px', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold', padding: '0px 3px', overflow: 'hidden', border: '1px solid #777777', color: '#CCCCCC', backgroundColor: '#000000', lineHeight: 'normal', verticalAlign: 'middle', cursor: 'pointer', boxSizing: 'content-box'});
 	appendMyElement(player['playerPanel'], player['videoMenu']);
 	if (feature['openpagelink']) {
 		player['videoList']['Page Link'] = page.url;
@@ -565,7 +565,7 @@ function createMyPlayer() {
 }
 
 function resizeMyPlayer(size) {
-	var playerWidth, playerHeight;
+	var playerWidth, playerHeight, playerIndex;
 
 	/* Resize The Player */
 	if (size == 'widesize') {
@@ -575,19 +575,21 @@ function resizeMyPlayer(size) {
 			playerWidth = player['playerWideWidth'];
 			playerHeight= player['playerWideHeight'];
 			sidebarMargin = player['sidebarMarginWide'];
+			playerIndex = '2';
 		}
 		else {
 			if (player['buttonWidesize']) styleMyElement(player['buttonWidesize'], {width: '20px', height: '10px'});
 			playerWidth = player['playerWidth'];
 			playerHeight= player['playerHeight'];
 			sidebarMargin = player['sidebarMarginNormal'];
+			playerIndex = 'auto';
 		}
 		if (player['sidebarWindow']) styleMyElement(player['sidebarWindow'], {marginTop: sidebarMargin + 'px'});
 		styleMyElement(player['playerSocket'], {height: playerHeight + 'px'});
-		styleMyElement(player['playerWindow'], {width: playerWidth + 'px', height: playerHeight + 'px'});
+		styleMyElement(player['playerWindow'], {width: playerWidth + 'px', height: playerHeight + 'px', zIndex: playerIndex});
 	}
 	else if (size == 'fullsize') {
-		var playerPosition, playerIndex;
+		var playerPosition;
 		if (option['fullsize']) {
 			playerPosition = 'fixed';
 			playerIndex = '9999999999';
@@ -609,7 +611,7 @@ function resizeMyPlayer(size) {
 		}
 		else {
 			playerPosition = 'relative';
-			playerIndex = 'auto';
+			playerIndex = (option['widesize']) ? '2' : 'auto';
 			playerWidth = (option['widesize']) ? player['playerWideWidth'] : player['playerWidth'];
 			playerHeight = (option['widesize']) ? player['playerWideHeight'] : player['playerHeight'];
 			if (feature['widesize']) styleMyElement(player['buttonWidesize'], {display: 'inline-block'});
@@ -873,15 +875,24 @@ function playMyVideo(play) {
 			var contentVideo = player['videoList'][player['videoPlay']];
 			var contentAudio = '';
 			var contentTrack = '';
+			var contentProtocol = 'viewtube:';
+			var contentStream = contentVideo;
 			if (player['videoList'][player['videoPlay']] == 'DASH') {
 				contentVideo = player['videoList'][player['videoPlay'].replace('Definition', 'Definition Video')];
 				contentAudio = player['videoList']['High Bitrate Audio WebM'] || player['videoList']['Medium Bitrate Audio WebM']
 														|| player['videoList']['Medium Bitrate Audio MP4'] || player['videoList'][player['videoPlay'].replace('Definition', 'Definition Audio')];
+				contentStream = contentVideo + 'SEPARATOR' + contentAudio;
 			}
 			if (option['subtitles'] != 'None') {
 				contentTrack = player['subtitlesList'][option['subtitles']];
+				contentStream = contentVideo + 'SEPARATOR' + contentAudio + 'SEPARATOR' + contentTrack;
 			}
-			page.win.location.href = 'viewtube:' + contentVideo + 'SEPARATOR' + contentAudio + 'SEPARATOR' + contentTrack;
+			if (option['media'] == 'VLC' || option['media'] == 'VLC*') {
+				if (!contentAudio && !contentTrack) {
+					contentProtocol = 'vlc://';
+				}
+			}
+			page.win.location.href = contentProtocol + contentStream;
 			return;
 		}
 		player['isPlaying'] = true;
@@ -1113,22 +1124,59 @@ function ViewTube() {
 			ytVideoThumb = (ytVideoId) ? 'https://img.youtube.com/vi/' + ytVideoId + '/maxresdefault.jpg' : null;
 			/* Get Subtitles */
 			if (ytSubtitlesContent) {
-				var ytSubtitlesLink = ytSubtitlesContent[0]['baseUrl'];
-				if (ytSubtitlesLink) {
-					var ytSubtitlesLinkBase = cleanMyContent(ytSubtitlesLink, false, false);
-					var ytSubtitlesLinkLang = ytSubtitlesLinkBase.replace(/lang=.*?(&|$)/, '').replace(/&$/, '');
-					var ytSubtitlesLanguagePattern = /"languageCode":"(.*?)"/g;
-					var ytSubtitlesLanguageMatches = [];
-					var ytSubtitlesLanguage;
-					while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesContent)) !== null) {
-						ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-						if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkLang + '&fmt=vtt&lang=' + ytSubtitlesLanguage;
+				var ytSubtitlesLink, ytSubtitlesCode, ytSubtitlesLinkSub, ytSubtitlesLinkCap, ytSubtitlesCodeSub = '', ytSubtitlesCodeCap = '';
+				for (var s = 0; s < ytSubtitlesContent.length; s++) {
+					if (!ytSubtitlesContent[s]['kind'] || ytSubtitlesContent[s]['kind'] != 'asr') {
+						ytSubtitlesLink = ytSubtitlesContent[s]['baseUrl'].replace(/&fmt=.*?(&|$)/, '') + '&fmt=vtt';
+						ytSubtitlesCode = ytSubtitlesContent[s]['languageCode'];
+						if (ytSubtitlesCode == 'en-US') ytSubtitlesCode = 'en';
+						ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLink;
+						if (ytSubtitlesCodeSub != 'en' && ytSubtitlesContent[s]['isTranslatable']) {
+							ytSubtitlesCodeSub = ytSubtitlesContent[s]['languageCode'];
+							if (ytSubtitlesCodeSub == 'en-US') ytSubtitlesCodeSub = 'en';
+							ytSubtitlesLinkSub = ytSubtitlesLink;
+						}
 					}
-					var ytSubtitlesTranslationLanguages = getMyContent(page.url, /"translationLanguages":\[(.*?)\]/, false);
-					if (ytSubtitlesTranslationLanguages) {
-						while ((ytSubtitlesLanguageMatches = ytSubtitlesLanguagePattern.exec(ytSubtitlesTranslationLanguages)) !== null) {
-							ytSubtitlesLanguage = ytSubtitlesLanguageMatches[1];
-							if (!ytSubtitlesList[ytSubtitlesLanguage]) ytSubtitlesList[ytSubtitlesLanguage] = ytSubtitlesLinkBase + '&fmt=vtt&tlang=' + ytSubtitlesLanguage;
+				}
+				for (var s = 0; s < ytSubtitlesContent.length; s++) {
+					if (ytSubtitlesContent[s]['kind'] == 'asr') {
+						ytSubtitlesLink = ytSubtitlesContent[s]['baseUrl'].replace(/&fmt=.*?(&|$)/, '') + '&fmt=vtt';
+						ytSubtitlesCode = ytSubtitlesContent[s]['languageCode'];
+						if (!ytSubtitlesList[ytSubtitlesCode]) {
+							if (ytSubtitlesCode == 'en-US') ytSubtitlesCode = 'en';
+							ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLink;
+							if (ytSubtitlesCodeCap != 'en' && ytSubtitlesContent[s]['isTranslatable']) {
+								ytSubtitlesCodeCap = ytSubtitlesContent[s]['languageCode'];
+								if (ytSubtitlesCodeCap == 'en-US') ytSubtitlesCodeCap = 'en';
+								ytSubtitlesLinkCap = ytSubtitlesLink;
+							}
+						}
+					}
+				}
+				var ytSubtitlesCodes = getMyContent(page.url, /"translationLanguages":(\[.*?\])/, false);
+				if (ytSubtitlesCodes) {
+					try {
+						ytSubtitlesCodes = JSON.parse(ytSubtitlesCodes);
+					}
+					catch(e) {
+						ytSubtitlesCodes = {};
+					}
+					if (ytSubtitlesCodes) {
+						if (ytSubtitlesLinkSub) {
+							for (var s = 0; s < ytSubtitlesCodes.length; s++) {
+								ytSubtitlesCode = ytSubtitlesCodes[s]['languageCode'];
+								if (ytSubtitlesCodeSub != ytSubtitlesCode) {
+									ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLinkSub + '&tlang=' + ytSubtitlesCode;
+								}
+							}
+						}
+						if (ytSubtitlesLinkCap) {
+							for (var s = 0; s < ytSubtitlesCodes.length; s++) {
+								ytSubtitlesCode = ytSubtitlesCodes[s]['languageCode'];
+								if (!ytSubtitlesList[ytSubtitlesCode]) {
+									ytSubtitlesList[ytSubtitlesCode] = ytSubtitlesLinkCap + '&tlang=' + ytSubtitlesCode;
+								}
+							}
 						}
 					}
 				}
@@ -1514,13 +1562,13 @@ function ViewTube() {
 		}
 
 		/* Player Size */
-		var ytPlayerWidth, ytPlayerHeight;
+		var ytPlayerWidth, ytPlayerHeight, ytPlayerWindowSize;
 		if (ytPlayerWindow.clientHeight) ytPlayerHeight = ytPlayerWindow.clientHeight;
 		else ytPlayerHeight = ytPlayerWindow.parentNode.clientHeight;
 		ytPlayerWidth = Math.ceil(ytPlayerHeight * (16 / 9));
 		function ytSizes() {
 			if (ytPlayerWindow) {
-				var ytPlayerWindowSize = getMyElement('', 'div', 'class', 'player-placeholder', 0, false);
+				ytPlayerWindowSize = getMyElement('', 'div', 'class', 'player-placeholder', 0, false);
 				if (ytPlayerWindowSize) {
 					if (ytPlayerWindowSize.clientHeight) ytPlayerHeight = ytPlayerWindowSize.clientHeight;
 					else ytPlayerHeight = ytPlayerWindowSize.parentNode.clientHeight;
@@ -1535,6 +1583,14 @@ function ViewTube() {
 							resizeMyPlayer('widesize');
 						}
 					}, 1000);
+				}
+				if (ytPlayerWidth && player['videoMenu']) {
+					if (ytPlayerWidth < 600) {
+						styleMyElement(player['videoMenu'], {maxWidth: '25%'});
+					}
+					else {
+						styleMyElement(player['videoMenu'], {maxWidth: '35%'});
+					}
 				}
 			}
 		}
@@ -1594,6 +1650,7 @@ function ViewTube() {
 				'playerHeight': ytPlayerHeight
 			};
 			createMyPlayer();
+			ytSizes();
 		}
 
 		/* Script */
@@ -1876,7 +1933,7 @@ function ViewTube() {
 					player['playerHeight'] = dmPlayerHeight;
 					resizeMyPlayer('widesize');
 				}
-			}, 300);
+			}, 500);
 		}, false);
 
 		/* My Player Window */
@@ -1911,18 +1968,8 @@ function ViewTube() {
 				clearInterval(dmWaitForObject);
 			}
 			/* Hide Ads */
-			//var dmAdsRight = getMyElement('', 'div', 'query', '[class*="videoInfoAdContainer"]', -1, false);
-			//if (dmAdsRight && dmAdsRight.parentNode) removeMyElement(dmAdsRight.parentNode, dmAdsRight);
-			//if (dmAdsRight) styleMyElement(dmAdsRight, {position: 'absolute'});
-			/*var dmAdsBottom = getMyElement('', 'div', 'query', '[class*="DisplayAd__adContainer"]', -1, false);
-			//if (dmAdsBottom && dmAdsBottom.parentNode) removeMyElement(dmAdsBottom.parentNode, dmAdsBottom);
-			if (dmAdsBottom) styleMyElement(dmAdsBottom, {position: 'absolute'});
-			/* Hide Player Placeholder */
-			/*var dmPlayerPlaceholder = getMyElement('', 'div', 'id', 'watching-player-placeholder', -1, false);
-			if (dmPlayerPlaceholder) styleMyElement(dmPlayerPlaceholder, {background: 'none'});
-			/* Continuous Player */
-			/*var dmContinuousPlace = getMyElement('', 'div', 'id', 'continuous-player', -1, false);
-			if (dmContinuousPlace) styleMyElement(dmContinuousPlace, {display: 'none'});*/
+			var dmAdsRight = getMyElement('', 'div', 'query', '[class*="NewWatchingDiscovery__adSection"]', -1, false);
+			if (dmAdsRight && dmAdsRight.parentNode) styleMyElement(dmAdsRight, {width: '0px'});
 		}, 1000);
 		intervals.push(dmWaitForObject);
 
@@ -2448,7 +2495,9 @@ function ViewTube() {
 			var myVideoCode, imdbVideo;
 			for (var imdbVideoCode in imdbVideoFormats) {
 				for (var i = 0; i < imdbVideosContent.length; i++) {
-					imdbVideo = parseMyContent(JSON.stringify(imdbVideosContent[i]), new RegExp('"url":"(.*?)".*?"value":"' + imdbVideoCode + '"'));
+					if (imdbVideosContent[i]["displayName"]["value"] == imdbVideoCode) {
+						imdbVideo = imdbVideosContent[i]["url"];
+					}
 					if (imdbVideo) {
 						imdbVideo = cleanMyContent(imdbVideo, false);
 						if (!imdbVideoFound) imdbVideoFound = true;

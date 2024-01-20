@@ -1,8 +1,8 @@
 {
 
-	"manifest_version": 2,
+	"manifest_version": 3,
 	"name": "ViewTube",
-	"version": "2023.7.7",
+	"version": "2024.1.19",
 
 	"description": "Watch videos from video sharing websites with extra options.",
 
@@ -46,11 +46,13 @@
 		}
 	],
 
-	"permissions": [
+	"host_permissions": [
 		"http://manifest.googlevideo.com/*",
 		"https://manifest.googlevideo.com/*",
 		"http://player.vimeo.com/*",
-		"https://player.vimeo.com/*"
+		"https://player.vimeo.com/*",
+		"http://api.vimeo.com/*",
+		"https://api.vimeo.com/*"
 	]
 
 }
