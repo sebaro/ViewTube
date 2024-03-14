@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.01.19
+// @version         2024.03.02
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -85,7 +85,7 @@ var feature = {'definition': true, 'container': true, 'openpagelink': true, 'aut
 var option = {'embed': 'Video', 'media': 'Auto', 'definition': 'High Definition', 'container': 'MP4', 'openpagelink': false, 'autoplay': false, 'subtitles': 'None', 'playdash': false, 'widesize': false, 'fullsize': false};
 
 // Embed
-var embedtypes = ['Video', 'Object', 'Embed', 'Protocol'];
+var embedtypes = ['Video', 'Object', 'Embed', 'Protocol', 'Tab'];
 var embedcontent = {
 	'Video': '<br><br>The video should be loading. If it doesn\'t load, make sure your browser supports HTML5\'s Video and this video codec. If you think it\'s a script issue, please report it <a href="' + contact + '" style="color:#00892C">here</a>.',
 	'Object': '<br><br>The video should be loading. If it doesn\'t load, make sure a video plugin is installed. If you think it\'s a script issue, please report it <a href="' + contact + '" style="color:#00892C">here</a>.<param name="scale" value="aspect"><param name="stretchtofit" value="true"><param name="autostart" value="true"><param name="autoplay" value="true">',
@@ -93,11 +93,12 @@ var embedcontent = {
 };
 
 // Media
-var mediatypes = {'MP4': 'video/mp4', 'WebM': 'video/webm', 'M3U8': 'application/x-mpegURL', 'M3U8*': 'application/vnd.apple.mpegURL', 'VLC': 'application/x-vlc-plugin', 'VLC*': 'application/x-vlc-plugin'}
+var mediatypes = {'MP4': 'video/mp4', 'WebM': 'video/webm', 'M3U8': 'application/x-mpegURL', 'M3U8*': 'application/vnd.apple.mpegURL', 'VLC': 'application/x-vlc-plugin', 'VLC*': 'application/x-vlc-plugin', 'VLC+': 'vlc://', 'Intent': 'intent:'}
 if (navigator.platform.indexOf('Win') != -1) {
 	mediatypes['WMP'] = 'application/x-ms-wmp';
 	mediatypes['WMP*'] = 'application/x-mplayer2';
 	mediatypes['QT'] = 'video/quicktime';
+	mediatypes['Pot'] = 'potplayer://';
 }
 else if (navigator.platform.indexOf('Mac') != -1) {
 	mediatypes['QT'] = 'video/quicktime';
@@ -887,12 +888,22 @@ function playMyVideo(play) {
 				contentTrack = player['subtitlesList'][option['subtitles']];
 				contentStream = contentVideo + 'SEPARATOR' + contentAudio + 'SEPARATOR' + contentTrack;
 			}
-			if (option['media'] == 'VLC' || option['media'] == 'VLC*') {
-				if (!contentAudio && !contentTrack) {
-					contentProtocol = 'vlc://';
+			if (!contentAudio && !contentTrack) {
+				if (option['media'] == 'VLC+' || option['media'] == 'Pot' || option['media'] == 'Intent') {
+					contentProtocol = mediatypes[option['media']];
+					if (option['media'] == 'Intent') {
+						contentStream = contentStream + '#Intent;type=video/mp4;end';
+					}
 				}
 			}
 			page.win.location.href = contentProtocol + contentStream;
+			return;
+		}
+		if (option['embed'] == 'Tab') {
+			var contentVideo = player['videoList'][player['videoPlay']];
+			if (player['videoList'][player['videoPlay']] != 'DASH') {
+				page.win.open(contentVideo, '_blank').focus();
+			}
 			return;
 		}
 		player['isPlaying'] = true;
@@ -932,6 +943,7 @@ function playMyVideo(play) {
 		}
 		player['contentVideo'].width = player['contentWidth'];
 		player['contentVideo'].height = player['contentHeight'];
+		player['contentVideo'].setAttribute('volume', '50');
 		styleMyElement(player['contentVideo'], {position: 'relative', width: player['contentWidth'] + 'px', height: player['contentHeight'] + 'px', outline: 'none'});
 		appendMyElement(player['playerContent'], player['contentVideo']);
 		player['contentVideo'].focus();
@@ -1071,7 +1083,7 @@ function ViewTube() {
 	if (page.url.indexOf('youtube.com/watch') != -1 && page.url.indexOf('m.youtube.com') == -1) {
 
 		/* Video Availability */
-		if (getMyContent(page.url, /"playabilityStatus":\{"status":"(ERROR|UNPLAYABLE)"/)) return;
+		if (getMyContent(page.url, /"playabilityStatus":\{"status":"(ERROR|UNPLAYABLE|LIVE_STREAM_OFFLINE)"/)) return;
 
 		/* Get Video ID */
 		var ytVideoId = parseMyContent(page.url, /(?:\?|&)v=(.*?)(&|$)/);
@@ -1549,7 +1561,7 @@ function ViewTube() {
 	else if (page.url.indexOf('m.youtube.com/watch') != -1) {
 
 		/* Video Availability */
-		if (getMyContent(page.url, /"playabilityStatus":\{"status":"(ERROR|UNPLAYABLE)"/)) return;
+		if (getMyContent(page.url, /"playabilityStatus":\{"status":"(ERROR|UNPLAYABLE|LIVE_STREAM_OFFLINE)"/)) return;
 
 		/* Get Video ID */
 		var ytVideoId = parseMyContent(page.url, /(?:\?|&)v=(.*?)(&|$)/);
@@ -1920,7 +1932,7 @@ function ViewTube() {
 		/* Player Size */
 		var dmPlayerWidth, dmPlayerHeight;
 		function dmSizes() {
-			if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth;
+			if (dmPlayerWindow) dmPlayerWidth = dmPlayerWindow.clientWidth - 60;
 			if (dmPlayerWidth) dmPlayerHeight = Math.ceil(dmPlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 		}
 
@@ -1949,17 +1961,9 @@ function ViewTube() {
 				cleanMyElement(myPlayerWindow, false);
 				cleanMyElement(dmPlayerWindow, true);
 				appendMyElement(dmPlayerWindow, myPlayerWindow);
-				//blockObject = dmPlayerWindow;
-				dmPlayerFrame = getMyElement(dmPlayerWindow.firstChild, 'iframe', 'tag', '', 0, false);
-				if (dmPlayerFrame) {
-					dmPlayerFrame.addEventListener('load', function() {
-						//dmPlayerFrame.src = '#';
-						blockObject = dmPlayerFrame.contentWindow.document;
-					}, false);
-				}
 				dmSizes();
 				styleMyElement(myPlayerWindow, {position: 'relative', width: dmPlayerWidth + 'px', height: dmPlayerHeight + 'px', textAlign: 'center'});
-				styleMyElement(dmPlayerWindow, {marginTop: '-15px'})
+				styleMyElement(dmPlayerWindow, {height: dmPlayerHeight + 'px', textAlign: 'center', marginLeft: '30px'})
 				if (dmVideosReady) dmPlayer();
 			}
 			dmWaitForLoops--;
@@ -1972,6 +1976,11 @@ function ViewTube() {
 			if (dmAdsRight && dmAdsRight.parentNode) styleMyElement(dmAdsRight, {width: '0px'});
 		}, 1000);
 		intervals.push(dmWaitForObject);
+		page.win.setTimeout(function() {
+			dmSizes();
+			blockObject = dmPlayerWindow;
+			blockVideos();
+		}, 5000);
 
 		/* Create Player */
 		var dmDefaultVideo = 'Low Definition MP4';

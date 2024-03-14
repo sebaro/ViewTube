@@ -2,6 +2,9 @@
 
 /* ViewTube Changelog */
 
+#2024.03.02
+- adds tab, vlc, potplayer, intent protocols
+
 #2024.01.19
 - fixes YouTube, IMDb
 
