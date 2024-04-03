@@ -1753,7 +1753,12 @@ function ViewTube() {
 				ytVideosContent = getMyContent(ytVideoInfoUrl + ytVideoInfoKey + '|' + JSON.stringify(ytVideoInfoDataRequest));
 			}
 			else {
-				ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s*=\s*({.*?});/);
+				if (client == 'WEB') {
+					ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s*=\s*({.*?});/);
+				}
+				if (client == 'EXT') {
+					ytVideosContent = getMyContent('https://sebaro-apps.vercel.app/api/request|' + JSON.stringify({'url':page.url.replace('m.youtube', 'www.youtube')}), /ytInitialPlayerResponse\s*=\s*({.*?});/);
+				}
 			}
 			try {
 				ytVideosContent = JSON.parse(ytVideosContent);
@@ -1789,6 +1794,9 @@ function ViewTube() {
 		}
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(false, 'WEB', false);
+		}
+		if (!ytVideosContent['formats']) {
+			ytGetVideos(false, 'EXT', false);
 		}
 		if (ytVideosContent['formats']) {
 			var ytVideoFormats = {
