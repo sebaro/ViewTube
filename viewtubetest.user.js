@@ -1534,9 +1534,9 @@ function ViewTube() {
 				'95': 'High Definition M3U8',
 				'96': 'Full High Definition M3U8'
 			};
-			ytVideoList["Multi Definition M3U8"] = ytVideosContent['hlsManifestUrl'];
+			ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
 			var ytHLSVideos, ytHLSVideo, ytVideoCode, myVideoCode;
-			ytHLSVideos = getMyContent(ytVideosContent['hlsManifestUrl'], /(http.*?m3u8)/g);
+			ytHLSVideos = getMyContent(ytVideosContentHLS, /(http.*?m3u8)/g);
 			if (ytHLSVideos) {
 				for (var i = 0; i < ytHLSVideos.length; i++) {
 					ytHLSVideo = ytHLSVideos[i];
