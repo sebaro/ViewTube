@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2024.02.14
+// @version         2024.06.09
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1634,7 +1634,7 @@ function ViewTube() {
 		page.win.setTimeout(function() {
 
 			/* Page Type */
-			var ylePageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"', false);
+			var ylePageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"');
 			if (!ylePageType || (ylePageType != 'video.episode' && ylePageType != 'video.other' && ylePageType != 'video.movie')) return;
 
 			/* Get Player Window */
@@ -1665,9 +1665,9 @@ function ViewTube() {
 			yleSizes();
 
 			/* Get Video Thumb */
-			var yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"', false);
-			if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image:url"\\s+content="(.*?)"', false);
-			if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'imagesrcset="([^"]*?) 640', false);
+			var yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image"\\s+content="(.*?)"');
+			if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'meta\\s+property="og:image:url"\\s+content="(.*?)"');
+			if (!yleVideoThumb) yleVideoThumb = getMyContent(page.url, 'imagesrcset="([^"]*?) 640');
 
 			function ylePlayer() {
 				var yleVideosPath = yleVideosContent.match(/"dataUrl":"(.*?)"/);
@@ -1755,8 +1755,8 @@ function ViewTube() {
 
 			/* Get Videos Content */
 			var yleVideosContent;
-			var yleVideosSource = getMyContent(page.url, 'meta\\s+property="og:video:url"\\s+content="(.*?)"', false);
-			if (yleVideosSource) yleVideosContent = getMyContent(yleVideosSource, '"entryResult":\\s*\\{(.*?)\\}\\}', false);
+			var yleVideosSource = getMyContent(page.url, 'meta\\s+property="og:video:url"\\s+content="(.*?)"');
+			if (yleVideosSource) yleVideosContent = getMyContent(yleVideosSource, '"entryResult":\\s*\\{(.*?)\\}\\}');
 			if (yleVideosContent) {
 				ylePlayer();
 			}
@@ -1765,7 +1765,7 @@ function ViewTube() {
 				ylePageId = (ylePageId) ? ylePageId[1] : null;
 				if (ylePageId) {
 					//yleVideosContent = getMyContent('https://player.api.yle.fi/v1/preview/' + ylePageId + '.json?language=fin&ssl=true&countryCode=FI&isInEU=true&host=areenaylefi&app_id=player_static_prod&app_key=8930d72170e48303cf5f3867780d549b', 'TEXT', false);
-					yleVideosContent = getMyContent('https://player.api.yle.fi/v1/preview/' + ylePageId + '.json?host=areenaylefi&app_id=player_static_prod&app_key=8930d72170e48303cf5f3867780d549b', 'TEXT', false);
+					yleVideosContent = getMyContent('https://player.api.yle.fi/v1/preview/' + ylePageId + '.json?host=areenaylefi&app_id=player_static_prod&app_key=8930d72170e48303cf5f3867780d549b');
 				}
 				if (yleVideosContent && yleVideosContent.indexOf('m3u8') != -1) {
 					ylePlayer();
