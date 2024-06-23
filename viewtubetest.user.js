@@ -1282,7 +1282,7 @@ function ViewTube() {
 				}
 				/* Sidebar Sparkles */
 				if (!ytSidebarSparkles) {
-					ytSidebarSparkles = getMyElement('', '', 'class', 'sparkles-light-cta', 0, false);
+					ytSidebarSparkles = getMyElement('', 'ytd-ad-slot-renderer', 'tag', '', 0, false);
 					if (ytSidebarSparkles) {
 						styleMyElement(ytSidebarSparkles, {display: 'none'});
 						ytWaitForObjects--;
@@ -1514,7 +1514,6 @@ function ViewTube() {
 					}
 				}
 				ytVideosReady = true;
-				if (ytPlayerWindow) ytCreatePlayer();
 			}
 			else {
 				showMyMessage('!videos');
@@ -1526,13 +1525,15 @@ function ViewTube() {
 		if (ytVideosContentHLS) {
 			ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
 			ytDefaultVideo = 'Multi Definition M3U8';
-			if (!ytVideosReady) {
-				ytVideosReady = true;
-				if (ytPlayerWindow) ytCreatePlayer();
-			}
+			ytVideosReady = true;
 		}
-		if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
-			showMyMessage('!content');
+		if (ytVideosReady) {
+			if (ytPlayerWindow) ytCreatePlayer();
+		}
+		else {
+			if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
+				showMyMessage('!content');
+			}
 		}
 
 	}
@@ -1860,7 +1861,6 @@ function ViewTube() {
 					}
 				}
 				ytVideosReady = true;
-				if (ytPlayerWindow) ytCreatePlayer();
 			}
 			else {
 				showMyMessage('!videos');
@@ -1872,13 +1872,15 @@ function ViewTube() {
 		if (ytVideosContentHLS) {
 			ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
 			ytDefaultVideo = 'Multi Definition M3U8';
-			if (!ytVideosReady) {
-				ytVideosReady = true;
-				if (ytPlayerWindow) ytCreatePlayer();
-			}
+			ytVideosReady = true;
 		}
-		if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
-			showMyMessage('!content');
+		if (ytVideosReady) {
+			if (ytPlayerWindow) ytCreatePlayer();
+		}
+		else {
+			if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
+				showMyMessage('!content');
+			}
 		}
 
 	}
