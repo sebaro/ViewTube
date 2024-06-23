@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=ViewTube Client
-Exec=/home/Devel/JavaScript/ViewTube/Protocol/viewtube %u
+Exec=/home/Devel/Userscripts/ViewTube/Protocol/viewtube %u
 Icon=mpv
 Type=Application
 Terminal=false

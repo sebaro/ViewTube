@@ -1,9 +1,14 @@
 #! /bin/bash
 
+export LD_LIBRARY_PATH=/usr/x86_64-linux-gnu
+
 i="$(echo "$1" | sed -e "s/viewtube://" -e "s/SEPARATOR/|/g")"
-v="$(echo "$i" | cut -d "|" -f 1)"
-a="$(echo "$i" | cut -d "|" -f 2)"
-s="$(echo "$i" | cut -d "|" -f 3)"
+v="$(echo "$i" | cut -d "|" -f 1 -s)"
+a="$(echo "$i" | cut -d "|" -f 2 -s)"
+s="$(echo "$i" | cut -d "|" -f 3 -s)"
+if [ "$v" = "" ]; then
+	v="$i"
+fi
 if [ "$a" = "" ]; then
 	if [ "$s" = "" ]; then
 		mpv --osc --fs "$v" || cvlc -f "$v"
