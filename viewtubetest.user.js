@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.06.23
+// @version         2024.07.03
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -125,6 +125,7 @@ function createMyElement(type, properties, event, listener) {
 	var obj = page.doc.createElement(type);
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
+		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {
@@ -136,6 +137,7 @@ function createMyElement(type, properties, event, listener) {
 function modifyMyElement(obj, properties, event, listener) {
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
+		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {
