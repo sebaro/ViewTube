@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.07.03
+// @version         2024.07.04
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1408,10 +1408,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(true, 'WEB', false);
-		if (!ytVideosContent['formats']) {
-			ytGetVideos(false, 'WEB', false);
-		}
+		ytGetVideos(false, 'WEB', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
@@ -1755,10 +1752,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(true, 'MWEB', false);
-		if (!ytVideosContent['formats']) {
-			ytGetVideos(false, 'WEB', false);
-		}
+		ytGetVideos(false, 'WEB', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
