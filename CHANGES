@@ -2,6 +2,13 @@
 
 /* ViewTube Changelog */
 
+
+#2024.08.09
+- fixes YouTube
+
+#2024.07.24
+- fixes YouTube, adds YouTube HLS
+
 #2024.03.02
 - adds tab, vlc, potplayer, intent protocols
 

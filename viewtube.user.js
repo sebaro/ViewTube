@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.08.07
+// @version         2024.08.09
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -126,6 +126,25 @@ function createMyElement(type, properties, event, listener) {
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
 		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
+		else if (propertykey == 'innerHTML') {
+			try {
+				obj[propertykey] = properties[propertykey];
+			}
+			catch(e) {
+				if (window.trustedTypes) {
+					if (!window.trustedTypes.defaultPolicy) {
+						if (window.trustedTypes.createPolicy) {
+							window.trustedTypes.createPolicy('default', {
+								createHTML: (string, sink) => string
+							});
+						}
+					}
+					if (window.trustedTypes.defaultPolicy) {
+						obj[propertykey] = window.trustedTypes.defaultPolicy.createHTML(properties[propertykey]);
+					}
+				}
+			}
+		}
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {
@@ -138,6 +157,25 @@ function modifyMyElement(obj, properties, event, listener) {
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
 		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
+		else if (propertykey == 'innerHTML') {
+			try {
+				obj[propertykey] = properties[propertykey];
+			}
+			catch(e) {
+				if (window.trustedTypes) {
+					if (!window.trustedTypes.defaultPolicy) {
+						if (window.trustedTypes.createPolicy) {
+							window.trustedTypes.createPolicy('default', {
+								createHTML: (string, sink) => string
+							});
+						}
+					}
+					if (window.trustedTypes.defaultPolicy) {
+						obj[propertykey] = window.trustedTypes.defaultPolicy.createHTML(properties[propertykey]);
+					}
+				}
+			}
+		}
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {
@@ -250,7 +288,7 @@ function getMyContent(url, pattern) {
 		url = url.split('|')[0];
 	}
 	if (data) {
-		//console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
+		console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
 		urle = btoa(url + data + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -280,7 +318,7 @@ function getMyContent(url, pattern) {
 		}
 	}
 	else {
-		//console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
+		console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
 		urle = btoa(url + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -1355,9 +1393,8 @@ function ViewTube() {
 		/* Get Videos Content */
 		var ytVideosContent = {};
 		var ytVideosContentHLS;
-		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
-		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false&key=';
-		var ytVideoInfoClientVersion = {'WEB': '2.20240401.01.00', 'ANDROID': '19.09.37', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.09.3'};
+		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
+		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'WEB_CREATOR': '1.20240723.03.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1367,23 +1404,19 @@ function ViewTube() {
 				ytVideoInfoDataRequest['context']['client'] = {};
 				ytVideoInfoDataRequest['context']['client']['clientName'] = client;
 				ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion[client];
-				if (client == 'ANDROID') {
-					ytVideoInfoDataRequest['context']['client']['androidSdkVersion'] = 30;
-					ytVideoInfoDataRequest['params'] = 'CgIIAQ==';
-					ytVideoInfoKey = 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w';
-				}
 				if (embed) {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
 					ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
-					ytGetScriptUrl();
-					ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
-					ytVideoInfoDataRequest['playbackContext'] = {};
-					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
-					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				}
+				ytVideoInfoDataRequest['playbackContext'] = {};
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['html5Preference'] = 'HTML5_PREF_WANTS';
+				ytGetScriptUrl();
+				ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				ytVideoInfoDataRequest['videoId'] = ytVideoId;
-				ytVideosContent = getMyContent(ytVideoInfoUrl + ytVideoInfoKey + '|' + JSON.stringify(ytVideoInfoDataRequest));
+				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
 			}
 			else {
 				ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s*=\s*({.*?});/);
@@ -1411,7 +1444,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(false, 'WEB', false);
+		ytGetVideos(true, 'WEB_CREATOR', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
@@ -1515,27 +1548,23 @@ function ViewTube() {
 						}
 					}
 				}
+				/* HLS */
+				if (!ytVideosContentHLS) {
+					ytGetVideos(true, 'IOS', false);
+				}
+				if (ytVideosContentHLS) {
+					ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
+					ytDefaultVideo = 'Multi Definition M3U8';
+				}
 				ytVideosReady = true;
+				if (ytPlayerWindow) ytCreatePlayer();
 			}
 			else {
 				showMyMessage('!videos');
 			}
 		}
-		if (!ytVideosContentHLS) {
-			ytGetVideos(true, 'IOS', false);
-		}
-		if (ytVideosContentHLS) {
-			ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
-			ytDefaultVideo = 'Multi Definition M3U8';
-			ytVideosReady = true;
-		}
-		if (ytVideosReady) {
-			if (ytPlayerWindow) ytCreatePlayer();
-		}
 		else {
-			if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
-				showMyMessage('!content');
-			}
+			showMyMessage('!content');
 		}
 
 	}
@@ -1705,9 +1734,8 @@ function ViewTube() {
 		/* Get Videos Content */
 		var ytVideosContent = {};
 		var ytVideosContentHLS;
-		var ytVideoInfoKey = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
-		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false&key=';
-		var ytVideoInfoClientVersion = {'MWEB': '2.20240401.01.00', 'ANDROID': '19.09.37', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.09.3'};
+		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
+		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'WEB_CREATOR': '1.20240723.03.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1717,23 +1745,19 @@ function ViewTube() {
 				ytVideoInfoDataRequest['context']['client'] = {};
 				ytVideoInfoDataRequest['context']['client']['clientName'] = client;
 				ytVideoInfoDataRequest['context']['client']['clientVersion'] = ytVideoInfoClientVersion[client];
-				if (client == 'ANDROID') {
-					ytVideoInfoDataRequest['context']['client']['androidSdkVersion'] = 30;
-					ytVideoInfoDataRequest['params'] = 'CgIIAQ==';
-					ytVideoInfoKey = 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w';
-				}
 				if (embed) {
 					ytVideoInfoDataRequest['context']['client']['clientScreen'] = 'EMBED';
 					ytVideoInfoDataRequest['context']['thirdParty'] = {};
 					ytVideoInfoDataRequest['context']['thirdParty']['embedUrl'] = 'https://www.youtube.com';
-					ytGetScriptUrl();
-					ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
-					ytVideoInfoDataRequest['playbackContext'] = {};
-					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
-					ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				}
+				ytVideoInfoDataRequest['playbackContext'] = {};
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext'] = {};
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['html5Preference'] = 'HTML5_PREF_WANTS';
+				ytGetScriptUrl();
+				ytVideoSignatureTimestamp = getMyContent(ytScriptUrl, /signatureTimestamp:(\d+)/);
+				ytVideoInfoDataRequest['playbackContext']['contentPlaybackContext']['signatureTimestamp'] = ytVideoSignatureTimestamp;
 				ytVideoInfoDataRequest['videoId'] = ytVideoId;
-				ytVideosContent = getMyContent(ytVideoInfoUrl + ytVideoInfoKey + '|' + JSON.stringify(ytVideoInfoDataRequest));
+				ytVideosContent = getMyContent(ytVideoInfoUrl + '|' + JSON.stringify(ytVideoInfoDataRequest));
 			}
 			else {
 				ytVideosContent = getMyContent(page.url, /ytInitialPlayerResponse\s*=\s*({.*?});/);
@@ -1749,6 +1773,9 @@ function ViewTube() {
 					ytVideoAuthor = ytVideosContent['videoDetails']['author'];
 					ytVideoTitle = ytVideoTitle + ' by ' + ytVideoAuthor;
 					ytVideoTitle = cleanMyContent(ytVideoTitle, false, true);
+					if (ytVideosContent['captions'] && ytVideosContent['captions']['playerCaptionsTracklistRenderer']) {
+						ytSubtitlesContent = ytVideosContent['captions']['playerCaptionsTracklistRenderer']['captionTracks'];
+					}
 				}
 			}
 			catch(e) {
@@ -1758,7 +1785,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(false, 'WEB', false);
+		ytGetVideos(true, 'WEB_CREATOR', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
@@ -1862,27 +1889,24 @@ function ViewTube() {
 						}
 					}
 				}
+				/* HLS */
+				if (!ytVideosContentHLS) {
+					ytGetVideos(true, 'IOS', false);
+				}
+				if (ytVideosContentHLS) {
+					ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
+					ytDefaultVideo = 'Multi Definition M3U8';
+					ytVideosReady = true;
+				}
 				ytVideosReady = true;
+				if (ytPlayerWindow) ytCreatePlayer();
 			}
 			else {
 				showMyMessage('!videos');
 			}
 		}
-		if (!ytVideosContentHLS) {
-			ytGetVideos(true, 'IOS', false);
-		}
-		if (ytVideosContentHLS) {
-			ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
-			ytDefaultVideo = 'Multi Definition M3U8';
-			ytVideosReady = true;
-		}
-		if (ytVideosReady) {
-			if (ytPlayerWindow) ytCreatePlayer();
-		}
 		else {
-			if (!ytVideosContent['formats'] && !ytVideosContentHLS) {
-				showMyMessage('!content');
-			}
+			showMyMessage('!content');
 		}
 
 	}
