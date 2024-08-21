@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.08.09
+// @version         2024.08.20
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1554,7 +1554,6 @@ function ViewTube() {
 				}
 				if (ytVideosContentHLS) {
 					ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
-					ytDefaultVideo = 'Multi Definition M3U8';
 				}
 				ytVideosReady = true;
 				if (ytPlayerWindow) ytCreatePlayer();
@@ -1895,10 +1894,7 @@ function ViewTube() {
 				}
 				if (ytVideosContentHLS) {
 					ytVideoList["Multi Definition M3U8"] = ytVideosContentHLS;
-					ytDefaultVideo = 'Multi Definition M3U8';
-					ytVideosReady = true;
 				}
-				ytVideosReady = true;
 				if (ytPlayerWindow) ytCreatePlayer();
 			}
 			else {
@@ -1995,7 +1991,7 @@ function ViewTube() {
 		}
 
 		/* Get Video Thumbnail */
-		var dmVideoThumb = getMyContent(dmMetadataUrl, /"posters":.*?"720":"(.*?)"/);
+		var dmVideoThumb = getMyContent(dmMetadataUrl, /"thumbnails":.*?"720":"(.*?)"/);
 		if (dmVideoThumb) dmVideoThumb = cleanMyContent(dmVideoThumb, false);
 
 		/* Get Video Title */
