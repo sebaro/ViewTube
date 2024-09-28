@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.08.29
+// @version         2024.09.28
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1603,22 +1603,17 @@ function ViewTube() {
 		else ytPlayerHeight = ytPlayerWindow.parentNode.clientHeight;
 		ytPlayerWidth = Math.ceil(ytPlayerHeight * (16 / 9));
 		function ytSizes() {
-			if (ytPlayerWindow) {
+			page.win.setTimeout(function() {
 				ytPlayerWindowSize = getMyElement('', 'div', 'class', 'player-placeholder', 0, false);
 				if (ytPlayerWindowSize) {
 					if (ytPlayerWindowSize.clientHeight) ytPlayerHeight = ytPlayerWindowSize.clientHeight;
 					else ytPlayerHeight = ytPlayerWindowSize.parentNode.clientHeight;
 					ytPlayerWidth = Math.ceil(ytPlayerHeight * (16 / 9));
 				}
-				else {
-					page.win.setTimeout(function() {
-						ytSizes();
-						if (player['playerSocket']) {
-							player['playerWidth'] = ytPlayerWidth;
-							player['playerHeight'] = ytPlayerHeight;
-							resizeMyPlayer('widesize');
-						}
-					}, 1000);
+				if (player['playerSocket']) {
+					player['playerWidth'] = ytPlayerWidth;
+					player['playerHeight'] = ytPlayerHeight;
+					resizeMyPlayer('widesize');
 				}
 				if (ytPlayerWidth && player['videoMenu']) {
 					if (ytPlayerWidth < 600) {
@@ -1628,7 +1623,7 @@ function ViewTube() {
 						styleMyElement(player['videoMenu'], {maxWidth: '35%'});
 					}
 				}
-			}
+			}, 2000);
 		}
 		ytSizes();
 
@@ -1646,13 +1641,14 @@ function ViewTube() {
 				cleanMyElement(ytPlayerWindow, true);
 				appendMyElement(ytPlayerWindow, myPlayerWindow);
 			}
+			var ytPlayerControlOverlay = getMyElement('', 'div', 'id', 'player-control-container', -1, false);
+			if (ytPlayerControlOverlay) {
+				styleMyElement(ytPlayerControlOverlay, {display: 'none'});
+				if (ytPlayerControlOverlay.parentNode) {
+					removeMyElement(ytPlayerControlOverlay.parentNode, ytPlayerControlOverlay);
+				}
+			}
 		}, 1000);
-
-		/* Live Videos */
-		var ytPlayerControlOverlay = getMyElement('', 'div', 'id', 'player-control-overlay', -1, false);
-		if (ytPlayerControlOverlay) {
-			styleMyElement(ytPlayerControlOverlay, {display: 'none'});
-		}
 
 		/* Update Sizes */
 		page.win.addEventListener('resize', function() {
