@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2024.09.28
+// @version         2024.10.13
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -288,7 +288,7 @@ function getMyContent(url, pattern) {
 		url = url.split('|')[0];
 	}
 	if (data) {
-		console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
+		//console.log('ViewTube: POST [' + pattern + '] ' + url + '\n' + data + '\n' + headers);
 		urle = btoa(url + data + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -318,7 +318,7 @@ function getMyContent(url, pattern) {
 		}
 	}
 	else {
-		console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
+		//console.log('ViewTube: GET [' + pattern + '] ' + url + '\n' + headers);
 		urle = btoa(url + headers);
 		if (!sources[urle]) {
 			xhr = new XMLHttpRequest();
@@ -1376,10 +1376,7 @@ function ViewTube() {
 				}
 			}
 			/* n */
-			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /String.fromCharCode\(110.*?\|\|([\w$]+)\(/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /b="nn".*?\|\|([\w$]+)\(/);
+			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\(a\)\{var\s*b=a.split\(/);
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
@@ -1394,7 +1391,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideosContentHLS;
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
-		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'WEB_CREATOR': '1.20240723.03.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
+		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'MWEB': '2.20240726.01.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1444,7 +1441,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(true, 'WEB_CREATOR', false);
+		ytGetVideos(true, 'MWEB', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
@@ -1724,10 +1721,7 @@ function ViewTube() {
 				}
 			}
 			/* n */
-			ytMainFuncName = getMyContent(ytScriptUrl, /&&\([\w$]+=([\w$]+)\(\w+\),\w+\.set\("n"/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /set\("n".*?\|\|([\w$]+)\(/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /String.fromCharCode\(110.*?\|\|([\w$]+)\(/);
-			if (!ytMainFuncName) ytMainFuncName = getMyContent(ytScriptUrl, /b="nn".*?\|\|([\w$]+)\(/);
+			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\(a\)\{var\s*b=a.split\(/);
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
@@ -1742,7 +1736,7 @@ function ViewTube() {
 		var ytVideosContent = {};
 		var ytVideosContentHLS;
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
-		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'WEB_CREATOR': '1.20240723.03.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
+		var ytVideoInfoClientVersion = {'WEB': '2.20240726.00.00', 'MWEB': '2.20240726.01.00', 'TVHTML5_SIMPLY_EMBEDDED_PLAYER': '2.0', 'IOS': '19.29.1'};
 		var ytVideoSignatureTimestamp = 19173;
 		var ytVideoInfoDataRequest = {};
 		function ytGetVideos(api, client, embed) {
@@ -1792,7 +1786,7 @@ function ViewTube() {
 		}
 
 		/* Get Videos */
-		ytGetVideos(true, 'WEB_CREATOR', false);
+		ytGetVideos(true, 'MWEB', false);
 		if (!ytVideosContent['formats']) {
 			ytGetVideos(true, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', true);
 		}
