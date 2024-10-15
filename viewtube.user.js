@@ -1610,6 +1610,7 @@ function ViewTube() {
 				if (player['playerSocket']) {
 					player['playerWidth'] = ytPlayerWidth;
 					player['playerHeight'] = ytPlayerHeight;
+					styleMyElement(player['playerSocket'], {height: '0px'});
 					resizeMyPlayer('widesize');
 				}
 				if (ytPlayerWidth && player['videoMenu']) {
@@ -1627,7 +1628,7 @@ function ViewTube() {
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center', zIndex: '2'});
-		styleMyElement(ytPlayerWindow, {position: 'absolute', width: ytPlayerWidth + 'px', height: ytPlayerHeight + 'px', textAlign: 'center', display: 'block', paddingBottom: '0px'});
+		styleMyElement(ytPlayerWindow, {position: 'absolute', width: '0px', height: '0px', textAlign: 'center', display: 'block', paddingBottom: '0px'});
 		cleanMyElement(ytPlayerWindow, true);
 		appendMyElement(ytPlayerWindow, myPlayerWindow);
 		blockObject = ytPlayerWindow;
@@ -1653,6 +1654,7 @@ function ViewTube() {
 			if (player['playerSocket']) {
 				player['playerWidth'] = ytPlayerWidth;
 				player['playerHeight'] = ytPlayerHeight;
+				styleMyElement(player['playerSocket'], {height: '0px'});
 				resizeMyPlayer('widesize');
 			}
 		}, false);
