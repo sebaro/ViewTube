@@ -11,6 +11,10 @@
 // @include         http://www.youtube.com*
 // @include         https://youtube.com*
 // @include         https://www.youtube.com*
+// @exclude         http://youtube.com/shorts*
+// @exclude         http://www.youtube.com/shorts*
+// @exclude         https://youtube.com/shorts*
+// @exclude         https://www.youtube.com/shorts*
 // @include         http://m.youtube.com*
 // @include         https://m.youtube.com*
 // @include         http://dailymotion.com*
