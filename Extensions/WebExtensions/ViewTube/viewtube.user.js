@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2025.03.28
+// @version         2025.04.23
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1358,15 +1358,15 @@ function ViewTube() {
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
-					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)\./);
+					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)[\.|\[]/);
 					if (ytExtraFuncName) {
 						ytExtraFuncBody = getMyContent(ytScriptUrl, new RegExp('var\\s+' + ytExtraFuncName.replace(/\$/, '\\$') + '=\\s*\\{(.*?)\\};'));
 						if (ytExtraFuncBody) {
 							ytMainFuncBody = 'var ' + ytExtraFuncName + '={' + ytExtraFuncBody + '};' + ytMainFuncBody;
-							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?\)),/);
+							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)|\]]),/);
 							if (ytExtraFuncBody) {
 								ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*return\s+(\w).join.*/, '$1'), ytMainFuncBody);
+								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*;return\s+(\w).*/, '$1'), ytMainFuncBody);
 							}
 						}
 					}
@@ -1374,11 +1374,14 @@ function ViewTube() {
 			}
 			/* n */
 			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\.split\(\w\.slice/);
+			if (!ytMainFuncName) {
+				ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\[\w\[\d+\]\]\(\w\[\d+\]\)/);
+			}
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
 					ytMainFuncBody = ytMainFuncBody.replace(/(\d+)?--(\d+)/, '$1- -$2').replace(/if\(typeof.*?;/, '');
-					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?\)),/);
+					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)|\]]),/);
 					if (ytExtraFuncBody) {
 						ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
 						ytUnscrambleParam['n'] = new Function(ytMainFuncBody.replace(/.*\+(\w)\}return.*/, '$1'), ytMainFuncBody);
@@ -1409,7 +1412,7 @@ function ViewTube() {
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
-				'clientVersion': '7.20250120.19.00',
+				'clientVersion': '7.20250312.16.00',
 				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'
 			},
 			'TV_EMBEDDED': {
@@ -1855,15 +1858,15 @@ function ViewTube() {
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
-					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)\./);
+					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)[\.|\[]/);
 					if (ytExtraFuncName) {
 						ytExtraFuncBody = getMyContent(ytScriptUrl, new RegExp('var\\s+' + ytExtraFuncName.replace(/\$/, '\\$') + '=\\s*\\{(.*?)\\};'));
 						if (ytExtraFuncBody) {
 							ytMainFuncBody = 'var ' + ytExtraFuncName + '={' + ytExtraFuncBody + '};' + ytMainFuncBody;
-							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?\)),/);
+							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)|\]]),/);
 							if (ytExtraFuncBody) {
 								ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*return\s+(\w).join.*/, '$1'), ytMainFuncBody);
+								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*;return\s+(\w).*/, '$1'), ytMainFuncBody);
 							}
 						}
 					}
@@ -1871,11 +1874,14 @@ function ViewTube() {
 			}
 			/* n */
 			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\.split\(\w\.slice/);
+			if (!ytMainFuncName) {
+				ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\[\w\[\d+\]\]\(\w\[\d+\]\)/);
+			}
 			if (ytMainFuncName) {
 				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
 				if (ytMainFuncBody) {
 					ytMainFuncBody = ytMainFuncBody.replace(/(\d+)?--(\d+)/, '$1- -$2').replace(/if\(typeof.*?;/, '');
-					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?\)),/);
+					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)|\]]),/);
 					if (ytExtraFuncBody) {
 						ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
 						ytUnscrambleParam['n'] = new Function(ytMainFuncBody.replace(/.*\+(\w)\}return.*/, '$1'), ytMainFuncBody);
@@ -1906,7 +1912,7 @@ function ViewTube() {
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
-				'clientVersion': '7.20250120.19.00',
+				'clientVersion': '7.20250312.16.00',
 				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'
 			},
 			'TV_EMBEDDED': {
