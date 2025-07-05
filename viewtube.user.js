@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2025.05.30
+// @version         2025.07.05
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -64,6 +64,14 @@
 // Don't run on frames or iframes
 if (window.top != window.self) return;
 
+// The new shit
+if (window.trustedTypes && window.trustedTypes.createPolicy && !window.trustedTypes.defaultPolicy) {
+  window.trustedTypes.createPolicy('default', {
+    createHTML: string => string,
+    createScript: string => string,
+  });
+}
+
 
 // ==========Variables========== //
 
@@ -126,25 +134,6 @@ function createMyElement(type, properties, event, listener) {
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
 		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
-		else if (propertykey == 'innerHTML') {
-			try {
-				obj[propertykey] = properties[propertykey];
-			}
-			catch(e) {
-				if (window.trustedTypes) {
-					if (!window.trustedTypes.defaultPolicy) {
-						if (window.trustedTypes.createPolicy) {
-							window.trustedTypes.createPolicy('default', {
-								createHTML: (string, sink) => string
-							});
-						}
-					}
-					if (window.trustedTypes.defaultPolicy) {
-						obj[propertykey] = window.trustedTypes.defaultPolicy.createHTML(properties[propertykey]);
-					}
-				}
-			}
-		}
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {
@@ -157,25 +146,6 @@ function modifyMyElement(obj, properties, event, listener) {
 	for (var propertykey in properties) {
 		if (propertykey == 'target') obj.setAttribute('target', properties[propertykey]);
 		else if (propertykey == 'type') obj.setAttribute('type', properties[propertykey]);
-		else if (propertykey == 'innerHTML') {
-			try {
-				obj[propertykey] = properties[propertykey];
-			}
-			catch(e) {
-				if (window.trustedTypes) {
-					if (!window.trustedTypes.defaultPolicy) {
-						if (window.trustedTypes.createPolicy) {
-							window.trustedTypes.createPolicy('default', {
-								createHTML: (string, sink) => string
-							});
-						}
-					}
-					if (window.trustedTypes.defaultPolicy) {
-						obj[propertykey] = window.trustedTypes.defaultPolicy.createHTML(properties[propertykey]);
-					}
-				}
-			}
-		}
 		else obj[propertykey] = properties[propertykey];
 	}
 	if (event && listener) {

@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2025.07.05
+- added Trusted Types, required by Tampermonkey and Violentmonkey
+
 #2025.05.30
 - fixes YouTube
 - fixes YouTube for some age restricted videos
