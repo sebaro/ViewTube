@@ -3,6 +3,9 @@
 /* ViewTube Changelog */
 
 
+#2025.07.09
+- fixes YouTube
+
 #2025.07.05
 - added Trusted Types, required by Tampermonkey and Violentmonkey
 
