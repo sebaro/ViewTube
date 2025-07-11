@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube+
-// @version         2024.06.09
+// @version         2024.07.10
 // @description     Watch videos from video sharing websites without Flash Player.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1635,10 +1635,10 @@ function ViewTube() {
 
 			/* Page Type */
 			var ylePageType = getMyContent(page.url, 'meta\\s+property="og:type"\\s+content="(.*?)"');
-			if (!ylePageType || (ylePageType != 'video.episode' && ylePageType != 'video.other' && ylePageType != 'video.movie')) return;
+			if (!ylePageType || ylePageType.indexOf('video') == -1) return;
 
 			/* Get Player Window */
-			var ylePlayerWindow = getMyElement('', 'div', 'query', '[class*="HeaderPlayControls_root"]', -1, false);
+			var ylePlayerWindow = getMyElement('', 'div', 'query', '[class*="GenericHeader_playControls"]', -1, false);
 			if (!ylePlayerWindow) {
 				showMyMessage('!player');
 				return;
@@ -1649,7 +1649,7 @@ function ViewTube() {
 			/* Player Sizes */
 			var ylePlayerWidth, ylePlayerHeight;
 			function yleSizes() {
-				if (ylePlayerWindow) ylePlayerWidth = ylePlayerWindow.clientWidth * 2;
+				if (ylePlayerWindow) ylePlayerWidth = ylePlayerWindow.clientWidth * 1.75;
 				if (ylePlayerWidth) ylePlayerHeight = Math.ceil(ylePlayerWidth / (16 / 9)) + myPlayerPanelHeight;
 			}
 
