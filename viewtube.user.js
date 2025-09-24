@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2025.07.09
+// @version         2025.09.24
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1202,7 +1202,7 @@ function ViewTube() {
 				'playerSocket': ytPlayerWindow,
 				'playerWindow': myPlayerWindow,
 				'videoList': ytVideoList,
-				'videoDefinitions': ['Ultra High Definition', 'Quad High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
+				'videoDefinitions': ['Ultra High Definition', 'Quad High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition', 'Multi Definition'],
 				'videoContainers': ['MP4', 'WebM', 'M3U8', 'Any'],
 				'videoPlay': ytDefaultVideo,
 				'videoThumb': ytVideoThumb,
@@ -1311,6 +1311,7 @@ function ViewTube() {
 				}
 				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
 					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
+					ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
 				}
 				if (!ytScriptUrl) {
 					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
@@ -1796,7 +1797,7 @@ function ViewTube() {
 				'playerSocket': ytPlayerWindow,
 				'playerWindow': myPlayerWindow,
 				'videoList': ytVideoList,
-				'videoDefinitions': ['Ultra High Definition', 'Quad High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition'],
+				'videoDefinitions': ['Ultra High Definition', 'Quad High Definition', 'Full High Definition', 'High Definition', 'Standard Definition', 'Low Definition', 'Very Low Definition', 'Multi Definition'],
 				'videoContainers': ['MP4', 'WebM', 'M3U8', 'Any'],
 				'videoPlay': ytDefaultVideo,
 				'videoThumb': ytVideoThumb,
@@ -1819,6 +1820,7 @@ function ViewTube() {
 				}
 				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
 					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
+					ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
 				}
 				if (!ytScriptUrl) {
 					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
