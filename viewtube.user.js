@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2025.09.24
+// @version         2025.10.06
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -242,10 +242,16 @@ function cleanMyContent(content, unesc, extra) {
 
 function parseMyContent(content, pattern) {
 	var parse, response;
-	content = content.replace(/(\r\n|\n|\r)/gm, '');
 	parse = content.match(pattern);
 	if (parse) {
 		response = (/g$/.test(pattern)) ? parse : parse[1];
+	}
+	if (!response) {
+		content = content.replace(/(\r\n|\n|\r)/gm, '');
+		parse = content.match(pattern);
+		if (parse) {
+			response = (/g$/.test(pattern)) ? parse : parse[1];
+		}
 	}
 	return response;
 }
@@ -1311,7 +1317,7 @@ function ViewTube() {
 				}
 				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
 					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
-					ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
+					//ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
 				}
 				if (!ytScriptUrl) {
 					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
@@ -1323,41 +1329,17 @@ function ViewTube() {
 		var ytUnscrambleParam = {};
 		function ytGetUnscrambleParamFunc() {
 			ytGetScriptUrl();
-			var ytMainFuncName, ytMainFuncBody, ytExtraFuncName, ytExtraFuncBody;
-			/* s */
-			ytMainFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\(decodeURIComponent/);
-			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/g, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
-				if (ytMainFuncBody) {
-					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)[\.\[]/);
-					if (ytExtraFuncName) {
-						ytExtraFuncBody = getMyContent(ytScriptUrl, new RegExp('var\\s+' + ytExtraFuncName.replace(/\$/g, '\\$') + '=\\s*\\{(.*?)\\};'));
-						if (ytExtraFuncBody) {
-							ytMainFuncBody = 'var ' + ytExtraFuncName + '={' + ytExtraFuncBody + '};' + ytMainFuncBody;
-							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)\]]),[\w$]/);
-							if (ytExtraFuncBody) {
-								ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*;return\s+(\w).*/, '$1'), ytMainFuncBody);
-							}
-						}
-					}
-				}
+			var ytScriptFunc = getMyContent(ytScriptUrl, /('use strict'[\S\s]*;)\}/);
+			var ytUnscrambleSFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\([^\(]*?decodeURIComponent\(/);
+			var ytUnscrambleSFuncArgm = parseInt(getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=[\w$]+\(([^\(]*?)decodeURIComponent\(/));
+			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /[\w$]+=\[([\w$]+)\];g\.[\w$]+=g\.[\w$]+\.prototype;g\.[\w$]+\.[\w$]+=function/);
+			var ytUnscrambleReturn = 'return {' + ytUnscrambleSFuncName + ':' + ytUnscrambleSFuncName + ', ' + ytUnscrambleNFuncName + ':' + ytUnscrambleNFuncName +'};';
+			var ytUnscrambleFunc = new Function('g', ytScriptFunc + ytUnscrambleReturn)([]);
+			ytUnscrambleParam['s'] = function(s) {
+				return (ytUnscrambleSFuncArgm) ? ytUnscrambleFunc[ytUnscrambleSFuncName](ytUnscrambleSFuncArgm, s) : ytUnscrambleFunc[ytUnscrambleSFuncName](s);
 			}
-			/* n */
-			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\.split\(\w\.slice/);
-			if (!ytMainFuncName) {
-				ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\[\w\[\d+\]\]\(\w\[\d+\]\)/);
-			}
-			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/g, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
-				if (ytMainFuncBody) {
-					ytMainFuncBody = ytMainFuncBody.replace(/(\d+)?--(\d+)/, '$1- -$2').replace(/if\(typeof.*?;/, '');
-					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)\]]),[\w$]/);
-					if (ytExtraFuncBody) {
-						ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-						ytUnscrambleParam['n'] = new Function(ytMainFuncBody.replace(/.*\+(\w)\}return.*/, '$1'), ytMainFuncBody);
-					}
-				}
+			ytUnscrambleParam['n'] = function(n) {
+				return ytUnscrambleFunc[ytUnscrambleNFuncName](n);
 			}
 		}
 
@@ -1368,11 +1350,11 @@ function ViewTube() {
 		var ytVideoInfoClients = {
 			'WEB_EMBEDDED': {
 				'clientName': 'WEB_EMBEDDED_PLAYER',
-				'clientVersion': '1.20250310.01.00'
+				'clientVersion': '1.20250923.21.00'
 			},
 			'WEB_SAFARI': {
 				'clientName': 'WEB',
-				'clientVersion': '2.20250312.04.00',
+				'clientVersion': '2.20250925.01.00',
 				'userAgent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15,gzip(gfe)'
 			},
 			'IOS': {
@@ -1382,13 +1364,13 @@ function ViewTube() {
 			},
 			'MWEB': {
 				'clientName': 'MWEB',
-				'clientVersion': '2.20250311.03.00',
+				'clientVersion': '2.20250925.01.00',
 				'userAgent': 'Mozilla/5.0 (iPad; CPU OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1,gzip(gfe)'
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
-				'clientVersion': '7.20250312.16.00',
-				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'
+				'clientVersion': '7.20250923.13.00',
+				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/25.lts.30.1034943-gold (unlike Gecko), Unknown_TV_Unknown_0/Unknown (Unknown, Unknown)'
 			},
 			'TV_EMBEDDED': {
 				'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
@@ -1820,7 +1802,7 @@ function ViewTube() {
 				}
 				if (ytScriptUrl && ytScriptUrl.indexOf('//') == -1) {
 					ytScriptUrl = page.win.location.protocol + '//' + page.win.location.hostname + ytScriptUrl;
-					ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
+					//ytScriptUrl = ytScriptUrl.replace(/\/player\/.*?\//, '\/player/0004de42\/');
 				}
 				if (!ytScriptUrl) {
 					showMyMessage('other', 'Couldn\'t get the script link. Please report it <a href="' + contact + '" style="color:#00892C">here</a>.');
@@ -1832,41 +1814,17 @@ function ViewTube() {
 		var ytUnscrambleParam = {};
 		function ytGetUnscrambleParamFunc() {
 			ytGetScriptUrl();
-			var ytMainFuncName, ytMainFuncBody, ytExtraFuncName, ytExtraFuncBody;
-			/* s */
-			ytMainFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\(decodeURIComponent/);
-			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/g, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
-				if (ytMainFuncBody) {
-					ytExtraFuncName = parseMyContent(ytMainFuncBody, /;([\w$]+)[\.\[]/);
-					if (ytExtraFuncName) {
-						ytExtraFuncBody = getMyContent(ytScriptUrl, new RegExp('var\\s+' + ytExtraFuncName.replace(/\$/g, '\\$') + '=\\s*\\{(.*?)\\};'));
-						if (ytExtraFuncBody) {
-							ytMainFuncBody = 'var ' + ytExtraFuncName + '={' + ytExtraFuncBody + '};' + ytMainFuncBody;
-							ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)\]]),[\w$]/);
-							if (ytExtraFuncBody) {
-								ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-								ytUnscrambleParam['s'] = new Function(ytMainFuncBody.replace(/.*;return\s+(\w).*/, '$1'), ytMainFuncBody);
-							}
-						}
-					}
-				}
+			var ytScriptFunc = getMyContent(ytScriptUrl, /('use strict'[\S\s]*;)\}/);
+			var ytUnscrambleSFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\([^\(]*?decodeURIComponent\(/);
+			var ytUnscrambleSFuncArgm = parseInt(getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=[\w$]+\(([^\(]*?)decodeURIComponent\(/));
+			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /[\w$]+=\[([\w$]+)\];g\.[\w$]+=g\.[\w$]+\.prototype;g\.[\w$]+\.[\w$]+=function/);
+			var ytUnscrambleReturn = 'return {' + ytUnscrambleSFuncName + ':' + ytUnscrambleSFuncName + ', ' + ytUnscrambleNFuncName + ':' + ytUnscrambleNFuncName +'};';
+			var ytUnscrambleFunc = new Function('g', ytScriptFunc + ytUnscrambleReturn)([]);
+			ytUnscrambleParam['s'] = function(s) {
+				return (ytUnscrambleSFuncArgm) ? ytUnscrambleFunc[ytUnscrambleSFuncName](ytUnscrambleSFuncArgm, s) : ytUnscrambleFunc[ytUnscrambleSFuncName](s);
 			}
-			/* n */
-			ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\.split\(\w\.slice/);
-			if (!ytMainFuncName) {
-				ytMainFuncName = getMyContent(ytScriptUrl, /(?:^|;)([\w$]+)=function\([\w$]+\)\s*\{var\s+\w=\w\[\w\[\d+\]\]\(\w\[\d+\]\)/);
-			}
-			if (ytMainFuncName) {
-				ytMainFuncBody = getMyContent(ytScriptUrl, new RegExp('(?:^|;)' + ytMainFuncName.replace(/\$/g, '\\$') + '\\s*=\\s*function\\s*' + '\\s*\\(\\w+\\)\\s*\\{(.*?\\))\\};'));
-				if (ytMainFuncBody) {
-					ytMainFuncBody = ytMainFuncBody.replace(/(\d+)?--(\d+)/, '$1- -$2').replace(/if\(typeof.*?;/, '');
-					ytExtraFuncBody = getMyContent(ytScriptUrl, /use strict';(var.*?[\)\]]),[\w$]/);
-					if (ytExtraFuncBody) {
-						ytMainFuncBody = 'try {' + ytExtraFuncBody + ';' + ytMainFuncBody + '} catch(e) {return null}';
-						ytUnscrambleParam['n'] = new Function(ytMainFuncBody.replace(/.*\+(\w)\}return.*/, '$1'), ytMainFuncBody);
-					}
-				}
+			ytUnscrambleParam['n'] = function(n) {
+				return ytUnscrambleFunc[ytUnscrambleNFuncName](n);
 			}
 		}
 
@@ -1877,11 +1835,11 @@ function ViewTube() {
 		var ytVideoInfoClients = {
 			'WEB_EMBEDDED': {
 				'clientName': 'WEB_EMBEDDED_PLAYER',
-				'clientVersion': '1.20250310.01.00'
+				'clientVersion': '1.20250923.21.00'
 			},
 			'WEB_SAFARI': {
 				'clientName': 'WEB',
-				'clientVersion': '2.20250312.04.00',
+				'clientVersion': '2.20250925.01.00',
 				'userAgent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15,gzip(gfe)'
 			},
 			'IOS': {
@@ -1891,13 +1849,13 @@ function ViewTube() {
 			},
 			'MWEB': {
 				'clientName': 'MWEB',
-				'clientVersion': '2.20250311.03.00',
+				'clientVersion': '2.20250925.01.00',
 				'userAgent': 'Mozilla/5.0 (iPad; CPU OS 16_7_10 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1,gzip(gfe)'
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
-				'clientVersion': '7.20250312.16.00',
-				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version'
+				'clientVersion': '7.20250923.13.00',
+				'userAgent': 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/25.lts.30.1034943-gold (unlike Gecko), Unknown_TV_Unknown_0/Unknown (Unknown, Unknown)'
 			},
 			'TV_EMBEDDED': {
 				'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
@@ -2315,7 +2273,7 @@ function ViewTube() {
 		/* Get Player Window */
 		var viPlayerWindow;
 		if (viPageType.indexOf('video') != -1) {
-			viPlayerWindow = getMyElement('', 'div', 'class', 'player_area', 0, false) || getMyElement('', 'div', 'class', 'player_container', 0, false) || getMyElement('', 'div', 'class', 'wrap_content', 0, false);
+			viPlayerWindow = getMyElement('', 'div', 'class', 'css-1vyinmt', 0, false);
 		}
 		else {
 			viPlayerWindow = getMyElement('', 'div', 'class', 'player_container', 1, false) || getMyElement('', 'div', 'class', 'player_container', 0, false);
@@ -2354,11 +2312,23 @@ function ViewTube() {
 
 		/* Get Content Source */
 		var viVideoSource = getMyContent(page.url, /config_url":"(.*?)"/);
-		if (viVideoSource) viVideoSource = cleanMyContent(viVideoSource, false);
+		if (viVideoSource) {
+			viVideoSource = cleanMyContent(viVideoSource, false);
+		}
 		else {
 			viVideoSource = getMyContent(page.url, /data-config-url="(.*?)"'/);
-			if (viVideoSource) viVideoSource = viVideoSource.replace(/&amp;/g, '&');
-			else viVideoSource = getMyContent(page.url, /embedUrl":"(.*?)"/);
+			if (viVideoSource) {
+				viVideoSource = viVideoSource.replace(/&amp;/g, '&');
+			}
+			else {
+				viVideoSource = getMyContent(page.url, /embedUrl":"(.*?)"/);
+				if (viVideoSource) {
+					viVideoSource = getMyContent(viVideoSource, /config_refresh_url":"(.*?)"/);
+					if (viVideoSource) {
+						viVideoSource = cleanMyContent(viVideoSource, false);
+					}
+				}
+			}
 		}
 
 		/* Get Videos Content */
@@ -2371,7 +2341,12 @@ function ViewTube() {
 					viVideosContent = viVideosContent['request']['files'];
 				}
 				else {
-					viVideosContent = '';
+					if (viVideosContent['files']) {
+						viVideosContent = viVideosContent['files'];
+					}
+					else {
+						viVideosContent = '';
+					}
 				}
 			}
 			catch(e) {
@@ -2385,7 +2360,12 @@ function ViewTube() {
 						viVideosContent = viVideosContent['request']['files'];
 					}
 					else {
-						viVideosContent = '';
+						if (viVideosContent['files']) {
+							viVideosContent = viVideosContent['files'];
+						}
+						else {
+							viVideosContent = '';
+						}
 					}
 				}
 				catch(e) {
@@ -2441,15 +2421,22 @@ function ViewTube() {
 		/* My Player Window */
 		myPlayerWindow = createMyElement('div');
 		styleMyElement(myPlayerWindow, {position: 'relative', width: '906px', height: '540px', textAlign: 'center', margin: '0px auto'});
-		styleMyElement(viPlayerWindow, {minHeight: '540px', position: 'static'});
+		//styleMyElement(viPlayerWindow, {minHeight: '540px', position: 'static', display: 'none'});
 		if (viPlayerWindow.parentNode) {
 			styleMyElement(viPlayerWindow.parentNode, {minHeight: '540px', position: 'relative'});
 			if (viPageType.indexOf('profile') != -1) {
 				styleMyElement(viPlayerWindow.parentNode, {marginLeft: '-50px'});
 			}
+			viPlayerWindow.parentNode.insertBefore(myPlayerWindow, viPlayerWindow);
 		}
 		cleanMyElement(viPlayerWindow, true);
-		appendMyElement(viPlayerWindow, myPlayerWindow);
+		//appendMyElement(viPlayerWindow, myPlayerWindow);
+		page.win.setInterval(function() {
+			var viXPlayerWindow = getMyElement('', 'div', 'class', 'css-1ujyh6g', 0, false);
+			if (viXPlayerWindow) {
+				styleMyElement(viXPlayerWindow, {display: 'none'});
+			}
+		}, 1000);
 		blockObject = viPlayerWindow;
 
 		/* Get Videos */
