@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2025.10.06
+// @version         2025.10.15
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1332,7 +1332,7 @@ function ViewTube() {
 			var ytScriptFunc = getMyContent(ytScriptUrl, /('use strict'[\S\s]*;)\}/);
 			var ytUnscrambleSFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\([^\(]*?decodeURIComponent\(/);
 			var ytUnscrambleSFuncArgm = parseInt(getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=[\w$]+\(([^\(]*?)decodeURIComponent\(/));
-			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /[\w$]+=\[([\w$]+)\];g\.[\w$]+=g\.[\w$]+\.prototype;g\.[\w$]+\.[\w$]+=function/);
+			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /(?:^|};)var\s+[\w$]+=\[([\w$]+)\];/);
 			var ytUnscrambleReturn = 'return {' + ytUnscrambleSFuncName + ':' + ytUnscrambleSFuncName + ', ' + ytUnscrambleNFuncName + ':' + ytUnscrambleNFuncName +'};';
 			var ytUnscrambleFunc = new Function('g', ytScriptFunc + ytUnscrambleReturn)([]);
 			ytUnscrambleParam['s'] = function(s) {
@@ -1817,7 +1817,7 @@ function ViewTube() {
 			var ytScriptFunc = getMyContent(ytScriptUrl, /('use strict'[\S\s]*;)\}/);
 			var ytUnscrambleSFuncName = getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=([\w$]+)\([^\(]*?decodeURIComponent\(/);
 			var ytUnscrambleSFuncArgm = parseInt(getMyContent(ytScriptUrl, /[\w$]+&&\([\w$]+=[\w$]+\(([^\(]*?)decodeURIComponent\(/));
-			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /[\w$]+=\[([\w$]+)\];g\.[\w$]+=g\.[\w$]+\.prototype;g\.[\w$]+\.[\w$]+=function/);
+			var ytUnscrambleNFuncName = getMyContent(ytScriptUrl, /(?:^|};)var\s+[\w$]+=\[([\w$]+)\];/);
 			var ytUnscrambleReturn = 'return {' + ytUnscrambleSFuncName + ':' + ytUnscrambleSFuncName + ', ' + ytUnscrambleNFuncName + ':' + ytUnscrambleNFuncName +'};';
 			var ytUnscrambleFunc = new Function('g', ytScriptFunc + ytUnscrambleReturn)([]);
 			ytUnscrambleParam['s'] = function(s) {
