@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2026.06.01
+// @version         2026.08.18
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1348,26 +1348,34 @@ function ViewTube() {
 			}
 			catch(e) {
 				ytScriptFunc = ytScriptFunc.replace('\'use strict\';', '');
-				ytUnscrambleFunc = new Function('g', ytScriptFunc + 'return {' + ytUnscrambleFuncReturn.join(',') + '};')([]);
+				try {
+					ytUnscrambleFunc = new Function('g', ytScriptFunc + 'return {' + ytUnscrambleFuncReturn.join(',') + '};')([]);
+				}
+				catch(e) {
+				}
 			}
-			ytUnscrambleParam['s'] = function(s) {
-				if (ytUnscrambleFunc.unscrambleS) {
-					try {
-						return ytUnscrambleFunc.unscrambleS(s);
-					}
-					catch(e) {
-						return false;
+			if (ytUnscrambleFunc) {
+				ytUnscrambleParam['s'] = function(s) {
+					if (ytUnscrambleFunc.unscrambleS) {
+						try {
+							return ytUnscrambleFunc.unscrambleS(s);
+						}
+						catch(e) {
+							return false;
+						}
 					}
 				}
 			}
-			ytUnscrambleParam['n'] = function(n) {
-				if (ytUnscrambleFunc.unscrambleN) {
-					try {
-						n = 'https://www.googlevideo.com/n/' + n + '/videoplayback?n=' + n;
-						return ytUnscrambleFunc.unscrambleN(n);
-					}
-					catch(e) {
-						return false;
+			if (ytUnscrambleFunc) {
+				ytUnscrambleParam['n'] = function(n) {
+					if (ytUnscrambleFunc.unscrambleN) {
+						try {
+							n = 'https://www.googlevideo.com/n/' + n + '/videoplayback?n=' + n;
+							return ytUnscrambleFunc.unscrambleN(n);
+						}
+						catch(e) {
+							return false;
+						}
 					}
 				}
 			}
@@ -1378,25 +1386,21 @@ function ViewTube() {
 		var ytVideosContentHLS;
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
 		var ytVideoInfoClients = {
-			'ANDROID_VR': {
-				'clientName': 'ANDROID_VR',
-				'clientVersion': '1.65.10'
+			'ANDROID': {
+				'clientName': 'ANDROID',
+				'clientVersion': '21.02.35'
+			},
+			'VISIONOS': {
+				'clientName': 'VISIONOS',
+				'clientVersion': '1.02'
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
 				'clientVersion': '7.20260114.12.00'
 			},
-			'ANDROID': {
-				'clientName': 'ANDROID',
-				'clientVersion': '21.02.35'
-			},
 			'TV_SIMPLY': {
 				'clientName': 'TVHTML5_SIMPLY',
 				'clientVersion': '1.0'
-			},
-			'WEB': {
-				'clientName': 'WEB',
-				'clientVersion': '2.20260114.08.00'
 			},
 			'MWEB': {
 				'clientName': 'MWEB',
@@ -1413,7 +1417,7 @@ function ViewTube() {
 			}
 		};
 		var ytVideoInfoClientsExtra = {
-			'unscrambled': {'ANDROID_VR': ['formats', 'adaptiveFormats'], 'ANDROID': ['formats']},
+			'unscrambled': {'ANDROID': ['formats'], 'VISIONOS': ['adaptiveFormats']},
 			'unavailable': {'ANDROID': ['adaptiveFormats'], 'MWEB': ['adaptiveFormats'], 'TV_SIMPLY': ['adaptiveFormats']}
 		};
 		var ytVideoInfoData = {'videoId': ytVideoId, 'context': {'client': null}, 'playbackContext': {'contentPlaybackContext': {'html5Preference': 'HTML5_PREF_WANTS'}}};
@@ -1884,24 +1888,28 @@ function ViewTube() {
 				ytScriptFunc = ytScriptFunc.replace('\'use strict\';', '');
 				ytUnscrambleFunc = new Function('g', ytScriptFunc + 'return {' + ytUnscrambleFuncReturn.join(',') + '};')([]);
 			}
-			ytUnscrambleParam['s'] = function(s) {
-				if (ytUnscrambleFunc.unscrambleS) {
-					try {
-						return ytUnscrambleFunc.unscrambleS(s);
-					}
-					catch(e) {
-						return false;
+			if (ytUnscrambleFunc) {
+				ytUnscrambleParam['s'] = function(s) {
+					if (ytUnscrambleFunc.unscrambleS) {
+						try {
+							return ytUnscrambleFunc.unscrambleS(s);
+						}
+						catch(e) {
+							return false;
+						}
 					}
 				}
 			}
-			ytUnscrambleParam['n'] = function(n) {
-				if (ytUnscrambleFunc.unscrambleN) {
-					try {
-						n = 'https://www.googlevideo.com/n/' + n + '/videoplayback?n=' + n;
-						return ytUnscrambleFunc.unscrambleN(n);
-					}
-					catch(e) {
-						return false;
+			if (ytUnscrambleFunc) {
+				ytUnscrambleParam['n'] = function(n) {
+					if (ytUnscrambleFunc.unscrambleN) {
+						try {
+							n = 'https://www.googlevideo.com/n/' + n + '/videoplayback?n=' + n;
+							return ytUnscrambleFunc.unscrambleN(n);
+						}
+						catch(e) {
+							return false;
+						}
 					}
 				}
 			}
@@ -1912,25 +1920,21 @@ function ViewTube() {
 		var ytVideosContentHLS;
 		var ytVideoInfoUrl = page.win.location.protocol + '//' + page.win.location.hostname + '/youtubei/v1/player?prettyPrint=false';
 		var ytVideoInfoClients = {
-			'ANDROID_VR': {
-				'clientName': 'ANDROID_VR',
-				'clientVersion': '1.65.10'
+			'ANDROID': {
+				'clientName': 'ANDROID',
+				'clientVersion': '21.02.35'
+			},
+			'VISIONOS': {
+				'clientName': 'VISIONOS',
+				'clientVersion': '1.02'
 			},
 			'TV': {
 				'clientName': 'TVHTML5',
 				'clientVersion': '7.20260114.12.00'
 			},
-			'ANDROID': {
-				'clientName': 'ANDROID',
-				'clientVersion': '21.02.35'
-			},
 			'TV_SIMPLY': {
 				'clientName': 'TVHTML5_SIMPLY',
 				'clientVersion': '1.0'
-			},
-			'WEB': {
-				'clientName': 'WEB',
-				'clientVersion': '2.20260114.08.00'
 			},
 			'MWEB': {
 				'clientName': 'MWEB',
@@ -1947,7 +1951,7 @@ function ViewTube() {
 			}
 		};
 		var ytVideoInfoClientsExtra = {
-			'unscrambled': {'ANDROID_VR': ['formats', 'adaptiveFormats'], 'ANDROID': ['formats']},
+			'unscrambled': {'ANDROID': ['formats'], 'VISIONOS': ['adaptiveFormats']},
 			'unavailable': {'ANDROID': ['adaptiveFormats'], 'MWEB': ['adaptiveFormats'], 'TV_SIMPLY': ['adaptiveFormats']}
 		};
 		var ytVideoInfoData = {'videoId': ytVideoId, 'context': {'client': null}, 'playbackContext': {'contentPlaybackContext': {'html5Preference': 'HTML5_PREF_WANTS'}}};
