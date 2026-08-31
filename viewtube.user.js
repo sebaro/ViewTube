@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            ViewTube
-// @version         2026.08.18
+// @version         2026.08.31
 // @description     Watch videos from video sharing websites with extra options.
 // @author          sebaro
 // @namespace       http://sebaro.pro/viewtube
@@ -1413,7 +1413,7 @@ function ViewTube() {
 			},
 			'IOS': {
 				'clientName': 'IOS',
-				'clientVersion': '21.26.4'
+				'clientVersion': '21.02.3'
 			}
 		};
 		var ytVideoInfoClientsExtra = {
@@ -1591,6 +1591,9 @@ function ViewTube() {
 				break;
 			}
 		}
+		if (ytVideoFounds['formats'] || ytVideoFounds['adaptiveFormats']) {
+			ytVideoFound = true;
+		}
 		/* DASH */
 		if (ytVideoFound) {
 			if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
@@ -1663,7 +1666,7 @@ function ViewTube() {
 			}
 			else {
 				if (getMyContent(page.url, /"playabilityStatus":\{"status":"(LOGIN_REQUIRED)"/)) {
-					showMyMessage('other', 'This video may be inappropriate for some users. Sign in to confirm your age.');
+					showMyMessage('other', 'Login required.');
 				}
 				else {
 					showMyMessage('!content');
@@ -1948,7 +1951,7 @@ function ViewTube() {
 			},
 			'IOS': {
 				'clientName': 'IOS',
-				'clientVersion': '21.26.4'
+				'clientVersion': '21.02.3'
 			}
 		};
 		var ytVideoInfoClientsExtra = {
@@ -2126,6 +2129,9 @@ function ViewTube() {
 				break;
 			}
 		}
+		if (ytVideoFounds['formats'] || ytVideoFounds['adaptiveFormats']) {
+			ytVideoFound = true;
+		}
 		/* DASH */
 		if (ytVideoFound) {
 			if (ytVideoList['Medium Bitrate Audio MP4'] || ytVideoList['Medium Bitrate Audio WebM']) {
@@ -2197,7 +2203,7 @@ function ViewTube() {
 			}
 			else {
 				if (getMyContent(page.url, /"playabilityStatus":\{"status":"(LOGIN_REQUIRED)"/)) {
-					showMyMessage('other', 'This video may be inappropriate for some users. Sign in to confirm your age.');
+					showMyMessage('other', 'Login required.');
 				}
 				else {
 					showMyMessage('!content');
